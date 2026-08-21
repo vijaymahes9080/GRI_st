@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'faculty' | 'scholar' | 'admin' | 'guest';
+export type UserRole = 'student' | 'faculty' | 'scholar' | 'admin' | 'guest' | 'super_admin' | 'dept_admin';
 
 export interface UserProfile {
   id: string;
@@ -27,6 +27,7 @@ export interface UserProfile {
   passwordUpdatedAt?: string;
   approvedAt?: string;
   approvedBy?: string;
+  createdAt?: string;
 }
 
 export type MessageChannel = 'EMAIL' | 'SMS' | 'WHATSAPP' | 'IN_APP';
@@ -37,7 +38,9 @@ export type MessageType =
   | 'REGISTRATION_RECEIVED' 
   | 'ROLE_PROMOTION'
   | 'CONTACT_UPDATED'
-  | 'CHANNEL_TEST';
+  | 'CHANNEL_TEST'
+  | 'CIRCULAR_BROADCAST'
+  | 'EMERGENCY_ALERT';
 
 export interface MultiChannelMessage {
   id: string;
@@ -64,6 +67,33 @@ export interface CircularItem {
   fileUrl?: string;
   targetRole?: 'ALL' | 'STUDENT' | 'FACULTY' | 'STAFF';
   author?: string;
+  status?: 'PUBLISHED' | 'DRAFT' | 'ARCHIVED';
+  viewsCount?: number;
+}
+
+export interface ProgrammeItem {
+  id?: string;
+  name: string;
+  level: 'UG' | 'PG' | 'Ph.D.' | 'Diploma' | 'B.Voc' | 'Certificate';
+  duration: string;
+  intake: number;
+  feesPerSem: string;
+  eligibility?: string;
+  syllabusUrl?: string;
+}
+
+export interface FacultyMember {
+  id?: string;
+  name: string;
+  designation: string;
+  qualification: string;
+  specialization: string;
+  email?: string;
+  phone?: string;
+  photoUrl?: string;
+  publicationsCount?: number;
+  researchAreas?: string[];
+  status?: 'ACTIVE' | 'ON_LEAVE' | 'ARCHIVED';
 }
 
 export interface DepartmentInfo {
@@ -76,10 +106,11 @@ export interface DepartmentInfo {
   email: string;
   phone: string;
   overview: string;
-  programmes: { name: string; level: string; duration: string; intake: number; feesPerSem: string }[];
-  faculty: { name: string; designation: string; qualification: string; specialization: string }[];
+  programmes: ProgrammeItem[];
+  faculty: FacultyMember[];
   researchAreas: string[];
   facilities: string[];
+  status?: 'ACTIVE' | 'ARCHIVED';
 }
 
 export interface SchoolInfo {
@@ -88,6 +119,183 @@ export interface SchoolInfo {
   deanName: string;
   description: string;
   departments: DepartmentInfo[];
+}
+
+export interface EventItem {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  time?: string;
+  venue: string;
+  organizer: string;
+  category: 'CONFERENCE' | 'WORKSHOP' | 'SEMINAR' | 'CULTURAL' | 'SPORTS' | 'COMMUNITY';
+  registrationUrl?: string;
+  imageUrl?: string;
+  status: 'UPCOMING' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
+  targetAudience?: string;
+}
+
+export interface PlacementItem {
+  id: string;
+  companyName: string;
+  role: string;
+  ctc: string;
+  driveDate: string;
+  deadline: string;
+  eligibleCourses: string[];
+  minCgpa: number;
+  location: string;
+  description: string;
+  applyLink?: string;
+  status: 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
+}
+
+export interface ResearchItem {
+  id: string;
+  title: string;
+  piName: string;
+  department: string;
+  fundingAgency: 'DST' | 'SERB' | 'ICAR' | 'ICSSR' | 'UGC' | 'MoE' | 'CSIR' | 'OTHER';
+  grantAmount: string;
+  sanctionYear: string;
+  status: 'ONGOING' | 'COMPLETED';
+  thrustArea: string;
+  publicationsCount?: number;
+}
+
+export interface DocumentItem {
+  id: string;
+  title: string;
+  category: 'REGULATION' | 'SYLLABUS' | 'PROSPECTUS' | 'FORM' | 'ANNUAL_REPORT' | 'AUDIT';
+  fileUrl: string;
+  fileSize: string;
+  fileType: string;
+  uploadDate: string;
+  uploadedBy: string;
+  downloadCount: number;
+  status: 'ACTIVE' | 'ARCHIVED';
+}
+
+export interface FaqItem {
+  id: string;
+  question: string;
+  answer: string;
+  category: 'ADMISSIONS' | 'EXAMINATIONS' | 'HOSTEL' | 'LIBRARY' | 'SCHOLARSHIP' | 'GENERAL';
+  order: number;
+  isPublished: boolean;
+}
+
+export interface QuickLinkItem {
+  id: string;
+  title: string;
+  url: string;
+  category: 'PORTAL' | 'GOVT' | 'LIBRARY' | 'STUDENT_SERVICE' | 'FACULTY_RESOURCE';
+  iconName?: string;
+  description?: string;
+  isExternal: boolean;
+  order: number;
+}
+
+export interface DynamicPage {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  category: 'ABOUT' | 'GOVERNANCE' | 'CAMPUS' | 'FACILITY' | 'CENTRE' | 'CUSTOM';
+  contentMarkdown: string;
+  bannerImage?: string;
+  published: boolean;
+  lastUpdated: string;
+  author: string;
+}
+
+export interface HeroBannerConfig {
+  headline: string;
+  subMotto: string;
+  accreditationBadge: string;
+  description: string;
+  urgentTickerText: string;
+  primaryCtaText: string;
+  primaryCtaTab: string;
+  secondaryCtaText: string;
+  secondaryCtaTab: string;
+  bgGradient: string;
+}
+
+export interface InstitutionProfile {
+  name: string;
+  subName: string;
+  accreditation: string;
+  ministry: string;
+  founded: string;
+  location: string;
+  phone: string;
+  email: string;
+  website: string;
+  mottoTamil: string;
+  mottoEnglish: string;
+  chancellor: string;
+  viceChancellor: string;
+  registrar: string;
+  coe: string;
+  campusStats: {
+    schools: number;
+    departments: number;
+    facultyMembers: number;
+    students: number;
+    researchScholars: number;
+    campusAreaAcres: number;
+    nirfRankBand: string;
+  };
+}
+
+export interface FeatureFlags {
+  enableAiAssistant: boolean;
+  enableLiveVoiceAgent: boolean;
+  enableMapsGrounding: boolean;
+  enableStudentGrievances: boolean;
+  enableExamHallTickets: boolean;
+  enableOnlineAdmissions: boolean;
+  enablePlacementPortal: boolean;
+  enableResearchRepository: boolean;
+  enableAlumniDirectory: boolean;
+  enableMaintenanceBanner: boolean;
+  maintenanceNotice?: string;
+}
+
+export interface AiKnowledgeSource {
+  id: string;
+  title: string;
+  category: 'CURRICULUM' | 'REGULATIONS' | 'ADMISSIONS' | 'HOSTEL' | 'HISTORY' | 'EXAM' | 'GENERAL';
+  sourceUrl?: string;
+  contentSnippet: string;
+  status: 'INDEXED' | 'PENDING' | 'ERROR';
+  chunkCount: number;
+  lastSynced: string;
+}
+
+export interface AiSettingsConfig {
+  assistantName: string;
+  welcomeMessage: string;
+  systemPersona: string;
+  allowedTopics: string[];
+  temperature: number;
+  enableCitations: boolean;
+  voiceName: string;
+  maxOutputTokens: number;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  timestamp: string;
+  adminEmail: string;
+  adminName: string;
+  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'PUBLISH' | 'UNPUBLISH' | 'APPROVE' | 'REJECT' | 'RESTORE' | 'DISPATCH' | 'CONFIG_CHANGE';
+  resourceType: 'CIRCULAR' | 'USER' | 'DEPARTMENT' | 'EVENT' | 'PLACEMENT' | 'RESEARCH' | 'DOCUMENT' | 'FAQ' | 'PAGE' | 'SETTINGS' | 'AI_KNOWLEDGE';
+  resourceId: string;
+  resourceTitle: string;
+  details: string;
 }
 
 export interface ExamScheduleItem {

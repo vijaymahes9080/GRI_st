@@ -535,3 +535,397 @@ export const CAREERS_MOCK: CareerItem[] = [
   { advtNo: 'GRI/REC/2026/02', postName: 'Guest Faculty in Artificial Intelligence & Data Science', department: 'Dept of Computer Science & Applications', salary: '₹1,500/lecture (Max ₹50,000/mo)', qualification: 'Ph.D. / M.Tech in CSE with NET', lastDate: '2026-08-25', category: 'TEACHING' },
   { advtNo: 'GRI/STAFF/2026/03', postName: 'Technical Assistant (Computer Laboratory & Network Admin)', department: 'Computer Centre', salary: '7th CPC Pay Level 6', qualification: 'B.E. CSE / B.Tech IT / MCA (First Class)', lastDate: '2026-09-02', category: 'NON-TEACHING' },
 ];
+
+export const DEFAULT_HERO_CONFIG = {
+  headline: 'The Gandhigram Rural Institute',
+  subMotto: '"கிராமம் உயர நாடு உயரும்" — As the village rises, so the nation rises',
+  accreditationBadge: "NAAC 'A++' Accredited Deemed University (CGPA 3.61)",
+  description: 'Founded in 1956 by Dr. T.S. Soundram and Dr. G. Ramachandran under the guidance of Mahatma Gandhi. GRI integrates Higher Education with Gandhian Values, Organic Agrarian Sciences, Rural Livelihoods, and Cutting-Edge Science & Computing.',
+  urgentTickerText: 'Admissions Open 2026-27 | End Semester Exam Timetable Released | CUET Counselling Portal Active',
+  primaryCtaText: 'ESE Exam Timetables & Services',
+  primaryCtaTab: 'services',
+  secondaryCtaText: 'Explore 28+ Departments',
+  secondaryCtaTab: 'explore',
+  bgGradient: 'from-slate-950 via-slate-900 to-emerald-950',
+};
+
+export const DEFAULT_FEATURE_FLAGS = {
+  enableAiAssistant: true,
+  enableLiveVoiceAgent: true,
+  enableMapsGrounding: true,
+  enableStudentGrievances: true,
+  enableExamHallTickets: true,
+  enableOnlineAdmissions: true,
+  enablePlacementPortal: true,
+  enableResearchRepository: true,
+  enableAlumniDirectory: true,
+  enableMaintenanceBanner: false,
+  maintenanceNotice: 'Scheduled ERP Maintenance: Saturday 11:00 PM to 02:00 AM IST.',
+};
+
+export const DEFAULT_AI_SETTINGS = {
+  assistantName: 'GRI RuralGPT',
+  welcomeMessage: 'Vanakkam! I am GRI RuralGPT, the official grounded AI Assistant for The Gandhigram Rural Institute. How may I assist you with academics, admissions, research, or campus facilities today?',
+  systemPersona: 'You are the official verified AI assistant for The Gandhigram Rural Institute (GRI), Deemed to be University, Gandhigram, Dindigul, Tamil Nadu. Ground all responses in official GRI facts.',
+  allowedTopics: ['Admissions', 'Examinations', 'Departments', 'CBCS Syllabi', 'Hostel Mess', 'KVK Farm', 'Gandhian Heritage', 'Placements', 'Scholarships'],
+  temperature: 0.3,
+  enableCitations: true,
+  voiceName: 'Zephyr',
+  maxOutputTokens: 2048,
+};
+
+export const INITIAL_AI_KNOWLEDGE_SOURCES = [
+  {
+    id: 'src-1',
+    title: 'GRI University Charter, Founder Legacy & Gandhian Philosophy',
+    category: 'HISTORY' as const,
+    sourceUrl: 'https://ruraluniv.ac.in/about',
+    contentSnippet: 'Founded in 1956 by Dr. T.S. Soundram (daughter of TVS founder T.V. Sundaram Iyengar) and Dr. G. Ramachandran under the guidance of Mahatma Gandhi. GRI embodies Nai Talim (Basic Education) and Shanti Sena (Peace Corps).',
+    status: 'INDEXED' as const,
+    chunkCount: 24,
+    lastSynced: '2026-08-20T10:00:00Z',
+  },
+  {
+    id: 'src-2',
+    title: 'GRI Admissions Guidelines, Eligibility & Samarth/CUET Criteria 2026-27',
+    category: 'ADMISSIONS' as const,
+    sourceUrl: 'https://ruraluniv.ac.in/admissions',
+    contentSnippet: 'Admissions into UG programmes (B.Sc. Agriculture, B.Tech, B.Com, B.A.) and PG programmes (M.Sc., MBA, MCA, M.A.) are conducted through CUET scores and direct merit counseling.',
+    status: 'INDEXED' as const,
+    chunkCount: 38,
+    lastSynced: '2026-08-20T10:00:00Z',
+  },
+  {
+    id: 'src-3',
+    title: 'CBCS Regulations, Grading System & Exam Evaluation Rules',
+    category: 'EXAM' as const,
+    sourceUrl: 'https://ruraluniv.ac.in/examination',
+    contentSnippet: 'Continuous Internal Assessment (CIA) accounts for 40% (2 internal tests, seminar, assignment) and End Semester Examination (ESE) accounts for 60%. Minimum passing marks: 40% in ESE and 50% aggregate.',
+    status: 'INDEXED' as const,
+    chunkCount: 45,
+    lastSynced: '2026-08-20T10:00:00Z',
+  },
+  {
+    id: 'src-4',
+    title: 'Hostel Accommodation, Pure Veg Mess & Anti-Ragging Standard Protocol',
+    category: 'HOSTEL' as const,
+    sourceUrl: 'https://ruraluniv.ac.in/hostels',
+    contentSnippet: 'Separate hostels for Men (Nadarajan Hostel, Gandhi Hostel) and Women (Kasturba Hostel, Soundram Hostel). Pure vegetarian mess operating on dividing system with organic produce from KVK farm.',
+    status: 'INDEXED' as const,
+    chunkCount: 19,
+    lastSynced: '2026-08-20T10:00:00Z',
+  },
+];
+
+export const INITIAL_EVENTS = [
+  {
+    id: 'evt-1',
+    title: 'National Conference on Renewable Energy & Green Agro-Technologies (NCREAT 2026)',
+    description: 'Two-day national conference showcasing cutting-edge advancements in solar photovoltaics, biomass energy, precision agro-electronics, and sustainable dryland farming.',
+    date: '2026-09-18',
+    time: '09:30 AM - 05:00 PM',
+    venue: 'Dr. G. Ramachandran Auditorium, GRI',
+    organizer: 'Dept. of Physics & School of Agriculture',
+    category: 'CONFERENCE' as const,
+    registrationUrl: 'https://ruraluniv.ac.in/events/ncreat2026',
+    status: 'UPCOMING' as const,
+    targetAudience: 'Researchers, Faculty, PG Scholars, Industry Experts',
+  },
+  {
+    id: 'evt-2',
+    title: 'Gandhian Peace & Rural Youth Leadership Workshop (Shanti Sena)',
+    description: 'Intensive community mediation and non-violent conflict resolution training conducted by senior Gandhian scholars for NSS and Shanti Sena student volunteers.',
+    date: '2026-09-25',
+    time: '10:00 AM - 04:00 PM',
+    venue: 'Gandhian Heritage Hall & Peace Centre',
+    organizer: 'Centre for Gandhian Studies & Shanti Sena',
+    category: 'WORKSHOP' as const,
+    status: 'UPCOMING' as const,
+    targetAudience: 'All Registered Students & Volunteers',
+  },
+  {
+    id: 'evt-3',
+    title: 'Organic Millet Farmers & Agri-Entrepreneurs Mega Fair',
+    description: 'Exhibition of value-added millet products, high-yielding drought-tolerant seed varieties, bio-fertilizers, and farm machinery demonstrations by ICAR-KVK.',
+    date: '2026-10-02',
+    time: '08:30 AM - 06:00 PM',
+    venue: 'GRI Instructional Farm Grounds, Ambathurai',
+    organizer: 'Krishi Vigyan Kendra (ICAR-GRI)',
+    category: 'COMMUNITY' as const,
+    status: 'UPCOMING' as const,
+    targetAudience: 'Farmers, Agronomists, General Public',
+  },
+];
+
+export const INITIAL_PLACEMENTS = [
+  {
+    id: 'plc-1',
+    companyName: 'TATA Consultancy Services (TCS Digital & Ninja)',
+    role: 'Systems Engineer & Digital Developer',
+    ctc: '₹3.80 - ₹7.20 LPA',
+    driveDate: '2026-09-12',
+    deadline: '2026-08-30',
+    eligibleCourses: ['MCA', 'M.Sc. Computer Science', 'M.Sc. IT', 'B.Tech / B.Sc. IT'],
+    minCgpa: 6.5,
+    location: 'Chennai / Bengaluru / Pan-India',
+    description: 'On-campus recruitment drive for final year postgraduate and undergraduate computing students. Online aptitude and coding test on TCS iON portal.',
+    status: 'OPEN' as const,
+  },
+  {
+    id: 'plc-2',
+    companyName: 'ITC Agro-Business Division (ITC Limited)',
+    role: 'Assistant Agri-Business Executive & Farm Lead',
+    ctc: '₹5.50 - ₹6.80 LPA',
+    driveDate: '2026-09-20',
+    deadline: '2026-09-05',
+    eligibleCourses: ['B.Sc. (Hons) Agriculture', 'M.Sc. Agronomy', 'MBA Rural Management'],
+    minCgpa: 7.0,
+    location: 'Tamil Nadu, Andhra Pradesh & Karnataka',
+    description: 'Technical and commercial recruitment for sustainable crop procurement, farmer producer organization (FPO) linkages, and organic supply chain management.',
+    status: 'OPEN' as const,
+  },
+  {
+    id: 'plc-3',
+    companyName: 'HDFC Bank (Rural & Inclusive Banking Group)',
+    role: 'Rural Credit Manager & Relationship Officer',
+    ctc: '₹4.60 - ₹5.80 LPA',
+    driveDate: '2026-09-28',
+    deadline: '2026-09-10',
+    eligibleCourses: ['MBA Rural Management', 'M.Com. Cooperative Management', 'M.A. Rural Economics'],
+    minCgpa: 6.0,
+    location: 'South India Branch Network',
+    description: 'Hiring graduates for priority sector lending, agricultural term loans, microfinance clusters, and digital rural banking operations.',
+    status: 'OPEN' as const,
+  },
+];
+
+export const INITIAL_RESEARCH_PROJECTS = [
+  {
+    id: 'res-1',
+    title: 'Development of Nanostructured Electrochemical Biosensors for Early Detection of Agrarian Pesticide Residues in Ground Water',
+    piName: 'Prof. Dr. S. Abraham John',
+    department: 'Department of Chemistry',
+    fundingAgency: 'DST' as const,
+    grantAmount: '₹54,20,000',
+    sanctionYear: '2025-2028',
+    status: 'ONGOING' as const,
+    thrustArea: 'Nanomaterials & Chemical Sensors',
+    publicationsCount: 8,
+  },
+  {
+    id: 'res-2',
+    title: 'Standardization and Nutritional Profiling of Bio-fortified Minor Millets for Combatting Anaemia in Rural Tribal Pockets of Western Ghats',
+    piName: 'Dr. M. Sundaramoorthy',
+    department: 'Department of Agriculture',
+    fundingAgency: 'ICAR' as const,
+    grantAmount: '₹42,00,000',
+    sanctionYear: '2024-2027',
+    status: 'ONGOING' as const,
+    thrustArea: 'Nutraceuticals & Drought-Resilient Agronomy',
+    publicationsCount: 6,
+  },
+  {
+    id: 'res-3',
+    title: 'Empirical Assessment of Digital Financial Inclusion and UPI Adoption across Women Self Help Groups (SHGs) in Dindigul District',
+    piName: 'Dr. C. Sivapragasam',
+    department: 'Department of Rural Development',
+    fundingAgency: 'ICSSR' as const,
+    grantAmount: '₹18,50,000',
+    sanctionYear: '2025-2026',
+    status: 'ONGOING' as const,
+    thrustArea: 'Rural Microfinance & Policy Research',
+    publicationsCount: 4,
+  },
+];
+
+export const INITIAL_DOCUMENTS = [
+  {
+    id: 'doc-1',
+    title: 'GRI General Regulations & CBCS Academic Handbook 2026-27',
+    category: 'REGULATION' as const,
+    fileUrl: 'https://ruraluniv.ac.in/docs/cbcs_handbook_2026.pdf',
+    fileSize: '4.2 MB',
+    fileType: 'PDF Document',
+    uploadDate: '2026-08-01',
+    uploadedBy: 'Academic Section (Registrar)',
+    downloadCount: 1420,
+    status: 'ACTIVE' as const,
+  },
+  {
+    id: 'doc-2',
+    title: 'CUET UG/PG Admission Prospectus & Fee Structure 2026-27',
+    category: 'PROSPECTUS' as const,
+    fileUrl: 'https://ruraluniv.ac.in/docs/prospectus_2026_27.pdf',
+    fileSize: '8.6 MB',
+    fileType: 'PDF Document',
+    uploadDate: '2026-07-28',
+    uploadedBy: 'Dean (Academic Affairs)',
+    downloadCount: 3890,
+    status: 'ACTIVE' as const,
+  },
+  {
+    id: 'doc-3',
+    title: 'Application Form for Migration Certificate / Duplicate Degree',
+    category: 'FORM' as const,
+    fileUrl: 'https://ruraluniv.ac.in/docs/migration_form.pdf',
+    fileSize: '540 KB',
+    fileType: 'PDF Document',
+    uploadDate: '2026-06-15',
+    uploadedBy: 'Controller of Examinations',
+    downloadCount: 810,
+    status: 'ACTIVE' as const,
+  },
+];
+
+export const INITIAL_FAQS = [
+  {
+    id: 'faq-1',
+    question: 'How do I apply for UG and PG programmes at GRI?',
+    answer: 'Candidates can apply online via the official Samarth portal or CUET (Common University Entrance Test) scores. Direct applications for Diploma and Certificate courses are processed through ruraluniv.ac.in/admissions.',
+    category: 'ADMISSIONS' as const,
+    order: 1,
+    isPublished: true,
+  },
+  {
+    id: 'faq-2',
+    question: 'What is the passing criteria under the GRI CBCS grading system?',
+    answer: 'A student must secure a minimum of 40% in the End Semester Examination (ESE) and an aggregate of 50% (combining 40% CIA + 60% ESE) to successfully pass a course.',
+    category: 'EXAMINATIONS' as const,
+    order: 2,
+    isPublished: true,
+  },
+  {
+    id: 'faq-3',
+    question: 'What facilities are provided in the GRI Student Hostels?',
+    answer: 'Hostels provide pure vegetarian dining on a dividing system, 24/7 Wi-Fi connectivity, RO purified drinking water, solar water heaters, study halls, and sports facilities.',
+    category: 'HOSTEL' as const,
+    order: 3,
+    isPublished: true,
+  },
+  {
+    id: 'faq-4',
+    question: 'What digital library resources and e-journals are accessible?',
+    answer: 'Central Library subscribes to UGC-e-ShodhSindhu, Delnet, IEEE Xplore, ScienceDirect, and provides RemoteXs access to students and faculty off-campus.',
+    category: 'LIBRARY' as const,
+    order: 4,
+    isPublished: true,
+  },
+];
+
+export const INITIAL_QUICK_LINKS = [
+  {
+    id: 'lnk-1',
+    title: 'Samarth Portal (Student / Faculty ERP)',
+    url: 'https://ruraluniv.samarth.edu.in',
+    category: 'PORTAL' as const,
+    iconName: 'Server',
+    description: 'Course registration, internal marks, fee payments, and attendance tracker.',
+    isExternal: true,
+    order: 1,
+  },
+  {
+    id: 'lnk-2',
+    title: 'UGC National Academic Depository (NAD / DigiLocker)',
+    url: 'https://nad.gov.in',
+    category: 'GOVT' as const,
+    iconName: 'Award',
+    description: 'Verify and download authentic digital degrees, marksheets, and transcripts.',
+    isExternal: true,
+    order: 2,
+  },
+  {
+    id: 'lnk-3',
+    title: 'National Scholarship Portal (NSP Government of India)',
+    url: 'https://scholarships.gov.in',
+    category: 'STUDENT_SERVICE' as const,
+    iconName: 'Award',
+    description: 'Central sector, Post-Matric SC/ST/OBC, and Pragati scholarships.',
+    isExternal: true,
+    order: 3,
+  },
+  {
+    id: 'lnk-4',
+    title: 'Unnat Bharat Abhiyan (UBA Regional Coordinating Institute)',
+    url: 'https://unnatbharatabhiyan.gov.in',
+    category: 'GOVT' as const,
+    iconName: 'HeartHandshake',
+    description: 'Rural village development, techno-economic intervention, and CSR linkages.',
+    isExternal: true,
+    order: 4,
+  },
+];
+
+export const INITIAL_DYNAMIC_PAGES = [
+  {
+    id: 'pg-1',
+    slug: 'about-gri',
+    title: 'About The Gandhigram Rural Institute',
+    subtitle: 'A Deemed University with a Unique Rural Mission',
+    category: 'ABOUT' as const,
+    contentMarkdown: `### Historical Genesis
+The Gandhigram Rural Institute was born in 1956 out of the creative genius of **Dr. T.S. Soundram** and **Dr. G. Ramachandran**, dedicated disciples of Mahatma Gandhi.
+
+### Core Philosophy
+* **Nai Talim (Education through Work)**: Integrating head, heart, and hand through community extension.
+* **Shanti Sena (Youth Peace Force)**: Imparting non-violent conflict resolution and emergency relief training.
+* **Rural Industrialization**: Fostering khadi, village agro-industries, and renewable technology.
+
+### NAAC 'A++' Grade Milestone
+In recognition of its outstanding teaching-learning, high-impact research, and rural extension, GRI was reaccredited with the highest **A++ Grade (CGPA: 3.61)** by NAAC.`,
+    published: true,
+    lastUpdated: '2026-08-15',
+    author: 'GRI Administration',
+  },
+  {
+    id: 'pg-2',
+    slug: 'gandhian-heritage',
+    title: 'Gandhian Heritage & Peace Centre',
+    subtitle: 'Preserving Gandhian Artefacts & Non-Violent Philosophy',
+    category: 'CENTRE' as const,
+    contentMarkdown: `### Shanti Sena & Peace Studies
+GRI pioneered the world-renowned **Shanti Sena (Peace Corps)**, where students undergo regular drill, village peace keeping, and community disaster mitigation.
+
+### Museum & Rare Archives
+The Gandhian Museum houses rare photographs of Mahatma Gandhi's visits to South India, spinning charkhas, letters written by Kasturba Gandhi, and historical Khadi looms.`,
+    published: true,
+    lastUpdated: '2026-08-10',
+    author: 'Director, Gandhian Studies',
+  },
+];
+
+export const INITIAL_AUDIT_LOGS = [
+  {
+    id: 'aud-1',
+    timestamp: '2026-08-20T10:15:00Z',
+    adminEmail: 'admin.gri@ruraluniv.ac.in',
+    adminName: 'Super Admin (ICT Centre)',
+    action: 'CONFIG_CHANGE' as const,
+    resourceType: 'SETTINGS' as const,
+    resourceId: 'feature_flags',
+    resourceTitle: 'AI Voice & Maps Grounding',
+    details: 'Enabled Gemini Live Voice agent and Google Maps Grounding across all user roles.',
+  },
+  {
+    id: 'aud-2',
+    timestamp: '2026-08-18T09:30:00Z',
+    adminEmail: 'admin.gri@ruraluniv.ac.in',
+    adminName: 'Dean (Academic Affairs)',
+    action: 'CREATE' as const,
+    resourceType: 'CIRCULAR' as const,
+    resourceId: 'circ-101',
+    resourceTitle: 'Admissions Open 2026-2027',
+    details: 'Published official admissions notification for UG, PG, and Ph.D. programmes.',
+  },
+  {
+    id: 'aud-3',
+    timestamp: '2026-08-16T14:20:00Z',
+    adminEmail: 'admin.gri@ruraluniv.ac.in',
+    adminName: 'Controller of Examinations',
+    action: 'CREATE' as const,
+    resourceType: 'CIRCULAR' as const,
+    resourceId: 'circ-102',
+    resourceTitle: 'ESE Exam Timetable Released',
+    details: 'Notified ESE November/December 2026 examination timetable with hall-ticket instructions.',
+  },
+];
+

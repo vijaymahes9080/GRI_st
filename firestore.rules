@@ -1,29 +1,91 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow public read on circulars, authenticated create/update
+    // Public read collections for institutional data
     match /circulars/{circularId} {
       allow read: if true;
       allow write: if true;
     }
 
-    // User profiles
+    match /schools/{schoolId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /placements/{placementId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /research_projects/{projectId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /documents/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /faqs/{faqId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /quick_links/{linkId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /dynamic_pages/{slug} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /ai_knowledge_sources/{sourceId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /system_config/{configDoc} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // User accounts & RBAC
     match /users/{userId} {
       allow read: if true;
       allow write: if true;
     }
 
-    // AI Chat history
+    // Communications & Audit Logs
+    match /dispatched_messages/{msgId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /audit_logs/{logId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Grievances
+    match /grievances/{ticketId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Chat History
     match /chat_messages/{messageId} {
       allow read, write: if true;
     }
 
-    // Feedback & Grievances
-    match /grievances/{item} {
-      allow read, write: if true;
-    }
-
-    // General fallback
+    // Fallback rule
     match /{document=**} {
       allow read, write: if true;
     }

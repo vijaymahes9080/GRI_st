@@ -250,12 +250,16 @@ export const LiveVoiceConversationModal: React.FC<LiveVoiceConversationModalProp
   }, [transcripts, liveModelText]);
 
   useEffect(() => {
+    let timer: NodeJS.Timeout;
     if (isOpen) {
-      startLiveSession();
+      timer = setTimeout(() => {
+        startLiveSession();
+      }, 0);
     } else {
       endLiveSession();
     }
     return () => {
+      clearTimeout(timer);
       endLiveSession();
     };
   }, [isOpen, startLiveSession, endLiveSession]);
