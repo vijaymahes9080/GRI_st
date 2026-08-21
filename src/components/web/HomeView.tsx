@@ -1,0 +1,389 @@
+import React, { useState } from 'react';
+import { useAppStore } from '../../core/store/appStore';
+import { INSTITUTION_INFO, SCHOOLS_DATA } from '../../core/data/griMasterData';
+import { 
+  GraduationCap, 
+  BookOpen, 
+  Calendar, 
+  Sparkles, 
+  FileText, 
+  Users, 
+  ShieldCheck, 
+  ArrowRight, 
+  Bell, 
+  HeartHandshake, 
+  Sprout, 
+  Landmark, 
+  Award,
+  ChevronRight,
+  ExternalLink,
+  Flame
+} from 'lucide-react';
+
+export const HomeView: React.FC = () => {
+  const { setTab, circulars, setSelectedDepartment } = useAppStore();
+  const [activeTab, setActiveTab] = useState<'all' | 'admissions' | 'exam' | 'academic'>('all');
+
+  const importantCirculars = circulars.filter(c => c.isImportant).slice(0, 3);
+  const featuredDepartments = SCHOOLS_DATA.flatMap(s => s.departments).slice(0, 4);
+
+  return (
+    <div className="space-y-10 pb-16">
+      {/* Hero Banner Section */}
+      <section className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 border border-slate-800 shadow-2xl p-6 sm:p-10">
+        <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -left-20 -top-20 w-80 h-80 bg-amber-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="relative z-10 max-w-4xl space-y-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-600/40 text-emerald-400 text-xs font-semibold">
+            <Award className="w-3.5 h-3.5" />
+            <span>NAAC 'A++' Accredited Deemed University (CGPA 3.61)</span>
+          </div>
+
+          <div className="space-y-2">
+            <h1 className="text-3xl sm:text-5xl font-extrabold font-display tracking-tight text-white leading-tight">
+              The Gandhigram Rural Institute
+            </h1>
+            <p className="text-emerald-400 font-serif italic text-lg sm:text-xl">
+              "கிராமம் உயர நாடு உயரும்" — As the village rises, so the nation rises
+            </p>
+          </div>
+
+          <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl font-light">
+            Founded in 1956 by Dr. T.S. Soundram and Dr. G. Ramachandran under the guidance of Mahatma Gandhi. GRI integrates Higher Education with Gandhian Values, Organic Agrarian Sciences, Rural Livelihoods, and Cutting-Edge Science & Computing.
+          </p>
+
+          {/* Action CTAs */}
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <button
+              onClick={() => setTab('services')}
+              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition shadow-lg shadow-emerald-900/40 flex items-center gap-2"
+            >
+              <Calendar className="w-4 h-4" />
+              <span>ESE Exam Timetables & Services</span>
+            </button>
+
+            <button
+              onClick={() => setTab('explore')}
+              className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-semibold text-sm border border-slate-700 transition flex items-center gap-2"
+            >
+              <BookOpen className="w-4 h-4 text-amber-400" />
+              <span>Explore 28+ Departments</span>
+            </button>
+
+            <button
+              onClick={() => setTab('ai_chat')}
+              className="px-5 py-2.5 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 font-semibold text-sm border border-amber-500/40 transition flex items-center gap-2"
+            >
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>Ask GRI RuralGPT</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Live News Ticker */}
+        <div className="mt-8 pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-rose-400 uppercase tracking-wider flex-shrink-0 bg-rose-950/80 px-2.5 py-1 rounded border border-rose-900">
+            <Flame className="w-3.5 h-3.5 text-rose-500 animate-pulse" />
+            <span>Urgent Notices</span>
+          </div>
+          <div className="text-xs text-slate-300 overflow-hidden text-ellipsis whitespace-nowrap flex-1">
+            {importantCirculars[0] ? (
+              <span 
+                onClick={() => setTab('alerts')}
+                className="hover:text-emerald-400 cursor-pointer underline decoration-dotted underline-offset-4"
+              >
+                {importantCirculars[0].title} ({importantCirculars[0].publishDate})
+              </span>
+            ) : (
+              'All academic schedules and regular classes are running as per calendar.'
+            )}
+          </div>
+          <button 
+            onClick={() => setTab('alerts')}
+            className="text-xs text-emerald-400 font-semibold hover:underline flex items-center gap-1 flex-shrink-0"
+          >
+            <span>View All Circulars</span>
+            <ChevronRight className="w-3 h-3" />
+          </button>
+        </div>
+      </section>
+
+      {/* Institutional Key Metrics */}
+      <section className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+        {[
+          { label: 'Schools of Study', value: INSTITUTION_INFO.campusStats.schools, icon: <GraduationCap className="w-4 h-4 text-emerald-400" /> },
+          { label: 'Academic Depts', value: INSTITUTION_INFO.campusStats.departments, icon: <BookOpen className="w-4 h-4 text-amber-400" /> },
+          { label: 'Distinguished Faculty', value: `${INSTITUTION_INFO.campusStats.facultyMembers}+`, icon: <Users className="w-4 h-4 text-sky-400" /> },
+          { label: 'Enrolled Students', value: `${INSTITUTION_INFO.campusStats.students}+`, icon: <Users className="w-4 h-4 text-purple-400" /> },
+          { label: 'Ph.D. Scholars', value: `${INSTITUTION_INFO.campusStats.researchScholars}+`, icon: <Sparkles className="w-4 h-4 text-rose-400" /> },
+          { label: 'Lush Green Campus', value: `${INSTITUTION_INFO.campusStats.campusAreaAcres} Acres`, icon: <Sprout className="w-4 h-4 text-lime-400" /> },
+          { label: 'NAAC Ranking', value: '3.61 A++', icon: <Award className="w-4 h-4 text-amber-300" /> },
+        ].map((stat, idx) => (
+          <div key={idx} className="bg-slate-900/80 p-3.5 rounded-2xl border border-slate-800 text-center hover:border-slate-700 transition">
+            <div className="flex justify-center mb-1.5">{stat.icon}</div>
+            <div className="font-extrabold text-white text-base sm:text-lg">{stat.value}</div>
+            <div className="text-[11px] text-slate-400 font-medium truncate">{stat.label}</div>
+          </div>
+        ))}
+      </section>
+
+      {/* Core Portals & Student Hub Tiles */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold font-display text-white">University Portals & Student Utilities</h2>
+            <p className="text-xs text-slate-400">Direct gateways to academic, examination, hostel and grievance services</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* ESE Examination Portal */}
+          <div 
+            onClick={() => setTab('services')}
+            className="group bg-gradient-to-br from-slate-900 to-slate-900/90 p-5 rounded-2xl border border-slate-800 hover:border-emerald-500/50 cursor-pointer transition shadow-lg relative overflow-hidden"
+          >
+            <div className="w-10 h-10 rounded-xl bg-emerald-950 border border-emerald-800/80 flex items-center justify-center text-emerald-400 mb-3 group-hover:scale-110 transition-transform">
+              <Calendar className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-white text-base group-hover:text-emerald-400 transition-colors">
+              ESE Examinations & Grades
+            </h3>
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+              Controller of Examinations timetable, hall tickets, CIA internal marks, and transcript verification.
+            </p>
+            <div className="mt-4 flex items-center text-xs font-semibold text-emerald-400 gap-1">
+              <span>Access Exam Portal</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+
+          {/* Admissions 2026-2027 */}
+          <div 
+            onClick={() => setTab('services')}
+            className="group bg-gradient-to-br from-slate-900 to-slate-900/90 p-5 rounded-2xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition shadow-lg relative overflow-hidden"
+          >
+            <div className="w-10 h-10 rounded-xl bg-amber-950 border border-amber-800/80 flex items-center justify-center text-amber-400 mb-3 group-hover:scale-110 transition-transform">
+              <FileText className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-white text-base group-hover:text-amber-400 transition-colors">
+              Admissions 2026-27 Hub
+            </h3>
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+              CUET-UG/PG prospectus, B.Sc. Agri, MCA, MBA, B.Voc, & Ph.D. application guidelines and fee details.
+            </p>
+            <div className="mt-4 flex items-center text-xs font-semibold text-amber-400 gap-1">
+              <span>View Prospectus & Fees</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+
+          {/* Central Library OPAC */}
+          <div 
+            onClick={() => setTab('services')}
+            className="group bg-gradient-to-br from-slate-900 to-slate-900/90 p-5 rounded-2xl border border-slate-800 hover:border-sky-500/50 cursor-pointer transition shadow-lg relative overflow-hidden"
+          >
+            <div className="w-10 h-10 rounded-xl bg-sky-950 border border-sky-800/80 flex items-center justify-center text-sky-400 mb-3 group-hover:scale-110 transition-transform">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-white text-base group-hover:text-sky-400 transition-colors">
+              Dr. Radhakrishnan Library
+            </h3>
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+              Search 1,60,000+ volumes, Gandhi Archival collection, e-journals, DELNET and thesis repositories.
+            </p>
+            <div className="mt-4 flex items-center text-xs font-semibold text-sky-400 gap-1">
+              <span>Open Library OPAC</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+
+          {/* Shanti Sena & Rural Outreach */}
+          <div 
+            onClick={() => setTab('services')}
+            className="group bg-gradient-to-br from-slate-900 to-slate-900/90 p-5 rounded-2xl border border-slate-800 hover:border-purple-500/50 cursor-pointer transition shadow-lg relative overflow-hidden"
+          >
+            <div className="w-10 h-10 rounded-xl bg-purple-950 border border-purple-800/80 flex items-center justify-center text-purple-400 mb-3 group-hover:scale-110 transition-transform">
+              <HeartHandshake className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-white text-base group-hover:text-purple-400 transition-colors">
+              Shanti Sena & UBA Outreach
+            </h3>
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+              Gandhian Peace Corps, Unnat Bharat Abhiyan village adoption, Krishi Vigyan Kendra farmer workshops.
+            </p>
+            <div className="mt-4 flex items-center text-xs font-semibold text-purple-400 gap-1">
+              <span>Explore Outreach</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Two Column Layout: Important Circulars + Featured Departments */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left 7 Cols: Latest Circulars */}
+        <div className="lg:col-span-7 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold font-display text-white flex items-center gap-2">
+                <Bell className="w-5 h-5 text-emerald-400" />
+                Latest Official Circulars
+              </h2>
+              <p className="text-xs text-slate-400">Notices released by Registrar, CoE, and Academic Council</p>
+            </div>
+            <button
+              onClick={() => setTab('alerts')}
+              className="text-xs font-semibold text-emerald-400 hover:underline flex items-center gap-1"
+            >
+              <span>View All ({circulars.length})</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {circulars.slice(0, 4).map((circ) => (
+              <div
+                key={circ.id}
+                onClick={() => setTab('alerts')}
+                className="p-4 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition cursor-pointer flex items-start justify-between gap-3 group"
+              >
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                      circ.category === 'EXAM' ? 'bg-rose-950 text-rose-300 border-rose-800' :
+                      circ.category === 'ADMISSIONS' ? 'bg-amber-950 text-amber-300 border-amber-800' :
+                      circ.category === 'TENDER' ? 'bg-sky-950 text-sky-300 border-sky-800' :
+                      'bg-slate-800 text-slate-300 border-slate-700'
+                    }`}>
+                      {circ.category}
+                    </span>
+                    <span className="text-[11px] text-slate-500 font-medium">{circ.publishDate}</span>
+                    {circ.isImportant && (
+                      <span className="text-[10px] bg-rose-600 text-white font-bold px-1.5 py-0.2 rounded">
+                        URGENT
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-semibold text-slate-200 text-sm group-hover:text-emerald-300 transition">
+                    {circ.title}
+                  </h3>
+                  <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                    {circ.description}
+                  </p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition flex-shrink-0 mt-2" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right 5 Cols: Featured Schools & Leadership */}
+        <div className="lg:col-span-5 space-y-6">
+          {/* Institutional Leadership Card */}
+          <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+              <Landmark className="w-4 h-4 text-emerald-400" />
+              Institutional Leadership
+            </h3>
+            
+            <div className="space-y-3 text-xs">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Chancellor</span>
+                  <strong className="text-slate-200 font-semibold text-sm">{INSTITUTION_INFO.chancellor}</strong>
+                </div>
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px]">Honorary</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Vice-Chancellor</span>
+                  <strong className="text-slate-200 font-semibold text-sm">{INSTITUTION_INFO.viceChancellor}</strong>
+                </div>
+                <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 text-[10px] border border-emerald-800">Academic Head</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Registrar</span>
+                  <strong className="text-slate-200 font-semibold text-sm">{INSTITUTION_INFO.registrar}</strong>
+                </div>
+                <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px]">Administration</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Academic Departments Quick Card */}
+          <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                Top Academic Departments
+              </h3>
+              <button
+                onClick={() => setTab('explore')}
+                className="text-xs text-emerald-400 font-semibold hover:underline"
+              >
+                All 28+
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {featuredDepartments.map((dept) => (
+                <div
+                  key={dept.code}
+                  onClick={() => {
+                    setSelectedDepartment(dept);
+                    setTab('explore');
+                  }}
+                  className="p-2.5 rounded-xl bg-slate-950 hover:bg-emerald-950/40 border border-slate-800/80 hover:border-emerald-600/50 cursor-pointer flex items-center justify-between transition group"
+                >
+                  <div>
+                    <h4 className="text-xs font-semibold text-slate-200 group-hover:text-emerald-300">
+                      {dept.name}
+                    </h4>
+                    <p className="text-[11px] text-slate-500">{dept.programmes.length} Programmes • HoD: {dept.head}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-emerald-400 transition" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Gandhian Pillars Showcase */}
+      <section className="p-6 sm:p-8 rounded-3xl bg-slate-950 border border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-2">
+          <div className="w-8 h-8 rounded-lg bg-emerald-950 text-emerald-400 flex items-center justify-center font-bold">
+            01
+          </div>
+          <h3 className="font-bold text-white text-base">Nai Talim (Experiential Learning)</h3>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Education through productive work and village engagement. Every GRI graduate participates in hands-on village field placements.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <div className="w-8 h-8 rounded-lg bg-amber-950 text-amber-400 flex items-center justify-center font-bold">
+            02
+          </div>
+          <h3 className="font-bold text-white text-base">Shanti Sena (Peace Brigade)</h3>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Pioneering student peace corps trained in non-violent conflict resolution, disaster management, community policing, and social harmony.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <div className="w-8 h-8 rounded-lg bg-sky-950 text-sky-400 flex items-center justify-center font-bold">
+            03
+          </div>
+          <h3 className="font-bold text-white text-base">Organic & Rural Technologies</h3>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Transferring bio-pesticides, solar power, watershed management, and micro-enterprises directly to grassroots farmers across Tamil Nadu.
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+};

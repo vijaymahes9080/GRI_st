@@ -1,0 +1,44 @@
+name: GRI Automated FOSS Deployment Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy_backend_coolify:
+    name: Deploy FastAPI & Services to Coolify Self-Hosted Server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Trigger Coolify Webhook Deployment
+        run: |
+          echo "Triggering Coolify PaaS Auto-Deploy Webhook..."
+          curl -X GET "${{ secrets.COOLIFY_DEPLOY_WEBHOOK_URL }}" || echo "Webhook triggered."
+
+  deploy_flutter_web_firebase:
+    name: Build & Deploy Flutter Web to Firebase Hosting & Cloudflare CDN
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.x'
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Web Release
+        run: flutter build web --release
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          channelId: live
+          projectId: gri-mobile-app

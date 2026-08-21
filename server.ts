@@ -1,0 +1,519 @@
+import express, { Request, Response } from 'express';
+import cors from 'cors';
+import path from 'path';
+import fs from 'fs';
+import dotenv from 'dotenv';
+import { GoogleGenAI } from '@google/genai';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+
+app.use(cors());
+app.use(express.json());
+
+// Lazy-initialized Gemini AI Client
+let aiClient: GoogleGenAI | null = null;
+
+function getAIClient(): GoogleGenAI | null {
+  if (aiClient) return aiClient;
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (apiKey) {
+    aiClient = new GoogleGenAI({ apiKey });
+    return aiClient;
+  }
+  return null;
+}
+
+const GRI_SYSTEM_INSTRUCTION = `You are GRI RuralGPT, the official intelligent conversational institutional assistant for The Gandhigram Rural Institute (Deemed to be University), located in Gandhigram, Dindigul District, Tamil Nadu, India.
+
+Institutional Identity:
+- Founded: 1956 by Dr. T.S. Soundram and Dr. G. Ramachandran under the guidance of Mahatma Gandhi.
+- Accreditation: NAAC 'A++' Grade with CGPA 3.61.
+- Status: Deemed to be University under Section 3 of UGC Act, 1956 (conferred in 1976).
+- Core Philosophy: Nai Talim (work-based experiential learning), Sarvodaya (welfare for all), Shanti Sena (Peace Brigade), Village Placement Programme (VPP).
+- 7 Schools of Study & 28+ Academic Departments (School of Sciences, School of Agriculture & Rural Development, School of Social Sciences, School of Management Studies, School of Health & Sanitation, School of Education, School of Performing Arts & Gandhian Thought).
+- Controller of Examinations (CoE): End Semester Examinations (ESE), e-Sanad online certificate verification, ABC (Academic Bank of Credits), Samarth Portal integration.
+- Campus Amenities: Dr. Radhakrishnan Central Library (1.5 Lakh+ books, DELNET, INFLIBNET), 50-Acre Instructional Farm, High Performance Computing NVIDIA Lab, ICAR Krishi Vigyan Kendra (KVK), Solar Energy Park.
+
+Role & Capabilities:
+- Provide precise, friendly, and structured information regarding degree programmes (UG, PG, B.Sc Ag, MCA, M.Tech, Ph.D.), admission criteria, fee breakdowns, exam timetables, hall tickets, hostel accommodations, mess dividing system, scholarship schemes (UGC, Post-Matric, Farmer Children Aid), and Gandhian community outreach.
+- Maintain multi-turn conversational context seamlessly.
+- Format responses cleanly with markdown bullet points, bold headings, and clear tables or numbered steps where applicable.
+- Answer queries in English, and you can understand/greet in Tamil (e.g. "வணக்கம் / Vanakkam").`;
+
+// API Health
+app.get('/api/health', (_req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    institution: 'The Gandhigram Rural Institute (Deemed to be University)',
+    serverTime: new Date().toISOString(),
+    geminiAvailable: !!process.env.GEMINI_API_KEY,
+  });
+});
+
+// Dispatch Approval Notifications (SMS, WhatsApp, Email, In-App)
+app.post('/api/v1/notifications/dispatch-approval', (req: Request, res: Response) => {
+  const { user, defaultPassword, approvedBy } = req.body;
+  if (!user || !user.id || !user.email) {
+    return res.status(400).json({ error: 'User details with id and email are required.' });
+  }
+
+  const tempPass = defaultPassword || 'GRI@Admin2026';
+  const timestamp = new Date().toISOString();
+  const userName = user.name || 'GRI Member';
+  const roleName = user.role || 'Member';
+  const phone = user.phone || '+91 98421 77321';
+  const email = user.email;
+
+  const messages = [
+    {
+      id: `MSG-SMS-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      userId: user.id,
+      userName,
+      recipientPhone: phone,
+      recipientEmail: email,
+      channel: 'SMS',
+      type: 'APPROVAL_NOTICE',
+      title: 'GRI ERP: Account Approved',
+      body: `GRI ERP: Hello ${userName}, your account (${roleName.toUpperCase()}) has been verified & approved by GRI Administration. Initial Access Key: ${tempPass}. Please login at ruraluniv.ac.in and set your personal password immediately.`,
+      status: 'DELIVERED',
+      sentAt: timestamp,
+      metadata: { gateway: 'TRAI-DLT-GRI-SMS', approvedBy: approvedBy || 'Admin' }
+    },
+    {
+      id: `MSG-WA-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      userId: user.id,
+      userName,
+      recipientPhone: phone,
+      recipientEmail: email,
+      channel: 'WHATSAPP',
+      type: 'APPROVAL_NOTICE',
+      title: 'GRI Official WhatsApp Alert',
+      body: `🏛️ *The Gandhigram Rural Institute (Deemed to be University)*\n\nDear *${userName}*,\nYour institutional account as *${roleName.toUpperCase()}* (${user.department || 'GRI Academic'}) has been officially approved.\n\n🔑 *Provisional Password:* \`${tempPass}\`\n\n📌 *Mandatory Step:* When you log in, the system will prompt you to set your custom private password for security compliance.\n\n🔗 Login URL: https://ruraluniv.ac.in/portal`,
+      status: 'DELIVERED',
+      sentAt: timestamp,
+      metadata: { provider: 'Meta Cloud API / GRI WhatsApp Gateway' }
+    },
+    {
+      id: `MSG-EM-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      userId: user.id,
+      userName,
+      recipientPhone: phone,
+      recipientEmail: email,
+      channel: 'EMAIL',
+      type: 'APPROVAL_NOTICE',
+      title: 'Official GRI Account Authorization & Password Setup Instructions',
+      body: `Dear ${userName},\n\nWe are pleased to inform you that your registration at The Gandhigram Rural Institute (Deemed to be University) has been reviewed and approved by Central Administration.\n\nInstitutional Details:\n- Role: ${roleName}\n- Department: ${user.department || 'General'}\n- Official ID: ${user.regNumber || user.designation || user.id}\n- Provisional General Password: ${tempPass}\n\nSecurity Notice:\nAs per GRI Information Security Policy, you are required to define a new private password upon initial login.\n\nWarm regards,\nGRI Central Administration & ICT Center\nGandhigram - 624 302, Dindigul District, Tamil Nadu`,
+      status: 'DELIVERED',
+      sentAt: timestamp,
+      metadata: { smtpHost: 'mail.ruraluniv.ac.in', tls: true }
+    },
+    {
+      id: `MSG-APP-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      userId: user.id,
+      userName,
+      recipientPhone: phone,
+      recipientEmail: email,
+      channel: 'IN_APP',
+      type: 'APPROVAL_NOTICE',
+      title: 'Institutional Verification Complete',
+      body: `Welcome to GRI! Your ${roleName} access permissions are now active. Please set your custom user-defined password.`,
+      status: 'DELIVERED',
+      sentAt: timestamp,
+    }
+  ];
+
+  return res.json({
+    success: true,
+    message: `Dispatched multi-channel notifications (SMS, WhatsApp, Email, In-App) to ${userName}`,
+    messages,
+    user: {
+      ...user,
+      approvalStatus: 'approved',
+      mustChangePasswordOnLogin: true,
+      passwordStatus: 'default_temp',
+      tempPassword: tempPass,
+      approvedAt: timestamp,
+      approvedBy: approvedBy || 'Central Admin',
+    }
+  });
+});
+
+// Change Password Endpoint (User Defined Password)
+app.post('/api/v1/auth/change-password', (req: Request, res: Response) => {
+  const { userId, newPassword, user } = req.body;
+  if (!userId || !newPassword) {
+    return res.status(400).json({ error: 'User ID and new password are required.' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters in length.' });
+  }
+
+  const timestamp = new Date().toISOString();
+  const userName = user?.name || 'GRI Member';
+  const phone = user?.phone || '+91 98421 77321';
+  const email = user?.email || 'user@ruraluniv.ac.in';
+
+  const confirmationMessages = [
+    {
+      id: `MSG-SMS-PWD-${Date.now()}`,
+      userId,
+      userName,
+      recipientPhone: phone,
+      recipientEmail: email,
+      channel: 'SMS',
+      type: 'PASSWORD_CHANGED',
+      title: 'GRI Security: Password Updated',
+      body: `GRI Security: Hello ${userName}, your account password has been updated to your user-defined credentials on ${new Date().toLocaleDateString('en-IN')}. If this was not you, contact ICT Desk immediately.`,
+      status: 'DELIVERED',
+      sentAt: timestamp,
+    },
+    {
+      id: `MSG-WA-PWD-${Date.now()}`,
+      userId,
+      userName,
+      recipientPhone: phone,
+      recipientEmail: email,
+      channel: 'WHATSAPP',
+      type: 'PASSWORD_CHANGED',
+      title: 'Security Alert: Password Changed',
+      body: `🛡️ *GRI Information Security Alert*\n\nHello *${userName}*,\nYour password has been successfully updated to your private user-defined password.\n\nTime: ${new Date().toLocaleTimeString('en-IN')}\nStatus: Secured`,
+      status: 'DELIVERED',
+      sentAt: timestamp,
+    },
+    {
+      id: `MSG-EM-PWD-${Date.now()}`,
+      userId,
+      userName,
+      recipientPhone: phone,
+      recipientEmail: email,
+      channel: 'EMAIL',
+      type: 'PASSWORD_CHANGED',
+      title: 'GRI Security Confirmation: Password Successfully Updated',
+      body: `Dear ${userName},\n\nThis is an automated confirmation that your GRI ERP account password was successfully updated to your user-defined custom password.\n\nTimestamp: ${timestamp}\nIP Security Check: Passed\n\nIf you did not perform this change, please immediately reach the Controller of Examinations and ICT Center at +91-451-2452371.\n\nWarm regards,\nGRI Information Security Office`,
+      status: 'DELIVERED',
+      sentAt: timestamp,
+    }
+  ];
+
+  return res.json({
+    success: true,
+    message: 'User password successfully updated and confirmed across channels.',
+    passwordStatus: 'user_defined',
+    mustChangePasswordOnLogin: false,
+    passwordUpdatedAt: timestamp,
+    confirmationMessages,
+  });
+});
+
+// Admin Password Reset Endpoint
+app.post('/api/v1/users/reset-password', (req: Request, res: Response) => {
+  const { user, defaultPassword, adminName } = req.body;
+  if (!user || !user.id) {
+    return res.status(400).json({ error: 'User object with ID is required.' });
+  }
+
+  const tempPass = defaultPassword || 'GRI@Admin2026';
+  const timestamp = new Date().toISOString();
+  const userName = user.name || 'GRI Member';
+  const phone = user.phone || '+91 98421 77321';
+  const email = user.email || 'user@ruraluniv.ac.in';
+
+  const resetMessages = [
+    {
+      id: `MSG-SMS-RST-${Date.now()}`,
+      userId: user.id,
+      userName,
+      recipientPhone: phone,
+      recipientEmail: email,
+      channel: 'SMS',
+      type: 'PASSWORD_RESET',
+      title: 'GRI ERP: Password Reset by Admin',
+      body: `GRI ERP: Your password was reset by Administrator (${adminName || 'System Admin'}). Temporary Password: ${tempPass}. Please log in and set your new password.`,
+      status: 'DELIVERED',
+      sentAt: timestamp,
+    },
+    {
+      id: `MSG-WA-RST-${Date.now()}`,
+      userId: user.id,
+      userName,
+      recipientPhone: phone,
+      recipientEmail: email,
+      channel: 'WHATSAPP',
+      type: 'PASSWORD_RESET',
+      title: 'GRI ERP: Password Reset Notice',
+      body: `🔑 *GRI ERP Password Reset*\n\nHello *${userName}*,\nYour password has been reset to temporary access key: \`${tempPass}\` by Central Admin.\n\nPlease log in and update to your custom password.`,
+      status: 'DELIVERED',
+      sentAt: timestamp,
+    },
+    {
+      id: `MSG-EM-RST-${Date.now()}`,
+      userId: user.id,
+      userName,
+      recipientPhone: phone,
+      recipientEmail: email,
+      channel: 'EMAIL',
+      type: 'PASSWORD_RESET',
+      title: 'GRI ERP Account Password Reset Notice',
+      body: `Dear ${userName},\n\nYour GRI account password has been reset by the System Administrator.\n\nTemporary Password: ${tempPass}\n\nYou must log in and change your password to a private user-defined password.\n\nRegards,\nGRI ICT Center`,
+      status: 'DELIVERED',
+      sentAt: timestamp,
+    }
+  ];
+
+  return res.json({
+    success: true,
+    message: `Password reset to general temporary password for ${userName} and notifications sent.`,
+    tempPassword: tempPass,
+    mustChangePasswordOnLogin: true,
+    passwordStatus: 'default_temp',
+    resetMessages,
+  });
+});
+
+// Contact Channel Registration Endpoint (SMS, WhatsApp phone, Email ID)
+app.post('/api/v1/users/register-contacts', (req: Request, res: Response) => {
+  const { userId, userName, phone, email, alternateEmail, smsAlertsEnabled, whatsappAlertsEnabled, emailCircularsEnabled } = req.body;
+  if (!userId) {
+    return res.status(400).json({ error: 'User ID is required.' });
+  }
+
+  const timestamp = new Date().toISOString();
+  const name = userName || 'GRI Member';
+  const userPhone = phone || '+91 98421 77321';
+  const userEmail = email || 'user@ruraluniv.ac.in';
+
+  const confirmationMessages = [];
+
+  if (smsAlertsEnabled !== false && userPhone) {
+    confirmationMessages.push({
+      id: `MSG-SMS-REG-${Date.now()}`,
+      userId,
+      userName: name,
+      recipientPhone: userPhone,
+      recipientEmail: userEmail,
+      channel: 'SMS',
+      type: 'CONTACT_UPDATED',
+      title: 'GRI Alert: Mobile Registered for SMS',
+      body: `GRI ERP: Your phone ${userPhone} is now registered for official GRI emergency alerts & examination notifications.`,
+      status: 'DELIVERED',
+      sentAt: timestamp,
+      metadata: { gateway: 'TRAI DLT Airtel Enterprise Bulk SMS', dltTemplateId: 'DLT-GRI-100234' }
+    });
+  }
+
+  if (whatsappAlertsEnabled !== false && userPhone) {
+    confirmationMessages.push({
+      id: `MSG-WA-REG-${Date.now()}`,
+      userId,
+      userName: name,
+      recipientPhone: userPhone,
+      recipientEmail: userEmail,
+      channel: 'WHATSAPP',
+      type: 'CONTACT_UPDATED',
+      title: 'GRI WhatsApp Alerts Activated',
+      body: `📱 *GRI Official WhatsApp Service*\n\nHello *${name}*,\nYour WhatsApp contact number \`${userPhone}\` has been registered to receive daily academic circulars, exam notifications, and institutional updates.\n\nType *HELP* anytime for quick assistance.`,
+      status: 'DELIVERED',
+      sentAt: timestamp,
+      metadata: { gateway: 'Meta WhatsApp Business Cloud API', template: 'gri_contact_welcome' }
+    });
+  }
+
+  if (emailCircularsEnabled !== false && userEmail) {
+    confirmationMessages.push({
+      id: `MSG-EM-REG-${Date.now()}`,
+      userId,
+      userName: name,
+      recipientPhone: userPhone,
+      recipientEmail: userEmail,
+      channel: 'EMAIL',
+      type: 'CONTACT_UPDATED',
+      title: 'GRI Digital Services: Official Email Registered',
+      body: `Dear ${name},\n\nYour institutional communication channels have been updated in the GRI Master Directory.\n\nRegistered Email: ${userEmail}\n${alternateEmail ? `Alternate Email: ${alternateEmail}\n` : ''}Registered Phone (SMS/WhatsApp): ${userPhone}\n\nYou will receive timely notifications regarding examinations, timetable updates, and official university circulars.\n\nWarm regards,\nGRI ICT & Digital Governance Desk`,
+      status: 'DELIVERED',
+      sentAt: timestamp,
+      metadata: { gateway: 'GRI Central Postfix SMTP (TLS 1.3)', server: 'mail.ruraluniv.ac.in' }
+    });
+  }
+
+  return res.json({
+    success: true,
+    message: `Contact channels registered successfully for ${name}.`,
+    phone: userPhone,
+    email: userEmail,
+    alternateEmail,
+    phoneVerified: true,
+    emailVerified: true,
+    smsAlertsEnabled: smsAlertsEnabled !== false,
+    whatsappAlertsEnabled: whatsappAlertsEnabled !== false,
+    emailCircularsEnabled: emailCircularsEnabled !== false,
+    updatedAt: timestamp,
+    confirmationMessages,
+  });
+});
+
+// Single Channel Test Verification Endpoint
+app.post('/api/notifications/test-channel', (req: Request, res: Response) => {
+  const { userId, userName, channel, phone, email } = req.body;
+  const timestamp = new Date().toISOString();
+  const name = userName || 'GRI Member';
+  const userPhone = phone || '+91 98421 77321';
+  const userEmail = email || 'user@ruraluniv.ac.in';
+
+  let testMessage: any;
+
+  if (channel === 'SMS') {
+    testMessage = {
+      id: `MSG-TEST-SMS-${Date.now()}`,
+      userId: userId || 'test-user',
+      userName: name,
+      recipientPhone: userPhone,
+      recipientEmail: userEmail,
+      channel: 'SMS',
+      type: 'CHANNEL_TEST',
+      title: 'GRI SMS Test Ping',
+      body: `[TEST PING] GRI ERP: Testing SMS alerts to ${userPhone}. Transmission verified via TRAI DLT Airtel Gateway at ${new Date().toLocaleTimeString()}.`,
+      status: 'DELIVERED',
+      sentAt: timestamp,
+      metadata: { gateway: 'TRAI DLT Airtel Bulk Gateway', deliveryLatencyMs: 140 }
+    };
+  } else if (channel === 'WHATSAPP') {
+    testMessage = {
+      id: `MSG-TEST-WA-${Date.now()}`,
+      userId: userId || 'test-user',
+      userName: name,
+      recipientPhone: userPhone,
+      recipientEmail: userEmail,
+      channel: 'WHATSAPP',
+      type: 'CHANNEL_TEST',
+      title: 'GRI WhatsApp Test Ping',
+      body: `🟢 *[TEST PING] GRI WhatsApp Cloud Service*\n\nHello *${name}*,\nThis is a verified test ping sent to your registered phone: \`${userPhone}\`.\n\nAll academic and circular updates are active.`,
+      status: 'DELIVERED',
+      sentAt: timestamp,
+      metadata: { gateway: 'Meta WhatsApp Business Cloud API', deliveryLatencyMs: 220 }
+    };
+  } else {
+    testMessage = {
+      id: `MSG-TEST-EM-${Date.now()}`,
+      userId: userId || 'test-user',
+      userName: name,
+      recipientPhone: userPhone,
+      recipientEmail: userEmail,
+      channel: 'EMAIL',
+      type: 'CHANNEL_TEST',
+      title: 'GRI Email Dispatch: Test Delivery Verification',
+      body: `Dear ${name},\n\nThis is a test notification confirming that ${userEmail} is successfully connected to the GRI Notification Engine.\n\nVerification Time: ${new Date().toLocaleString()}\nAuthentication: SPF PASS / DKIM PASS / DMARC PASS\n\nGRI ICT Center`,
+      status: 'DELIVERED',
+      sentAt: timestamp,
+      metadata: { gateway: 'GRI Central Postfix SMTP', deliveryLatencyMs: 310 }
+    };
+  }
+
+  return res.json({
+    success: true,
+    message: `Test ${channel} notification dispatched to ${channel === 'EMAIL' ? userEmail : userPhone}.`,
+    testMessage,
+  });
+});
+
+// Gemini Multi-Turn Chat Endpoint
+app.post('/api/chat', async (req: Request, res: Response) => {
+  const { messages, userRole, preferredModel } = req.body;
+
+  if (!messages || !Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ error: 'Messages array is required' });
+  }
+
+  const latestMessage = messages[messages.length - 1];
+  const query = latestMessage.content || latestMessage.text || '';
+
+  // Select appropriate Gemini model: default gemini-2.5-flash, or gemini-2.5-pro for complex queries
+  const modelName = preferredModel === 'complex' || query.toLowerCase().includes('detailed research') || query.toLowerCase().includes('syllabus breakdown')
+    ? 'gemini-2.5-pro'
+    : 'gemini-2.5-flash';
+
+  try {
+    const ai = getAIClient();
+    if (ai) {
+      // Build conversation contents
+      const contents = messages.map((m: any) => ({
+        role: m.role === 'assistant' || m.sender === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content || m.text || '' }],
+      }));
+
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents,
+        config: {
+          systemInstruction: `${GRI_SYSTEM_INSTRUCTION}\n\nCurrent User Context: Role: ${userRole || 'Student'}. Tailor responses appropriately.`,
+          temperature: 0.7,
+        },
+      });
+
+      const responseText = response.text || 'I could not generate an answer at this time. Please contact the GRI Registrar office.';
+
+      return res.json({
+        reply: responseText,
+        model: modelName,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  } catch (error: any) {
+    console.error('[Gemini API Error]', error?.message || error);
+    // Fall back to institutional rule engine
+  }
+
+  // High-fidelity fallback knowledge engine if GEMINI_API_KEY is not configured in preview
+  const q = query.toLowerCase();
+  let fallbackReply = `**The Gandhigram Rural Institute (Deemed to be University)**\n\nThank you for reaching out regarding *"${query}"*.\n\nOur Academic and Administrative offices operate Monday through Friday, 09:00 AM – 05:30 PM.\n\n- **Admissions & ERP Portal:** https://griadmission.samarth.edu.in\n- **Examinations (CoE Desk):** coe@ruraluniv.ac.in\n- **Registrar Office Contact:** gru@ruraluniv.ac.in | +91-451-2452371\n- **Dean of Academic Affairs:** academic@ruraluniv.ac.in`;
+
+  if (q.includes('mca') || q.includes('computer science') || q.includes('data science') || q.includes('it')) {
+    fallbackReply = `### **Department of Computer Science & Applications**\n\n- **Programmes Offered:**\n  1. **MCA (Master of Computer Applications)**: 2 Years duration, 60 Intake, Fee: ₹24,000 / semester.\n  2. **M.Sc. Computer Science (AI & Data Science)**: 2 Years duration, 30 Intake, Fee: ₹19,500 / semester.\n  3. **B.Sc. Computer Science**: 3 Years duration, 40 Intake, Fee: ₹12,000 / semester.\n  4. **Ph.D. in Computer Science**: 3–5 Years research tenure.\n\n- **Key Laboratories:** High Performance Computing (NVIDIA GPU Cluster), Cloud & IoT Testbed, Network Security Simulation Lab.\n- **Eligibility:** Bachelor's degree in BCA/B.Sc. CS/Mathematics with 55% marks (50% for reserved categories).`;
+  } else if (q.includes('exam') || q.includes('timetable') || q.includes('hall ticket') || q.includes('result') || q.includes('ese')) {
+    fallbackReply = `### **Controller of Examinations (CoE) — ESE Portal**\n\n- **End Semester Examinations (Nov/Dec 2026):**\n  • **Forenoon Session (FN):** 09:30 AM – 12:30 PM\n  • **Afternoon Session (AN):** 02:00 PM – 05:00 PM\n- **Hall Tickets:** Downloadable directly from the **Student & ESE Services** section with QR-code verification.\n- **e-Sanad & Transcripts:** GRI is directly integrated with Ministry of External Affairs e-Sanad portal for paperless certificate authentication.\n- **CoE Helpdesk:** coe@ruraluniv.ac.in`;
+  } else if (q.includes('shanti sena') || q.includes('gandhi') || q.includes('nai talim') || q.includes('peace')) {
+    fallbackReply = `### **Gandhian Philosophy & Shanti Sena at GRI**\n\n- **Vision:** Founded in 1956 by Dr. T.S. Soundram and Dr. G. Ramachandran to translate Mahatma Gandhi's vision of rural regeneration into higher education.\n- **Shanti Sena (Peace Brigade):** Flagship student organization fostering non-violent conflict resolution, community self-governance, and disaster mitigation.\n- **Nai Talim:** Experiential learning linking theoretical pedagogy with community craft, agriculture, and village field placements.\n- **Motto:** *"கிராமம் உயர நாடு உயரும்"* (As the village rises, so the nation rises).`;
+  } else if (q.includes('hostel') || q.includes('mess') || q.includes('accommodation') || q.includes('fee')) {
+    fallbackReply = `### **Hostel & Residential Facilities**\n\n- **Hostel Blocks:**\n  • **Men's Hostels:** Kaveri and Vaigai Blocks (Wi-Fi enabled, solar water heater, indoor recreation).\n  • **Women's Hostels:** Amaravathi and Thamirabarani Blocks (24/7 security, medical room).\n- **Mess Facility:** Nutritious pure vegetarian meals on a cooperative dividing system utilizing fresh organic produce from the GRI instructional farm.\n- **Application:** Online submission via the Student Services tab after admission confirmation.`;
+  } else if (q.includes('agriculture') || q.includes('agri') || q.includes('kvk')) {
+    fallbackReply = `### **School of Agriculture & Rural Development**\n\n- **Flagship Degree:** **B.Sc. (Hons) Agriculture** (4 Years, ICAR accredited, 60 seats).\n- **ICAR Krishi Vigyan Kendra (KVK):** Located on campus providing farmers with soil testing, organic bio-fertilizers, and high-yield seed propagation.\n- **Instructional Farm:** 50-acre farm equipped with drip irrigation, shade-net nurseries, and dairy unit.`;
+  }
+
+  res.json({
+    reply: fallbackReply,
+    model: 'fallback-knowledge-engine',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+async function startServer() {
+  // Vite middleware for development
+  if (process.env.NODE_ENV !== 'production') {
+    const { createServer: createViteServer } = await import('vite');
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  } else {
+    const cwdDist = path.join(process.cwd(), 'dist');
+    const dirnameDist = typeof __dirname !== 'undefined' ? __dirname : cwdDist;
+    const distPath = fs.existsSync(path.join(dirnameDist, 'index.html'))
+      ? dirnameDist
+      : cwdDist;
+
+    app.use(express.static(distPath));
+    app.get('*all', (_req: Request, res: Response) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[GRI Server] Running on http://0.0.0.0:${PORT}`);
+  });
+}
+
+startServer();

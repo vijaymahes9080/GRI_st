@@ -1,0 +1,12 @@
+{
+    "name": "vijaymahes/gri",
+    "description": "GRI Project",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Vijay Mahes",
+            "email": "Vijaypradhap2004@gmail.com"
+        }
+    ],
+    "require": {}
+}

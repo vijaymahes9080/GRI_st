@@ -1,0 +1,27 @@
+{
+  "monitors": [
+    {
+      "name": "GRI FastAPI Health Endpoint",
+      "type": "http",
+      "url": "https://api.ruraluniv-app.railway.app/health",
+      "interval": 60,
+      "retryInterval": 20,
+      "maxRetries": 3,
+      "accepted_statuscodes": ["200-299"]
+    },
+    {
+      "name": "GRI Admin Portal Vercel",
+      "type": "http",
+      "url": "https://admin.ruraluniv.ac.in",
+      "interval": 120,
+      "accepted_statuscodes": ["200-299"]
+    },
+    {
+      "name": "Official GRI Source Sync (ruraluniv.ac.in)",
+      "type": "http",
+      "url": "https://ruraluniv.ac.in",
+      "interval": 300,
+      "accepted_statuscodes": ["200-299"]
+    }
+  ]
+}

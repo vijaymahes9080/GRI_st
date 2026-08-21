@@ -1,0 +1,224 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { useAppStore } from '../../core/store/appStore';
+import { Search, X, Compass, FileText, ArrowRight, BookOpen, Layers } from 'lucide-react';
+import { SCHOOLS_DATA, INITIAL_CIRCULARS } from '../../core/data/griMasterData';
+
+export const QuickSearchModal: React.FC = () => {
+  const { isSearchOpen, setSearchOpen, setTab, setSelectedDepartment } = useAppStore();
+  const [query, setQuery] = useState('');
+
+  // Keyboard shortcut listener for Cmd/Ctrl + K and Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(!isSearchOpen);
+      }
+      if (e.key === 'Escape' && isSearchOpen) {
+        setSearchOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSearchOpen, setSearchOpen]);
+
+  // Extract all departments and programmes
+  const allDepartments = useMemo(() => {
+    return SCHOOLS_DATA.flatMap((s) => s.departments);
+  }, []);
+
+  const results = useMemo(() => {
+    if (!query.trim()) {
+      return {
+        departments: allDepartments.slice(0, 3),
+        circulars: INITIAL_CIRCULARS.slice(0, 2),
+      };
+    }
+    const q = query.toLowerCase();
+    return {
+      departments: allDepartments.filter(
+        (d) =>
+          d.name.toLowerCase().includes(q) ||
+          d.code.toLowerCase().includes(q) ||
+          d.programmes.some((p) => p.name.toLowerCase().includes(q)) ||
+          d.faculty.some((f) => f.name.toLowerCase().includes(q))
+      ),
+      circulars: INITIAL_CIRCULARS.filter(
+        (c) =>
+          c.title.toLowerCase().includes(q) ||
+          c.description.toLowerCase().includes(q) ||
+          c.category.toLowerCase().includes(q)
+      ),
+    };
+  }, [query, allDepartments]);
+
+  if (!isSearchOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+        {/* Search input header */}
+        <div className="flex items-center px-4 py-3.5 border-b border-slate-800 bg-slate-950/50">
+          <Search className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search departments, programmes (MCA, B.Sc Agri), circulars, staff..."
+            autoFocus
+            className="w-full bg-transparent text-slate-100 placeholder-slate-500 text-base outline-none"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              className="text-slate-400 hover:text-slate-200 p-1 text-xs"
+            >
+              Clear
+            </button>
+          )}
+          <button
+            onClick={() => setSearchOpen(false)}
+            className="ml-2 p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Results Container */}
+        <div className="p-4 overflow-y-auto space-y-5">
+          {/* Quick Actions Shortcuts */}
+          {!query && (
+            <div>
+              <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-2">
+                Quick Navigation
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <button
+                  onClick={() => {
+                    setTab('services');
+                    setSearchOpen(false);
+                  }}
+                  className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-left text-xs text-slate-300"
+                >
+                  <Layers className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>ESE Timetable</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setTab('explore');
+                    setSearchOpen(false);
+                  }}
+                  className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-left text-xs text-slate-300"
+                >
+                  <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Programmes</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setTab('alerts');
+                    setSearchOpen(false);
+                  }}
+                  className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-left text-xs text-slate-300"
+                >
+                  <FileText className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Admissions</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setTab('ai_chat');
+                    setSearchOpen(false);
+                  }}
+                  className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-left text-xs text-slate-300"
+                >
+                  <Compass className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Ask RuralGPT</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Departments & Courses Section */}
+          {results.departments.length > 0 && (
+            <div>
+              <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-2">
+                Departments & Academics ({results.departments.length})
+              </p>
+              <div className="space-y-2">
+                {results.departments.map((dept) => (
+                  <div
+                    key={dept.code}
+                    onClick={() => {
+                      setSelectedDepartment(dept);
+                      setTab('explore');
+                      setSearchOpen(false);
+                    }}
+                    className="p-3 rounded-xl bg-slate-800/60 hover:bg-emerald-950/40 border border-slate-700/80 hover:border-emerald-500/50 cursor-pointer flex items-center justify-between transition group"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-800">
+                          {dept.code}
+                        </span>
+                        <h4 className="text-sm font-semibold text-white group-hover:text-emerald-300 transition">
+                          {dept.name}
+                        </h4>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1 line-clamp-1">
+                        Head: {dept.head} • {dept.programmes.length} Programmes offered
+                      </p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition flex-shrink-0" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Circulars Section */}
+          {results.circulars.length > 0 && (
+            <div>
+              <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-2">
+                Official Circulars & Notices ({results.circulars.length})
+              </p>
+              <div className="space-y-2">
+                {results.circulars.map((circ) => (
+                  <div
+                    key={circ.id}
+                    onClick={() => {
+                      setTab('alerts');
+                      setSearchOpen(false);
+                    }}
+                    className="p-3 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 cursor-pointer flex items-center justify-between group transition"
+                  >
+                    <div className="pr-3">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">
+                        {circ.category}
+                      </span>
+                      <h4 className="text-xs font-medium text-slate-200 mt-1 line-clamp-1">
+                        {circ.title}
+                      </h4>
+                      <span className="text-[10px] text-slate-500">{circ.publishDate}</span>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-white transition flex-shrink-0" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {results.departments.length === 0 && results.circulars.length === 0 && (
+            <div className="py-8 text-center text-slate-400 text-sm">
+              No matching records found for "{query}". Try searching for <span className="text-emerald-400">Agriculture</span>, <span className="text-emerald-400">Computer Science</span>, <span className="text-emerald-400">Examinations</span>, or <span className="text-emerald-400">Hostel</span>.
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-4 py-2 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-500">
+          <span>Press ESC to close</span>
+          <span>Gandhigram Rural Institute Central Directory</span>
+        </div>
+      </div>
+    </div>
+  );
+};

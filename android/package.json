@@ -1,0 +1,12 @@
+{
+  "name": "gri-mobile-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Android Native sub-module configuration for GRI One Super-App",
+  "scripts": {
+    "postinstall": "npx husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}
