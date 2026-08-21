@@ -1,7 +1,10 @@
 {
   "name": "GRI",
   "description": "Official institutional portal for The Gandhigram Rural Institute (Deemed to be University) with Real-Time Firebase Firestore persistence and Gemini-powered RuralGPT AI Assistant.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": [
+    "microphone",
+    "geolocation"
+  ],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]

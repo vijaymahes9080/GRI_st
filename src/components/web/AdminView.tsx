@@ -3,6 +3,7 @@ import { useAppStore } from '../../core/store/appStore';
 import { BulkConfirmModal, BulkActionType } from './BulkConfirmModal';
 import { AddUserModal } from '../admin/AddUserModal';
 import { EditUserContactModal } from '../admin/EditUserContactModal';
+import { BulkImportUsersModal } from '../admin/BulkImportUsersModal';
 import { CommunicationLogsView } from '../admin/CommunicationLogsView';
 import { UserRole, UserProfile } from '../../types';
 import { 
@@ -27,13 +28,12 @@ import {
   AlertTriangle,
   Download,
   FileSpreadsheet,
+  FileJson,
+  Upload,
   UserPlus,
   KeyRound,
   MessageSquare,
-  Smartphone,
-  Mail,
-  RotateCcw,
-  Sparkles
+  Smartphone
 } from 'lucide-react';
 
 export const AdminView: React.FC = () => {
@@ -63,6 +63,9 @@ export const AdminView: React.FC = () => {
 
   // Add User Modal State
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+
+  // Bulk JSON Import Modal State
+  const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false);
 
   // Edit User Contact Modal State
   const [editContactUser, setEditContactUser] = useState<UserProfile | null>(null);
@@ -274,6 +277,15 @@ export const AdminView: React.FC = () => {
 
         <div className="flex flex-wrap items-center gap-3">
           <button
+            id="open-bulk-import-modal-btn"
+            onClick={() => setIsBulkImportModalOpen(true)}
+            className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-blue-400 border border-blue-500/40 hover:border-blue-400 font-bold text-xs flex items-center gap-2 transition shadow-md"
+          >
+            <FileJson className="w-4 h-4 text-blue-400" />
+            <span>Bulk Import (JSON)</span>
+          </button>
+
+          <button
             id="open-add-user-modal-btn"
             onClick={() => setIsAddUserModalOpen(true)}
             className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-2 transition shadow-lg shadow-indigo-900/30"
@@ -451,6 +463,16 @@ export const AdminView: React.FC = () => {
                   <span className="text-[10px] px-1.5 py-0.2 bg-emerald-950 text-emerald-300 rounded-md border border-emerald-800/60">
                     {filteredUsers.length}
                   </span>
+                </button>
+
+                {/* Bulk Import JSON Button */}
+                <button
+                  onClick={() => setIsBulkImportModalOpen(true)}
+                  title="Import bulk user accounts via JSON configuration"
+                  className="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-blue-400 border border-blue-500/40 hover:border-blue-400 font-bold text-xs flex items-center gap-1.5 transition shadow-sm"
+                >
+                  <Upload className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Import JSON</span>
                 </button>
               </div>
             </div>
@@ -993,6 +1015,12 @@ export const AdminView: React.FC = () => {
         user={editContactUser}
         isOpen={!!editContactUser}
         onClose={() => setEditContactUser(null)}
+      />
+
+      {/* Bulk JSON Import Modal */}
+      <BulkImportUsersModal
+        isOpen={isBulkImportModalOpen}
+        onClose={() => setIsBulkImportModalOpen(false)}
       />
     </div>
   );

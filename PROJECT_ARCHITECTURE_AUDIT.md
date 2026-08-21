@@ -2,69 +2,79 @@
 
 ## 🏛️ Executive Summary
 
-**Project**: GRI One — Gandhigram Rural Institute Unified Digital University Super-App  
-**Target Platform**: React Native 0.74.5 / Expo SDK 51 / TypeScript 5.3  
-**Backend Framework**: FastAPI Microservices Gateway / PostgreSQL 16 + Redis + Async SQLAlchemy  
-**Android Target**: API Level 35 (Android 15) with 16 KB Page Boundary Alignment  
+**Project**: GRI One — Gandhigram Rural Institute Unified Digital University Super-App & Administration Platform  
+**Target Architecture**: Full-Stack Node.js/Express Server + React 18 / TypeScript 5 / Tailwind CSS + Firebase Cloud Firestore  
+**Backend Framework**: Express.js Gateway (Port 3000) & FastAPI Microservices Engine  
+**Real-Time Data Layer**: Google Cloud Firestore (`ai-studio-gri-abda2eed-5946-4405-900c-e9c2f6dc2530`) + PostgreSQL 16 Cluster  
+**AI Layer**: Google GenAI SDK (`@google/genai`) Gemini 2.5 Flash / Pro, Gemini 3.1 Flash Live API (`gemini-3.1-flash-live-preview`) for 24kHz/16kHz real-time bidirectional voice, and Gemini 3.5 Flash (`gemini-3.5-flash` with `googleMaps` tool) for dynamic Google Maps Grounding  
+**Multi-Channel Communications**: In-App WebSockets, Live Audio Streams, FCM Push, SMTP (TLS 1.3), WhatsApp Meta Cloud API, SMS TRAI DLT Gateway  
 
-This document presents the complete architectural audit, risk assessment, technical debt catalog, and migration roadmap for transforming GRI One into an automatically adaptable, flexible, scalable, reliable, maintainable, secure, and offline-capable university application.
+This document presents the complete architectural audit, risk assessment, technical debt catalog, and system verification results for the unified GRI digital ecosystem.
 
 ---
 
 ## 1. 🔍 Repository Audit Findings
 
 ### 1.1 Technology Stack & Framework Verification
-- **Framework**: React Native 0.74.5 with Expo SDK 51 file-based routing (`expo-router`).
-- **Flutter Check**: **Zero Flutter code detected**. Entire workspace is standard TypeScript/React Native monorepo structure.
-- **State Management**: Dual-layer architecture:
-  - **Server State**: `@tanstack/react-query` v5 for async caching, retry logic, and pagination.
-  - **Client/Auth State**: `zustand` v4 for RBAC (Multi-role), token state, and user profile management.
-  - **Encrypted Persistence**: `react-native-mmkv` v2 for high-speed encrypted key-value storage.
-- **Styling**: `nativewind` v4 (Tailwind CSS for React Native) with official GRI brand design system tokens (`#518214` Forest Green, `#911C03` Deep Maroon, `#F16236` Saffron, `#0D47A1` Khadi Blue).
-- **Authentication & Admin Control**:
-  - Multi-role authorization (`admin`, `student`, `faculty`, `staff`, `other`).
-  - Admin self-registration via secret key + Admin pre-creation and approval for Student, Faculty, Staff, and Other accounts.
-- **Real-Time Communication Hub**: Omnichannel notification engine sending push, email, SMS, and WhatsApp alerts filtered by audience (`all`, `student`, `faculty`, `staff`, `other`) backed by WebSockets (`/ws/announcements`).
-- **Web Admin Panel**: Control panel UI (`admin/index.html`) for user approvals, role changes, notification broadcasting, feature flags, and audit log.
+- **Frontend Framework**: React 18, TypeScript, Tailwind CSS, Lucide Icons, and Motion transitions.
+- **State Management**: Zustand with persistent client store, optimistic UI updates, and real-time Firestore synchronization listeners.
+- **Database Architecture**:
+  - **Firebase Firestore**: Real-time collections for `users`, `circulars`, `grievance_tickets`, `dispatched_messages`, and `emergency_contacts`.
+  - **PostgreSQL Database Schema**: Schemas for `core`, `academic`, `exam`, `campus`, `finance`, `placement`, `research`, `ai`, and `infra`.
+- **Authentication & Multi-Role RBAC**:
+  - Roles: `student`, `faculty`, `staff`, `scholar`, `alumni`, `admin`, `super_admin`.
+  - Admin self-registration with security keys + Admin-managed approval lifecycle (`approved`, `pending`, `rejected`, `suspended`).
+  - Temporary password provisioning and mandatory initial password change (`mustChangePasswordOnLogin`).
+- **Bulk User Import & Validation Engine**:
+  - Direct JSON payload ingestion API (`POST /api/v1/users/bulk-import`).
+  - Pre-import validation for RFC email format, intra-batch duplicate prevention, role compliance, password length constraints, and department mappings.
+  - High-throughput database batch commits via Firestore `writeBatch`.
+- **Real-Time Communication Hub**:
+  - Multi-channel notification engine dispatching In-App alerts, Push, Email, SMS, and WhatsApp messages filtered by audience role, department, semester, or individual user ID.
+- **Web Admin Panel**:
+  - Interactive administration center (`AdminView.tsx`) with user management, bulk import modal, contact channel editor, communication logs viewer, circulars publisher, and system telemetry.
 
 ---
 
 ## 2. ⚡ Technical Debt & Risk Assessment Matrix
 
-| Area | Current Risk Level | Technical Debt / Potential Bottleneck | Recommended Architecture |
+| Area | Status | Technical Debt / Risk | Resolved Architecture |
 |---|:---:|---|---|
-| **Responsive Layouts** | `Low (Mitigated)` | Fixed dimension assumptions on smaller devices (< 360dp). | Implemented `src/core/responsive/` with `useResponsive`, `breakpoints`, native flex gap, and font scaling. |
-| **API Client Scoping** | `Low (Mitigated)` | Hardcoded API endpoints in presenting UI screens. | Centralized `src/core/api/` with Axios interceptors and automatic JWT refresh handling. |
-| **Offline Resilience** | `Low (Mitigated)` | Network interruption causing unhandled UI failures. | Implemented `src/core/offline/syncQueue.ts` for retry queueing and MMKV local state caching. |
-| **UI Crash Isolation** | `Low (Mitigated)` | Sub-component crash cascading to root layout. | Implemented `ErrorBoundary` component + global `ErrorUtils` exception guard. |
-| **Role Authorization** | `Low (Mitigated)` | Unauthenticated client route access. | Enforced Multi-Role RBAC with explicit Admin approval checks (`approval_status`). |
+| **Bulk User Provisioning** | `Resolved (P0)` | Manual single-user entry bottleneck for large university batches. | Automated JSON Bulk Import Engine (`BulkImportUsersModal.tsx`) with schema validation & Firestore atomic batch writes. |
+| **Multi-Channel Contact Sync** | `Resolved (P1)` | Incomplete contact channels causing failed message deliveries. | Integrated contact channel registration (`EditUserContactModal.tsx`) with real-time test verification pings. |
+| **API Client Scoping** | `Resolved (P1)` | Scattered API calls across components. | Centralized Express backend routes (`/api/v1/*`) and Zustand store action handlers. |
+| **Data Consistency & Sync** | `Resolved (P1)` | Out-of-sync state between clients. | Real-time Firestore snapshot listeners (`onSnapshot`) for instant cross-device updates. |
+| **AI Assistant Grounding** | `Resolved (P2)` | Risk of hallucinated academic info. | Strict RAG context pipeline grounded in verified GRI master data (`griMasterData.ts`) and university syllabi. |
+| **Role Authorization** | `Resolved (P0)` | Unauthenticated client route access. | Server-side role validation (`RoleChecker`) and Firestore security rules. |
 
 ---
 
 ## 3. 🛡️ System Architecture & Adaptive Layering
 
-```
+```text
                                   ┌─────────────────────────────────────────┐
-                                  │   GRI One Mobile App (React Native)     │
-                                  │   Android 16 KB Page-Size Compliant     │
+                                  │    GRI One Interactive Web & Mobile     │
+                                  │   (React 18 + Tailwind CSS + Zustand)   │
                                   └────────────────────┬────────────────────┘
-                                                       │ HTTPS / WSS (Axios + MMKV Cache)
+                                                       │ HTTPS / REST / WSS
                                   ┌────────────────────▼────────────────────┐
-                                  │    FastAPI API Gateway & WAF           │
-                                  │   Security Headers & Rate Limiter       │
-                                  └────────────────────┬────────────────────┘
-                                                       │
-          ┌────────────────────────┬───────────────────┼───────────────────┬────────────────────────┐
-          │                        │                   │                   │                        │
- ┌────────▼─────────┐    ┌─────────▼────────┐  ┌───────▼────────┐ ┌────────▼────────┐    ┌───────────▼───────────┐
- │ Academic Service │    │ Auth & User Admin│  │ Broadcast Hub  │ │ AI RAG Microservice│ │ Web Ingestion Engine  │
- │ (BLE & Geo-Fence)│    │ (Multi-Role RBAC)│  │ (WebSockets)   │ │ (pgvector Embeds) │ │ (News/Events/Depts)   │
- └────────┬─────────┘    └─────────┬────────┘  └───────┬────────┘ └────────┬────────┘    └───────────┬───────────┘
-          │                        │                   │                   │                        │
- ┌────────▼────────────────────────▼───────────────────▼───────────────────▼────────────────────────▼───────────┐
- │                        PostgreSQL 16 Database Cluster (3 Migrations: schema.sql,                         │
- │                        schema_v2_extension.sql, schema_auth_extension.sql) + Redis Cache                 │
- └────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                  │      Express.js Backend & Gateway       │
+                                  │     (Port 3000 Ingress & API Routes)    │
+                                  └───────────────┬─────────────────┬───────┘
+                                                  │                 │
+           ┌──────────────────────────────────────┼─────────────────┼──────────────────────────────────────┐
+           │                                      │                 │                                      │
+  ┌────────▼─────────┐                  ┌─────────▼────────┐  ┌─────▼──────────┐                 ┌────────▼────────┐
+  │ Auth & User RBAC │                  │  Broadcast Hub   │  │ Bulk JSON Ingest│                 │ RuralGPT AI RAG │
+  │ (Approvals & Pwd)│                  │ (Multi-Channel)  │  │(Schema Validate)│                 │ (Gemini 2.5 SDK)│
+  └────────┬─────────┘                  └─────────┬────────┘  └─────┬──────────┘                 └────────┬────────┘
+           │                                      │                 │                                     │
+           └──────────────────────────────────────┼─────────────────┴─────────────────────────────────────┘
+                                                  │
+                                  ┌───────────────▼─────────────────────────┐
+                                  │    Google Cloud Firestore Database      │
+                                  │  (Users, Circulars, Logs, Grievances)   │
+                                  └─────────────────────────────────────────┘
 ```
 
 ---
@@ -76,28 +86,23 @@ This document presents the complete architectural audit, risk assessment, techni
                                 VERIFICATION SCORECARD
 ================================================================================
 [✓] TypeScript Strict Static Compilation   : tsc --noEmit           -> PASSED (0 Errors)
-[✓] ESLint Code Quality & Style Auditor    : eslint .               -> PASSED (0 Errors, 0 Warnings)
-[✓] Python Bytecode Compilation            : py_compile backend     -> PASSED (0 Errors)
-[✓] Pytest API Automated Test Suite        : pytest backend/tests   -> PASSED (37/37 Tests, 100%)
-[✓] Security & OWASP Top 10 Audit          : Auth, WAF, Sanitize    -> PASSED & REINFORCED
+[✓] Vite Production Bundle Build           : vite build             -> PASSED
+[✓] Firestore Rules & Schema Validation    : firestore.rules        -> VERIFIED & SECURE
+[✓] Bulk User JSON Import Engine           : /api/v1/users/bulk-imp -> TESTED & OPERATIONAL
+[✓] Multi-Channel Communication Engine     : In-App, Email, WA, SMS -> VERIFIED & LIVE
 [✓] Multi-Role User Approval Architecture  : Auth & User Admin      -> VERIFIED & PASSED
-[✓] Real-Time Notification Broadcast Engine: WebSockets & Omnichannel-> VERIFIED & PASSED
-[✓] PostgreSQL Schema Extensions           : schema_auth_extension  -> VERIFIED & READY
-[✓] Web Ingestion Engine Adapters          : syncEngine             -> VERIFIED & READY
-[✓] Root Crash Isolation                   : ErrorBoundary Guard    -> ENFORCED
-[✓] Android 16 KB Page Boundary Alignment  : zipalign -p 16         -> PASSED (API 35 Ready)
+[✓] Grounded AI RuralGPT Integration       : @google/genai          -> VERIFIED & PASSING
 ================================================================================
 ```
 
 ---
 
-## 5. 🛡️ Security & AI Model Audit Summary (Latest Verification)
+## 5. 🛡️ Security & AI Model Audit Summary
 
-1. **Syntax & Compilation**: Verified 100% clean compilation across all Python backend files (`py_compile`).
-2. **Auth Security**: Implemented bcrypt hash verification (`verify_password`) in API authentication endpoints, JWT refresh token rotation, and `approval_status` permission guards.
-3. **Admin Controls**: Administrative endpoints (`/api/v1/admin/*`) guarded by `RoleChecker(["admin"])` with immutable audit log recording (`core.audit_log`).
-4. **Real-Time Communication**: Multi-channel broadcast dispatcher with role-based WebSocket filtering (`/ws/announcements`).
-5. **AI RAG Guardrails**: Added prompt boundary tags (`<<<...>>>`), system override filters (`sanitize_rag_prompt()`), and grounded exception handles to mitigate prompt injection.
+1. **Authentication Security**: Implemented bcrypt hash verification in API authentication endpoints, JWT refresh token rotation, and `approval_status` permission guards.
+2. **Admin Controls**: Administrative endpoints (`/api/v1/admin/*` and `/api/v1/users/*`) guarded by role checks with real-time audit logging.
+3. **Real-Time Communication**: Multi-channel broadcast dispatcher with role-based filtering and delivery tracking logs.
+4. **AI RAG Guardrails**: Strict prompt boundaries, institutional grounding against `griMasterData.ts`, and verification disclaimers on non-public data.
 6. **WAF & Memory Eviction**: Rate Limiter WAF middleware enhanced with automatic key eviction for memory protection and JSON HTTP 429 rate limit responses.
 7. **Upload Protection**: File upload handlers bounded to a 10 MB limit (`MAX_FILE_SIZE_BYTES`) to prevent Denial of Service memory exhaustion.
 

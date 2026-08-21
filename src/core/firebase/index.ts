@@ -217,6 +217,47 @@ export async function saveUserProfile(user: UserProfile) {
 }
 
 /**
+ * Bulk / Batch Insert Users to Firestore using writeBatch
+ */
+export async function batchInsertUsersToFirestore(users: UserProfile[]): Promise<void> {
+  if (!users || users.length === 0) return;
+  const batch = writeBatch(db);
+  for (const u of users) {
+    const userRef = doc(db, USERS_COLLECTION, u.id);
+    const sanitized = cleanFirestoreData({
+      id: u.id,
+      name: u.name || 'GRI Member',
+      email: u.email || '',
+      role: u.role || 'student',
+      department: u.department || 'General Academic',
+      regNumber: u.regNumber || null,
+      designation: u.designation || null,
+      approvalStatus: u.approvalStatus || 'approved',
+      avatarUrl: u.avatarUrl || null,
+      phone: u.phone || null,
+      attendance: typeof u.attendance === 'number' ? u.attendance : 90,
+      cgpa: typeof u.cgpa === 'number' ? u.cgpa : 8.5,
+      semester: typeof u.semester === 'number' ? u.semester : 1,
+      passwordStatus: u.passwordStatus || 'default_temp',
+      mustChangePasswordOnLogin: u.mustChangePasswordOnLogin !== false,
+      tempPassword: u.tempPassword || 'GRI@Admin2026',
+      passwordUpdatedAt: u.passwordUpdatedAt || null,
+      approvedAt: u.approvedAt || new Date().toISOString(),
+      approvedBy: u.approvedBy || 'Admin JSON Bulk Import',
+      phoneVerified: u.phoneVerified !== false,
+      emailVerified: u.emailVerified !== false,
+      smsAlertsEnabled: u.smsAlertsEnabled !== false,
+      whatsappAlertsEnabled: u.whatsappAlertsEnabled !== false,
+      emailCircularsEnabled: u.emailCircularsEnabled !== false,
+      updatedAt: serverTimestamp(),
+      createdAt: serverTimestamp(),
+    });
+    batch.set(userRef, sanitized, { merge: true });
+  }
+  await batch.commit();
+}
+
+/**
  * Real-time Dispatched Multi-Channel Messages Listener
  */
 export function subscribeToDispatchedMessages(callback: (messages: MultiChannelMessage[]) => void) {

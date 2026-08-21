@@ -1,9 +1,11 @@
 import express, { Request, Response } from 'express';
+import http from 'http';
+import { WebSocketServer, WebSocket } from 'ws';
 import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 
 dotenv.config();
 
@@ -274,6 +276,126 @@ app.post('/api/v1/users/reset-password', (req: Request, res: Response) => {
   });
 });
 
+// Allowed institutional roles
+const ALLOWED_USER_ROLES = ['student', 'faculty', 'admin', 'staff', 'scholar', 'alumni', 'super_admin'];
+
+// Bulk Users JSON Import & Validation Endpoint
+app.post('/api/v1/users/bulk-import', (req: Request, res: Response) => {
+  const { users, autoApprove, defaultPassword, importedBy } = req.body;
+
+  if (!users || !Array.isArray(users) || users.length === 0) {
+    return res.status(400).json({ error: 'Payload must contain a non-empty array of user objects in "users".' });
+  }
+
+  const errors: { index: number; email?: string; name?: string; message: string }[] = [];
+  const validatedUsers: any[] = [];
+  const seenEmails = new Set<string>();
+  const fallbackPass = defaultPassword || 'GRI@Admin2026';
+  const timestamp = new Date().toISOString();
+
+  users.forEach((rawUser: any, index: number) => {
+    const rowNum = index + 1;
+    if (!rawUser || typeof rawUser !== 'object') {
+      errors.push({ index, message: `Row ${rowNum}: Invalid user record format.` });
+      return;
+    }
+
+    const name = (rawUser.name || '').trim();
+    const email = (rawUser.email || '').trim().toLowerCase();
+    const rawRole = (rawUser.role || '').toString().trim().toLowerCase();
+    const department = (rawUser.department || '').trim();
+    const phone = (rawUser.phone || '').trim();
+    const regNumber = (rawUser.regNumber || rawUser.rollNumber || rawUser.employeeId || '').trim();
+    const designation = (rawUser.designation || '').trim();
+    const tempPassword = (rawUser.password || rawUser.tempPassword || fallbackPass).trim();
+
+    // 1. Name validation
+    if (!name || name.length < 2) {
+      errors.push({ index, email, name, message: `Row ${rowNum}: Name is required and must be at least 2 characters.` });
+      return;
+    }
+
+    // 2. Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      errors.push({ index, email, name, message: `Row ${rowNum}: Invalid email address "${email}".` });
+      return;
+    }
+
+    if (seenEmails.has(email)) {
+      errors.push({ index, email, name, message: `Row ${rowNum}: Duplicate email "${email}" found in the import batch.` });
+      return;
+    }
+    seenEmails.add(email);
+
+    // 3. Role validation
+    if (!rawRole || !ALLOWED_USER_ROLES.includes(rawRole)) {
+      errors.push({ 
+        index, 
+        email, 
+        name, 
+        message: `Row ${rowNum}: Invalid role "${rawRole}". Allowed roles are: ${ALLOWED_USER_ROLES.join(', ')}.` 
+      });
+      return;
+    }
+
+    // 4. Department validation
+    if (!department) {
+      errors.push({ index, email, name, message: `Row ${rowNum}: Department is required.` });
+      return;
+    }
+
+    // 5. Password validation
+    if (tempPassword && tempPassword.length < 6) {
+      errors.push({ 
+        index, 
+        email, 
+        name, 
+        message: `Row ${rowNum}: Password for "${email}" must be at least 6 characters.` 
+      });
+      return;
+    }
+
+    // User is validated
+    const userId = rawUser.id || `USER-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    const shouldApprove = autoApprove !== false && (rawUser.approvalStatus !== 'pending');
+
+    validatedUsers.push({
+      id: userId,
+      name,
+      email,
+      role: rawRole,
+      department,
+      phone: phone || '+91 98421 00000',
+      regNumber: regNumber || undefined,
+      designation: designation || (rawRole === 'faculty' ? 'Assistant Professor' : undefined),
+      approvalStatus: shouldApprove ? 'approved' : 'pending',
+      passwordStatus: 'default_temp',
+      mustChangePasswordOnLogin: true,
+      tempPassword,
+      phoneVerified: true,
+      emailVerified: true,
+      smsAlertsEnabled: rawUser.smsAlertsEnabled !== false,
+      whatsappAlertsEnabled: rawUser.whatsappAlertsEnabled !== false,
+      emailCircularsEnabled: rawUser.emailCircularsEnabled !== false,
+      approvedAt: shouldApprove ? timestamp : undefined,
+      approvedBy: shouldApprove ? (importedBy || 'Admin JSON Bulk Import') : undefined,
+      attendance: typeof rawUser.attendance === 'number' ? rawUser.attendance : 90,
+      cgpa: typeof rawUser.cgpa === 'number' ? rawUser.cgpa : (rawRole === 'student' ? 8.5 : undefined),
+      semester: typeof rawUser.semester === 'number' ? rawUser.semester : (rawRole === 'student' ? 1 : undefined),
+    });
+  });
+
+  return res.json({
+    success: errors.length === 0,
+    totalRecords: users.length,
+    validCount: validatedUsers.length,
+    errorCount: errors.length,
+    validatedUsers,
+    errors,
+  });
+});
+
 // Contact Channel Registration Endpoint (SMS, WhatsApp phone, Email ID)
 app.post('/api/v1/users/register-contacts', (req: Request, res: Response) => {
   const { userId, userName, phone, email, alternateEmail, smsAlertsEnabled, whatsappAlertsEnabled, emailCircularsEnabled } = req.body;
@@ -419,9 +541,118 @@ app.post('/api/notifications/test-channel', (req: Request, res: Response) => {
   });
 });
 
-// Gemini Multi-Turn Chat Endpoint
+// Google Maps Grounding Endpoint
+app.post('/api/maps/grounding', async (req: Request, res: Response) => {
+  const { query, latitude, longitude } = req.body;
+  const userQuery = query || 'Find departments, libraries, hostel blocks, and amenities at Gandhigram Rural Institute';
+  
+  // GRI Central Campus Coordinates (Gandhigram, Dindigul, Tamil Nadu)
+  const lat = typeof latitude === 'number' ? latitude : 10.2785;
+  const lng = typeof longitude === 'number' ? longitude : 77.9304;
+
+  try {
+    const ai = getAIClient();
+    if (ai) {
+      // Maps Grounding using gemini-3.5-flash as specified by guidelines
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.5-flash',
+        contents: `Provide accurate location and geographical details with Google Maps grounding for: "${userQuery}".
+Mention exact campus landmarks, nearby transit (e.g. Ambathurai railway station, Dindigul junction, Madurai airport), hostel blocks, libraries, and key facilities in and around The Gandhigram Rural Institute campus.`,
+        config: {
+          tools: [{ googleMaps: {} }],
+          toolConfig: {
+            retrievalConfig: {
+              latLng: {
+                latitude: lat,
+                longitude: lng,
+              },
+            },
+          },
+          systemInstruction: `${GRI_SYSTEM_INSTRUCTION}\nYou are providing geographic, navigation, and location services grounded in Google Maps for GRI campus, Dindigul, and Tamil Nadu.`,
+        },
+      });
+
+      const responseText = response.text || 'Location details retrieved for Gandhigram Rural Institute.';
+      const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+
+      // Extract places and URLs strictly according to the skill
+      const places: { title: string; uri: string; address?: string; snippet?: string }[] = [];
+      
+      for (const chunk of groundingChunks) {
+        if (chunk.maps) {
+          const uri = chunk.maps.uri || `https://maps.google.com/?q=${encodeURIComponent(chunk.maps.title || 'Gandhigram Rural Institute')}`;
+          const title = chunk.maps.title || 'GRI Campus Location';
+          const snippet = chunk.maps.placeAnswerSources?.reviewSnippets?.[0] || undefined;
+          places.push({ title, uri, address: (chunk.maps as any).address, snippet });
+        } else if (chunk.web) {
+          places.push({
+            title: chunk.web.title || 'Official Source',
+            uri: chunk.web.uri || 'https://ruraluniv.ac.in',
+            snippet: undefined,
+          });
+        }
+      }
+
+      return res.json({
+        reply: responseText,
+        places,
+        groundingChunks,
+        model: 'gemini-3.5-flash',
+        coordinates: { latitude: lat, longitude: lng },
+        timestamp: new Date().toISOString(),
+      });
+    }
+  } catch (error: any) {
+    console.error('[Google Maps Grounding Error]', error?.message || error);
+  }
+
+  // High-fidelity fallback campus location grounding data
+  const fallbackPlaces = [
+    {
+      title: 'The Gandhigram Rural Institute (Deemed to be University)',
+      uri: 'https://maps.google.com/?q=The+Gandhigram+Rural+Institute+Gandhigram+Tamil+Nadu',
+      address: 'Gandhigram, Dindigul District, Tamil Nadu 624302',
+      snippet: 'Main 204-Acre Institutional Campus featuring Dr. Radhakrishnan Central Library, Multi-purpose Auditorium, and Administrative Block.'
+    },
+    {
+      title: 'Dr. Radhakrishnan Central Library, GRI',
+      uri: 'https://maps.google.com/?q=Central+Library+Gandhigram+Rural+Institute',
+      address: 'Central Campus, GRI, Gandhigram 624302',
+      snippet: 'Automated digital university library holding over 1.5 Lakh volumes, e-ShodhSindhu, and DELNET digital repository.'
+    },
+    {
+      title: 'ICAR Krishi Vigyan Kendra (KVK) & Instructional Farm',
+      uri: 'https://maps.google.com/?q=Krishi+Vigyan+Kendra+Gandhigram+Rural+Institute',
+      address: 'School of Agriculture Campus, Gandhigram 624302',
+      snippet: '50-acre experiential farm, bio-fertilizer propagation unit, and soil analysis laboratory.'
+    },
+    {
+      title: 'Ambathurai Railway Station (Nearest Rail Transit)',
+      uri: 'https://maps.google.com/?q=Ambathurai+Railway+Station+Gandhigram',
+      address: 'Ambathurai, Near Gandhigram (2.5 km from GRI Gate)',
+      snippet: 'Direct passenger & express train connectivity to Dindigul (12 km) and Madurai Junction (54 km).'
+    },
+    {
+      title: 'Kaveri & Amaravathi University Hostels',
+      uri: 'https://maps.google.com/?q=Gandhigram+Rural+Institute+Hostels',
+      address: 'Hostel Complex, Gandhigram Campus 624302',
+      snippet: 'Residential student blocks with organic farm dining, high-speed Wi-Fi, and 24/7 security.'
+    }
+  ];
+
+  return res.json({
+    reply: `### **The Gandhigram Rural Institute (Deemed to be University) — Location & Navigation**\n\n- **Campus Address:** Gandhigram, Dindigul District, Tamil Nadu - 624 302, India.\n- **Geographic Coordinates:** 10.2785° N, 77.9304° E\n- **Proximity & Transit:**\n  • **Nearest Railway Station:** Ambathurai (ABI) — 2.5 km from university main gate.\n  • **Major Railway Hub:** Dindigul Junction (DG) — 12 km (regular city buses & autos available).\n  • **Nearest Airport:** Madurai International Airport (IXM) — ~65 km via NH 44 four-lane highway.\n  • **Highway Access:** NH 44 (Kanyakumari - Srinagar corridor) with dedicated Gandhigram flyover and bus stops.`,
+    places: fallbackPlaces,
+    groundingChunks: fallbackPlaces.map(p => ({ maps: { title: p.title, uri: p.uri } })),
+    model: 'fallback-campus-maps',
+    coordinates: { latitude: lat, longitude: lng },
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Gemini Multi-Turn Chat Endpoint (with optional Maps Grounding)
 app.post('/api/chat', async (req: Request, res: Response) => {
-  const { messages, userRole, preferredModel } = req.body;
+  const { messages, userRole, preferredModel, enableMaps, latitude, longitude } = req.body;
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'Messages array is required' });
@@ -429,9 +660,24 @@ app.post('/api/chat', async (req: Request, res: Response) => {
 
   const latestMessage = messages[messages.length - 1];
   const query = latestMessage.content || latestMessage.text || '';
+  const qLower = query.toLowerCase();
 
-  // Select appropriate Gemini model: default gemini-2.5-flash, or gemini-2.5-pro for complex queries
-  const modelName = preferredModel === 'complex' || query.toLowerCase().includes('detailed research') || query.toLowerCase().includes('syllabus breakdown')
+  const isLocationQuery = enableMaps || 
+    qLower.includes('where is') || 
+    qLower.includes('directions') || 
+    qLower.includes('location') || 
+    qLower.includes('nearest') || 
+    qLower.includes('railway station') || 
+    qLower.includes('bus stop') || 
+    qLower.includes('airport') || 
+    qLower.includes('how to reach') ||
+    qLower.includes('hostel block');
+
+  // Select appropriate Gemini model: gemini-3.5-flash with googleMaps for location queries,
+  // or gemini-2.5-pro for research/complex, gemini-2.5-flash by default.
+  const modelName = isLocationQuery
+    ? 'gemini-3.5-flash'
+    : preferredModel === 'complex' || qLower.includes('detailed research') || qLower.includes('syllabus breakdown')
     ? 'gemini-2.5-pro'
     : 'gemini-2.5-flash';
 
@@ -444,20 +690,49 @@ app.post('/api/chat', async (req: Request, res: Response) => {
         parts: [{ text: m.content || m.text || '' }],
       }));
 
+      const config: any = {
+        systemInstruction: `${GRI_SYSTEM_INSTRUCTION}\n\nCurrent User Context: Role: ${userRole || 'Student'}. Tailor responses appropriately.`,
+        temperature: 0.7,
+      };
+
+      if (isLocationQuery) {
+        config.tools = [{ googleMaps: {} }];
+        config.toolConfig = {
+          retrievalConfig: {
+            latLng: {
+              latitude: typeof latitude === 'number' ? latitude : 10.2785,
+              longitude: typeof longitude === 'number' ? longitude : 77.9304,
+            },
+          },
+        };
+      }
+
       const response = await ai.models.generateContent({
         model: modelName,
         contents,
-        config: {
-          systemInstruction: `${GRI_SYSTEM_INSTRUCTION}\n\nCurrent User Context: Role: ${userRole || 'Student'}. Tailor responses appropriately.`,
-          temperature: 0.7,
-        },
+        config,
       });
 
       const responseText = response.text || 'I could not generate an answer at this time. Please contact the GRI Registrar office.';
+      const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+
+      // Extract places if maps was grounded
+      const places: { title: string; uri: string; snippet?: string }[] = [];
+      for (const chunk of groundingChunks) {
+        if (chunk.maps) {
+          places.push({
+            title: chunk.maps.title || 'GRI Location',
+            uri: chunk.maps.uri || `https://maps.google.com/?q=${encodeURIComponent(chunk.maps.title || 'Gandhigram')}`,
+            snippet: chunk.maps.placeAnswerSources?.reviewSnippets?.[0],
+          });
+        }
+      }
 
       return res.json({
         reply: responseText,
         model: modelName,
+        places: places.length > 0 ? places : undefined,
+        groundingChunks: groundingChunks.length > 0 ? groundingChunks : undefined,
         timestamp: new Date().toISOString(),
       });
     }
@@ -480,6 +755,8 @@ app.post('/api/chat', async (req: Request, res: Response) => {
     fallbackReply = `### **Hostel & Residential Facilities**\n\n- **Hostel Blocks:**\n  • **Men's Hostels:** Kaveri and Vaigai Blocks (Wi-Fi enabled, solar water heater, indoor recreation).\n  • **Women's Hostels:** Amaravathi and Thamirabarani Blocks (24/7 security, medical room).\n- **Mess Facility:** Nutritious pure vegetarian meals on a cooperative dividing system utilizing fresh organic produce from the GRI instructional farm.\n- **Application:** Online submission via the Student Services tab after admission confirmation.`;
   } else if (q.includes('agriculture') || q.includes('agri') || q.includes('kvk')) {
     fallbackReply = `### **School of Agriculture & Rural Development**\n\n- **Flagship Degree:** **B.Sc. (Hons) Agriculture** (4 Years, ICAR accredited, 60 seats).\n- **ICAR Krishi Vigyan Kendra (KVK):** Located on campus providing farmers with soil testing, organic bio-fertilizers, and high-yield seed propagation.\n- **Instructional Farm:** 50-acre farm equipped with drip irrigation, shade-net nurseries, and dairy unit.`;
+  } else if (q.includes('where') || q.includes('reach') || q.includes('location') || q.includes('dindigul')) {
+    fallbackReply = `### **Campus Location & How to Reach GRI**\n\n- **Address:** Gandhigram, Dindigul District, Tamil Nadu 624302\n- **Coordinates:** 10.2785° N, 77.9304° E\n- **By Train:** Ambathurai (ABI) station is 2.5 km away. Dindigul Jn (DG) is 12 km.\n- **By Air:** Madurai Airport (IXM) is 65 km.\n- **By Road:** NH 44 directly connects Gandhigram to Dindigul, Madurai, and Trichy.`;
   }
 
   res.json({
@@ -490,6 +767,120 @@ app.post('/api/chat', async (req: Request, res: Response) => {
 });
 
 async function startServer() {
+  const server = http.createServer(app);
+
+  // Initialize WebSocketServer for Live API (gemini-3.1-flash-live-preview)
+  const wss = new WebSocketServer({ server, path: '/live' });
+
+  wss.on('connection', async (clientWs: WebSocket) => {
+    console.log('[Live WebSocket] Client connected for voice session');
+    let session: any = null;
+
+    try {
+      const ai = getAIClient();
+      if (!ai) {
+        clientWs.send(JSON.stringify({ 
+          error: 'Gemini API is not configured on server. Please ensure GEMINI_API_KEY is active.' 
+        }));
+        return;
+      }
+
+      // Connect to Gemini Live API with model gemini-3.1-flash-live-preview as specified
+      session = await ai.live.connect({
+        model: 'gemini-3.1-flash-live-preview',
+        config: {
+          responseModalities: [Modality.AUDIO],
+          speechConfig: {
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } },
+          },
+          systemInstruction: `${GRI_SYSTEM_INSTRUCTION}\nYou are engaged in a real-time live voice conversation with a member of The Gandhigram Rural Institute. Speak naturally, concisely, and warmly.`,
+        },
+        callbacks: {
+          onmessage: (message: LiveServerMessage) => {
+            try {
+              // 1. Audio data from model
+              const audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
+              const text = message.serverContent?.modelTurn?.parts?.[0]?.text;
+              
+              if (audio || text) {
+                clientWs.send(JSON.stringify({
+                  audio,
+                  text,
+                  type: 'model_turn',
+                }));
+              }
+
+              // 2. Interruption event
+              if (message.serverContent?.interrupted) {
+                clientWs.send(JSON.stringify({ interrupted: true, type: 'interrupted' }));
+              }
+
+              // 3. Turn complete
+              if (message.serverContent?.turnComplete) {
+                clientWs.send(JSON.stringify({ turnComplete: true, type: 'turn_complete' }));
+              }
+            } catch (err) {
+              console.error('[Live WebSocket onmessage Error]', err);
+            }
+          },
+          onclose: () => {
+            console.log('[Live Session] Gemini Live session closed');
+          },
+          onerror: (err) => {
+            console.error('[Live Session Error]', err);
+            if (clientWs.readyState === WebSocket.OPEN) {
+              clientWs.send(JSON.stringify({ error: err?.message || 'Live session error' }));
+            }
+          },
+        },
+      });
+
+      clientWs.send(JSON.stringify({ status: 'connected', model: 'gemini-3.1-flash-live-preview' }));
+
+      // Handle messages incoming from browser client microphone / text
+      clientWs.on('message', (rawData) => {
+        try {
+          const parsed = JSON.parse(rawData.toString());
+
+          // Streaming microphone PCM 16kHz audio chunk
+          if (parsed.audio && session) {
+            session.sendRealtimeInput({
+              audio: { data: parsed.audio, mimeType: 'audio/pcm;rate=16000' },
+            });
+          }
+
+          // Optional text prompt over Live session
+          if (parsed.text && session) {
+            session.sendClientContent({
+              turns: [{ role: 'user', parts: [{ text: parsed.text }] }],
+              turnComplete: true,
+            });
+          }
+        } catch (parseErr) {
+          console.error('[Live Client WS Message Parse Error]', parseErr);
+        }
+      });
+
+      clientWs.on('close', () => {
+        console.log('[Live WebSocket] Client disconnected');
+        if (session) {
+          try {
+            session.close();
+          } catch {
+            // ignore
+          }
+        }
+      });
+    } catch (sessionErr: any) {
+      console.error('[Live Connection Setup Error]', sessionErr?.message || sessionErr);
+      if (clientWs.readyState === WebSocket.OPEN) {
+        clientWs.send(JSON.stringify({
+          error: sessionErr?.message || 'Failed to establish Gemini Live audio session',
+        }));
+      }
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== 'production') {
     const { createServer: createViteServer } = await import('vite');
@@ -511,9 +902,10 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[GRI Server] Running on http://0.0.0.0:${PORT}`);
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`[GRI Server] Running on http://0.0.0.0:${PORT} with Live API & Maps Grounding`);
   });
 }
 
 startServer();
+

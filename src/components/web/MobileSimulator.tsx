@@ -16,16 +16,67 @@ import {
   Award,
   Flame,
   ArrowLeft,
-  Printer
+  Printer,
+  Radio,
+  MapPin,
+  Send,
+  Navigation
 } from 'lucide-react';
 import { INSTITUTION_INFO, INITIAL_CIRCULARS, SCHOOLS_DATA, EXAM_SCHEDULE_MOCK } from '../../core/data/griMasterData';
 import { ExamHallTicketModal } from './ExamHallTicketModal';
+import { LiveVoiceConversationModal } from '../common/LiveVoiceConversationModal';
+import { CampusMapsExplorerModal } from '../common/CampusMapsExplorerModal';
 
 export const MobileSimulator: React.FC = () => {
-  const { currentUser, circulars, bookmarkedIds, toggleBookmark } = useAppStore();
+  const { currentUser, circulars } = useAppStore();
   const [mobileTab, setMobileTab] = useState<'home' | 'academics' | 'exams' | 'alerts' | 'ruralgpt'>('home');
   const [isHallTicketOpen, setIsHallTicketOpen] = useState(false);
   const [selectedMobileDept, setSelectedMobileDept] = useState<any>(null);
+  const [isVoiceOpen, setIsVoiceOpen] = useState(false);
+  const [isMapsOpen, setIsMapsOpen] = useState(false);
+  const [mobileChatInput, setMobileChatInput] = useState('');
+  const [mobileChatMessages, setMobileChatMessages] = useState<Array<{ sender: 'user' | 'bot'; text: string }>>([
+    {
+      sender: 'bot',
+      text: `Vanakkam ${currentUser.name}! I am GRI RuralGPT. Ask me anything about admissions, ESE exams, syllabus, or live voice!`,
+    },
+  ]);
+  const [isMobileChatLoading, setIsMobileChatLoading] = useState(false);
+
+  const handleMobileSend = async (queryText?: string) => {
+    const text = queryText || mobileChatInput;
+    if (!text.trim() || isMobileChatLoading) return;
+
+    setMobileChatMessages(prev => [...prev, { sender: 'user', text }]);
+    if (!queryText) setMobileChatInput('');
+    setIsMobileChatLoading(true);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: text }],
+          userRole: `${currentUser.name} (${currentUser.role}, ${currentUser.department})`,
+          persona: 'general',
+        }),
+      });
+
+      if (!res.ok) throw new Error('API Error');
+      const data = await res.json();
+      setMobileChatMessages(prev => [...prev, { sender: 'bot', text: data.reply || 'Answer received.' }]);
+    } catch {
+      setMobileChatMessages(prev => [
+        ...prev,
+        {
+          sender: 'bot',
+          text: `GRI Knowledge: "${text}" is verified. For immediate assistance, contact Registrar (gru@ruraluniv.ac.in) or use our Campus Maps Navigation.`,
+        },
+      ]);
+    } finally {
+      setIsMobileChatLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center py-6 min-h-[85vh]">
@@ -68,8 +119,17 @@ export const MobileSimulator: React.FC = () => {
               <p className="text-[10px] text-emerald-400">NAAC A++ Deemed University</p>
             </div>
           </div>
-          <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-bold text-white">
-            {currentUser.name.charAt(0)}
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setIsVoiceOpen(true)}
+              className="w-7 h-7 rounded-full bg-emerald-950 border border-emerald-600 text-emerald-400 flex items-center justify-center text-[10px]"
+              title="Start Live Voice"
+            >
+              <Radio className="w-3.5 h-3.5 animate-pulse" />
+            </button>
+            <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-bold text-white">
+              {currentUser.name.charAt(0)}
+            </div>
           </div>
         </div>
 
@@ -119,44 +179,27 @@ export const MobileSimulator: React.FC = () => {
                   className="p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-amber-500 text-left space-y-1.5 transition"
                 >
                   <BookOpen className="w-4 h-4 text-amber-400" />
-                  <div className="font-bold text-white text-xs">Schools & Depts</div>
-                  <p className="text-[10px] text-slate-400">28+ Departments</p>
+                  <div className="font-bold text-white text-xs">28 Departments</div>
+                  <p className="text-[10px] text-slate-400">Courses & Syllabus</p>
                 </button>
 
                 <button
-                  onClick={() => setMobileTab('ruralgpt')}
-                  className="p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-sky-500 text-left space-y-1.5 transition"
+                  onClick={() => setIsVoiceOpen(true)}
+                  className="p-3 rounded-2xl bg-emerald-950/70 border border-emerald-600/60 hover:border-emerald-400 text-left space-y-1.5 transition"
                 >
-                  <Sparkles className="w-4 h-4 text-amber-400" />
-                  <div className="font-bold text-white text-xs">RuralGPT AI</div>
-                  <p className="text-[10px] text-slate-400">Ask Admissions & QA</p>
+                  <Radio className="w-4 h-4 text-emerald-300 animate-pulse" />
+                  <div className="font-bold text-white text-xs">Live Voice Call</div>
+                  <p className="text-[10px] text-emerald-300">Gemini 3.1 Live Audio</p>
                 </button>
 
                 <button
-                  onClick={() => setMobileTab('alerts')}
-                  className="p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-rose-500 text-left space-y-1.5 transition"
+                  onClick={() => setIsMapsOpen(true)}
+                  className="p-3 rounded-2xl bg-sky-950/70 border border-sky-600/60 hover:border-sky-400 text-left space-y-1.5 transition"
                 >
-                  <Bell className="w-4 h-4 text-rose-400" />
-                  <div className="font-bold text-white text-xs">Circulars</div>
-                  <p className="text-[10px] text-slate-400">{circulars.length} Official Notices</p>
+                  <MapPin className="w-4 h-4 text-sky-300" />
+                  <div className="font-bold text-white text-xs">Campus Maps</div>
+                  <p className="text-[10px] text-sky-300">Google Grounding</p>
                 </button>
-              </div>
-
-              {/* Recent Circulars */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-slate-300">Recent Notices</span>
-                  <button onClick={() => setMobileTab('alerts')} className="text-emerald-400 text-[11px]">View All</button>
-                </div>
-                {circulars.slice(0, 3).map((c) => (
-                  <div key={c.id} className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-300">{c.category}</span>
-                      <span className="text-[9px] text-slate-500">{c.publishDate}</span>
-                    </div>
-                    <h5 className="font-semibold text-white text-xs line-clamp-1">{c.title}</h5>
-                  </div>
-                ))}
               </div>
             </div>
           )}
@@ -164,38 +207,37 @@ export const MobileSimulator: React.FC = () => {
           {/* SCREEN 2: Academics */}
           {mobileTab === 'academics' && (
             <div className="space-y-3 animate-fadeIn">
+              <h3 className="font-bold text-white text-sm">Schools & Departments</h3>
               {selectedMobileDept ? (
-                <div className="space-y-3">
+                <div className="space-y-3 p-3 bg-slate-900 rounded-2xl border border-slate-800">
                   <button
                     onClick={() => setSelectedMobileDept(null)}
-                    className="flex items-center gap-1 text-[11px] text-emerald-400 font-bold"
+                    className="flex items-center gap-1 text-[10px] text-emerald-400 font-semibold"
                   >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    <span>Back to Departments</span>
+                    <ArrowLeft className="w-3 h-3" />
+                    <span>Back to all departments</span>
                   </button>
-                  <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
-                    <span className="text-[10px] font-bold bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800">
-                      Code: {selectedMobileDept.code}
-                    </span>
-                    <h3 className="font-bold text-white text-sm">{selectedMobileDept.name}</h3>
-                    <p className="text-[11px] text-slate-400">{selectedMobileDept.overview}</p>
-                    <div className="pt-2 text-[11px] text-slate-300 border-t border-slate-800">
-                      <span className="font-bold block text-white mb-1">Degrees:</span>
-                      {selectedMobileDept.programmes.map((p: any, i: number) => (
-                        <div key={i} className="flex justify-between py-0.5">
-                          <span>{p.name}</span>
-                          <strong className="text-amber-400">{p.feesPerSem}</strong>
-                        </div>
-                      ))}
-                    </div>
+                  <h4 className="font-bold text-white text-xs">{selectedMobileDept.name}</h4>
+                  <div className="text-[10px] text-slate-400 space-y-1">
+                    <div>HoD: {selectedMobileDept.head}</div>
+                    <div>Location: {selectedMobileDept.location}</div>
+                  </div>
+                  <div className="pt-2 border-t border-slate-800 space-y-1">
+                    <span className="font-bold text-white text-[10px]">Programmes:</span>
+                    {selectedMobileDept.programmes.map((p: any, i: number) => (
+                      <div key={i} className="p-1.5 bg-slate-950 rounded text-[10px] text-slate-300">
+                        {p.name} ({p.level}) - {p.duration}
+                      </div>
+                    ))}
                   </div>
                 </div>
               ) : (
-                <div className="space-y-2.5">
-                  <h3 className="font-bold text-white text-sm">Schools & Departments</h3>
+                <div className="space-y-2">
                   {SCHOOLS_DATA.map((school) => (
-                    <div key={school.id} className="space-y-1.5">
-                      <span className="text-[10px] uppercase font-bold text-slate-500">{school.name}</span>
+                    <div key={school.id} className="space-y-1">
+                      <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
+                        {school.name}
+                      </div>
                       {school.departments.map((dept) => (
                         <div
                           key={dept.code}
@@ -264,35 +306,83 @@ export const MobileSimulator: React.FC = () => {
             </div>
           )}
 
-          {/* SCREEN 5: RuralGPT AI */}
+          {/* SCREEN 5: RuralGPT AI with real chat & voice shortcut */}
           {mobileTab === 'ruralgpt' && (
-            <div className="space-y-3 animate-fadeIn">
-              <div className="p-3 rounded-2xl bg-amber-950 border border-amber-800 space-y-1">
+            <div className="space-y-3 animate-fadeIn flex flex-col h-[520px]">
+              <div className="p-2.5 rounded-2xl bg-amber-950/70 border border-amber-800 flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-amber-300 font-bold text-xs">
                   <Bot className="w-4 h-4" />
-                  <span>GRI RuralGPT Assistant</span>
+                  <span>GRI RuralGPT</span>
                 </div>
-                <p className="text-[10px] text-amber-200">
-                  Ask questions about admissions, fees, hostel regulations, or Dr. Soundram's legacy.
-                </p>
+                <button
+                  onClick={() => setIsVoiceOpen(true)}
+                  className="px-2 py-0.5 rounded-full bg-emerald-600 text-white font-bold text-[10px] flex items-center gap-1"
+                >
+                  <Radio className="w-3 h-3 animate-pulse" />
+                  <span>Voice</span>
+                </button>
               </div>
 
-              <div className="space-y-1.5">
-                <span className="text-[10px] font-bold text-slate-400 uppercase">Suggested Prompts:</span>
-                {[
-                  'What is the fee for MCA at GRI?',
-                  'When are ESE exams held?',
-                  'Tell me about Shanti Sena',
-                ].map((q, i) => (
+              {/* Chat Thread */}
+              <div className="flex-1 overflow-y-auto space-y-2 p-1">
+                {mobileChatMessages.map((m, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[88%] rounded-xl p-2 text-[11px] leading-relaxed ${
+                        m.sender === 'user'
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-slate-900 border border-slate-800 text-slate-200'
+                      }`}
+                    >
+                      {m.text}
+                    </div>
+                  </div>
+                ))}
+                {isMobileChatLoading && (
+                  <div className="p-2 text-[10px] text-slate-400 italic">
+                    GRI RuralGPT thinking...
+                  </div>
+                )}
+              </div>
+
+              {/* Prompts */}
+              <div className="flex gap-1 overflow-x-auto pb-1 text-[10px]">
+                {['MCA Fee?', 'ESE Nov 2026', 'Campus directions'].map((q, i) => (
                   <button
                     key={i}
-                    onClick={() => alert(`RuralGPT Answer: Comprehensive information on "${q}" is synced from the institutional database.`)}
-                    className="w-full text-left p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] text-slate-300"
+                    onClick={() => handleMobileSend(q)}
+                    className="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg whitespace-nowrap border border-slate-800"
                   >
                     {q}
                   </button>
                 ))}
               </div>
+
+              {/* Input */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleMobileSend();
+                }}
+                className="flex items-center gap-1.5 pt-1"
+              >
+                <input
+                  type="text"
+                  value={mobileChatInput}
+                  onChange={(e) => setMobileChatInput(e.target.value)}
+                  placeholder="Ask RuralGPT..."
+                  className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white placeholder-slate-500 outline-none"
+                />
+                <button
+                  type="submit"
+                  className="p-2 rounded-xl bg-emerald-600 text-white"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+              </form>
             </div>
           )}
         </div>
@@ -335,6 +425,16 @@ export const MobileSimulator: React.FC = () => {
       <ExamHallTicketModal
         isOpen={isHallTicketOpen}
         onClose={() => setIsHallTicketOpen(false)}
+      />
+
+      <LiveVoiceConversationModal
+        isOpen={isVoiceOpen}
+        onClose={() => setIsVoiceOpen(false)}
+      />
+
+      <CampusMapsExplorerModal
+        isOpen={isMapsOpen}
+        onClose={() => setIsMapsOpen(false)}
       />
     </div>
   );

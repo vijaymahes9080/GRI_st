@@ -10,9 +10,22 @@ import {
   Cpu, 
   GraduationCap, 
   Scroll, 
-  Compass
+  Compass,
+  Mic,
+  MapPin,
+  ExternalLink,
+  Navigation,
+  Radio
 } from 'lucide-react';
 import { useAppStore } from '../../core/store/appStore';
+import { LiveVoiceConversationModal } from '../common/LiveVoiceConversationModal';
+import { CampusMapsExplorerModal } from '../common/CampusMapsExplorerModal';
+
+interface GroundedPlaceItem {
+  title: string;
+  uri: string;
+  snippet?: string;
+}
 
 interface ChatMessage {
   id: string;
@@ -20,6 +33,7 @@ interface ChatMessage {
   text: string;
   timestamp: string;
   modelUsed?: string;
+  places?: GroundedPlaceItem[];
 }
 
 type AssistantPersona = 'general' | 'academic' | 'exam' | 'gandhian';
@@ -53,14 +67,19 @@ const PERSONAS: { id: AssistantPersona; name: string; icon: any; description: st
 
 const PRESET_QUESTIONS = [
   'What are the eligibility and fee structure for MCA / M.Sc Computer Science?',
+  'Where is the Central Library and how do I reach GRI from Ambathurai railway station?',
   'When are the End Semester Examinations (ESE) Nov/Dec 2026 scheduled?',
   'Explain the founding vision of Dr. T.S. Soundram and Dr. G. Ramachandran.',
   'How does the Shanti Sena (Peace Brigade) train university students?',
-  'What research facilities exist in the Chemistry & Physics departments?',
-  'How do I apply for Hostel accommodation and how does the mess dividing system work?',
+  'Where are the Kaveri & Amaravathi student hostels and instructional farm located?',
 ];
 
-const createMessage = (sender: 'user' | 'assistant', text: string, modelUsed?: string): ChatMessage => {
+const createMessage = (
+  sender: 'user' | 'assistant', 
+  text: string, 
+  modelUsed?: string, 
+  places?: GroundedPlaceItem[]
+): ChatMessage => {
   const now = new Date();
   const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
   return {
@@ -69,6 +88,7 @@ const createMessage = (sender: 'user' | 'assistant', text: string, modelUsed?: s
     text,
     timestamp: timeStr,
     modelUsed,
+    places,
   };
 };
 
@@ -79,14 +99,21 @@ export const AiChatView: React.FC = () => {
     {
       id: 'msg-1',
       sender: 'assistant',
-      text: `Vanakkam ${currentUser.name}! I am **GRI RuralGPT**, your AI Institutional Assistant for **The Gandhigram Rural Institute (Deemed to be University)**.\n\nI am connected to the real-time university database covering all 7 Schools, 28 Departments, End Semester Examinations, Admissions 2026-27, Samarth ERP integration, and Gandhian Peace Studies.\n\nHow can I help you today?`,
+      text: `Vanakkam ${currentUser.name}! I am **GRI RuralGPT**, your AI Institutional Assistant for **The Gandhigram Rural Institute (Deemed to be University)**.\n\nI am connected to the real-time university database covering all 7 Schools, 28 Departments, End Semester Examinations, Admissions 2026-27, Samarth ERP integration, Google Maps Navigation, and Real-Time Live Voice.\n\nHow can I help you today?`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       modelUsed: 'gemini-2.5-flash',
     },
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [enableMapsGrounding, setEnableMapsGrounding] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  
+  // Modals state
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [isMapsModalOpen, setIsMapsModalOpen] = useState(false);
+  const [mapsModalQuery, setMapsModalQuery] = useState('');
+
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -121,6 +148,7 @@ export const AiChatView: React.FC = () => {
           })),
           userRole: `${currentUser.name} (${currentUser.role}, ${currentUser.department})`,
           persona: selectedPersona,
+          enableMaps: enableMapsGrounding,
           preferredModel: selectedPersona === 'academic' || selectedPersona === 'exam' ? 'complex' : 'standard',
         }),
       });
@@ -130,7 +158,12 @@ export const AiChatView: React.FC = () => {
       }
 
       const data = await response.json();
-      const botMessage = createMessage('assistant', data.reply || 'No response received from GRI institutional server.', data.model || 'gemini-2.5-flash');
+      const botMessage = createMessage(
+        'assistant', 
+        data.reply || 'No response received from GRI institutional server.', 
+        data.model || 'gemini-2.5-flash',
+        data.places
+      );
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       console.warn('[Chat Error, utilizing client intelligence]', error);
@@ -148,6 +181,9 @@ export const AiChatView: React.FC = () => {
     if (q.includes('mca') || q.includes('computer') || q.includes('data science')) {
       return `### **Department of Computer Science & Applications (School of Sciences)**\n\n- **MCA (Master of Computer Applications)**: 2 Years duration, 60 Intake, Fee: ₹24,000 / semester.\n- **M.Sc. Computer Science (AI & Data Science)**: 2 Years duration, 30 Intake, Fee: ₹19,500 / semester.\n- **B.Sc. Computer Science**: 3 Years duration, 40 Intake, Fee: ₹12,000 / semester.\n- **Facilities**: NVIDIA High Performance Computing Cluster, Cloud & IoT Lab, Network Simulator.\n- **Head of Department**: Dr. R. Ramanathan, Professor & Head.`;
     }
+    if (q.includes('where') || q.includes('location') || q.includes('railway') || q.includes('reach') || q.includes('dindigul')) {
+      return `### **The Gandhigram Rural Institute — Location & Directions**\n\n- **Address:** Gandhigram, Dindigul District, Tamil Nadu - 624 302\n- **Coordinates:** 10.2785° N, 77.9304° E\n- **Nearest Train Station:** Ambathurai Railway Station (2.5 km)\n- **Major Hub:** Dindigul Junction (12 km)\n- **Airport:** Madurai International Airport (65 km via NH 44)`;
+    }
     if (q.includes('exam') || q.includes('ese') || q.includes('hall ticket') || q.includes('timetable')) {
       return `### **End Semester Examinations (ESE) Nov/Dec 2026**\n\n- **Timetable Status**: Published and available under the *Services* tab.\n- **Forenoon Session (FN)**: 09:30 AM – 12:30 PM\n- **Afternoon Session (AN)**: 02:00 PM – 05:00 PM\n- **Hall Tickets**: Generated online via Samarth portal integration with mandatory QR-code verification.\n- **Controller of Examinations**: Dr. M. Senthilvel (coe@ruraluniv.ac.in).`;
     }
@@ -159,38 +195,63 @@ export const AiChatView: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-16">
-      {/* Header */}
+      {/* Header with Live Voice & Maps Quick Action Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-600/40 text-emerald-400 text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Gemini-Powered Multi-Turn Institutional Intelligence</span>
+            <span>Gemini 3.1 Live Voice & Google Maps Grounding Active</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-white">
             GRI RuralGPT Assistant
           </h1>
           <p className="text-sm text-slate-400">
-            Real-time conversational answers for admissions, examination rules, syllabi, fee structures, and Gandhian peace studies.
+            Real-time conversational intelligence with low-latency live voice calls and verified Google Maps campus navigation.
           </p>
         </div>
 
-        <button
-          onClick={() =>
-            setMessages([
-              {
-                id: 'msg-1',
-                sender: 'assistant',
-                text: `Vanakkam ${currentUser.name}! Chat thread refreshed. What would you like to explore regarding The Gandhigram Rural Institute?`,
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                modelUsed: 'gemini-2.5-flash',
-              },
-            ])
-          }
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold hover:bg-slate-800 transition self-start sm:self-auto"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Clear Thread</span>
-        </button>
+        {/* Action Buttons: Live Voice & Campus Maps */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Live Voice Call Button */}
+          <button
+            onClick={() => setIsVoiceModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-emerald-900/40 transition hover:scale-105"
+          >
+            <Radio className="w-4 h-4 animate-pulse text-amber-300" />
+            <span>Live Voice Call</span>
+          </button>
+
+          {/* Campus Maps Button */}
+          <button
+            onClick={() => {
+              setMapsModalQuery('GRI Campus map, departments, hostel blocks, and library');
+              setIsMapsModalOpen(true);
+            }}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-sky-500/40 text-sky-300 hover:text-white text-xs sm:text-sm font-semibold transition"
+          >
+            <MapPin className="w-4 h-4 text-sky-400" />
+            <span>Campus Maps</span>
+          </button>
+
+          {/* Clear Thread */}
+          <button
+            onClick={() =>
+              setMessages([
+                {
+                  id: 'msg-1',
+                  sender: 'assistant',
+                  text: `Vanakkam ${currentUser.name}! Chat thread refreshed. What would you like to explore regarding The Gandhigram Rural Institute?`,
+                  timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                  modelUsed: 'gemini-2.5-flash',
+                },
+              ])
+            }
+            className="p-2 rounded-2xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-xs hover:bg-slate-800 transition"
+            title="Clear Chat Thread"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Role / Persona Selector */}
@@ -239,16 +300,30 @@ export const AiChatView: React.FC = () => {
       </div>
 
       {/* Chat Container */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col h-[580px]">
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col h-[600px]">
         {/* Top Status Bar */}
         <div className="px-4 py-2.5 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>Active Persona: <strong className="text-slate-200">{PERSONAS.find(p => p.id === selectedPersona)?.name}</strong></span>
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-mono">
-            <Cpu className="w-3.5 h-3.5" />
-            <span>Gemini AI Connected</span>
+          <div className="flex items-center gap-3 text-[11px]">
+            <button
+              onClick={() => setEnableMapsGrounding(!enableMapsGrounding)}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold transition ${
+                enableMapsGrounding
+                  ? 'bg-sky-950 border border-sky-500 text-sky-400'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Toggle automatic Google Maps grounding on every query"
+            >
+              <MapPin className="w-3.5 h-3.5 text-sky-400" />
+              <span>Maps Grounding: {enableMapsGrounding ? 'ON' : 'OFF'}</span>
+            </button>
+            <div className="flex items-center gap-1 text-emerald-400 font-mono">
+              <Cpu className="w-3.5 h-3.5" />
+              <span>Gemini AI Live</span>
+            </div>
           </div>
         </div>
 
@@ -277,6 +352,43 @@ export const AiChatView: React.FC = () => {
                   <div className="whitespace-pre-wrap font-sans prose prose-invert max-w-none text-xs sm:text-sm">
                     {msg.text}
                   </div>
+
+                  {/* Grounded Google Maps Places Cards */}
+                  {msg.places && msg.places.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-slate-800/80 space-y-2">
+                      <div className="flex items-center gap-1.5 text-[11px] font-semibold text-sky-400">
+                        <MapPin className="w-3.5 h-3.5" />
+                        <span>Google Maps Grounded Locations:</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {msg.places.map((place, pIdx) => (
+                          <a
+                            key={pIdx}
+                            href={place.uri}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="bg-slate-900 hover:bg-slate-850 p-2.5 rounded-xl border border-slate-700/80 hover:border-sky-500/60 transition flex flex-col justify-between group/place"
+                          >
+                            <div>
+                              <div className="flex items-center justify-between text-white font-bold text-xs group-hover/place:text-sky-300">
+                                <span className="line-clamp-1">{place.title}</span>
+                                <ExternalLink className="w-3 h-3 text-slate-400 group-hover/place:text-sky-400 flex-shrink-0 ml-1" />
+                              </div>
+                              {place.snippet && (
+                                <p className="text-[10px] text-slate-400 line-clamp-2 mt-1">
+                                  {place.snippet}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1 text-[10px] text-sky-400 font-semibold mt-2">
+                              <Navigation className="w-3 h-3" />
+                              <span>View on Google Maps</span>
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/60 text-[10px]">
                     <span className={isBot ? 'text-slate-500 font-mono' : 'text-emerald-200'}>
@@ -321,7 +433,9 @@ export const AiChatView: React.FC = () => {
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse delay-100"></span>
                 <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse delay-200"></span>
-                <span className="ml-1">Querying GRI RuralGPT AI Knowledge Base...</span>
+                <span className="ml-1">
+                  {enableMapsGrounding ? 'Retrieving Google Maps Grounded coordinates...' : 'Querying GRI RuralGPT AI Knowledge Base...'}
+                </span>
               </div>
             </div>
           )}
@@ -337,11 +451,21 @@ export const AiChatView: React.FC = () => {
             }}
             className="flex items-center gap-2"
           >
+            {/* Live Mic Action */}
+            <button
+              type="button"
+              onClick={() => setIsVoiceModalOpen(true)}
+              className="p-3 rounded-xl bg-slate-900 hover:bg-emerald-950/60 border border-slate-700 hover:border-emerald-500 text-slate-300 hover:text-emerald-400 transition"
+              title="Launch Live Voice Call (gemini-3.1-flash-live-preview)"
+            >
+              <Mic className="w-4 h-4" />
+            </button>
+
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask anything about admissions, examination rules, syllabi, hostels, fee structures, Shanti Sena..."
+              placeholder="Ask admissions, exams, syllabi, hostels, or campus directions..."
               className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-xs sm:text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-emerald-500 transition"
             />
             <button
@@ -355,6 +479,18 @@ export const AiChatView: React.FC = () => {
           </form>
         </div>
       </div>
+
+      {/* Global Modals */}
+      <LiveVoiceConversationModal
+        isOpen={isVoiceModalOpen}
+        onClose={() => setIsVoiceModalOpen(false)}
+      />
+
+      <CampusMapsExplorerModal
+        isOpen={isMapsModalOpen}
+        onClose={() => setIsMapsModalOpen(false)}
+        initialQuery={mapsModalQuery}
+      />
     </div>
   );
 };
