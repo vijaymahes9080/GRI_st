@@ -25,6 +25,9 @@ export interface UserProfile {
   mustChangePasswordOnLogin?: boolean;
   tempPassword?: string;
   passwordUpdatedAt?: string;
+  passwordResetAt?: string;
+  passwordResetBy?: string;
+  passwordExpiryHours?: number;
   approvedAt?: string;
   approvedBy?: string;
   createdAt?: string;

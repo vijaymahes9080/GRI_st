@@ -18,64 +18,51 @@ import { AiKnowledgeManager } from '../admin/AiKnowledgeManager';
 import { SystemSettingsManager } from '../admin/SystemSettingsManager';
 import { AuditLogsViewer } from '../admin/AuditLogsViewer';
 import { GrievanceManager } from '../admin/GrievanceManager';
+import { AdminResetPasswordModal } from '../admin/AdminResetPasswordModal';
 import { UserRole, UserProfile } from '../../types';
 import { 
   ShieldCheck, 
   Users, 
   Bell, 
-  RefreshCw, 
   Check, 
   X, 
-  Send, 
-  Database, 
   Activity, 
-  Server,
-  Lock,
-  CheckSquare,
-  Square,
-  Trash2,
-  Ban,
-  Search,
-  UserCheck,
-  CheckCircle2,
-  AlertTriangle,
-  Download,
-  FileSpreadsheet,
-  FileJson,
-  Upload,
-  UserPlus,
-  KeyRound,
-  MessageSquare,
-  Building2,
-  Calendar,
-  Briefcase,
-  FlaskConical,
-  FolderOpen,
-  HelpCircle,
-  Link2,
-  Layout,
-  Brain,
-  Sliders,
-  AlertCircle,
-  Layers,
-  ChevronRight,
-  TrendingUp,
-  Cpu
+  CheckSquare, 
+  Square, 
+  Trash2, 
+  Search, 
+  UserCheck, 
+  AlertTriangle, 
+  FileSpreadsheet, 
+  FileJson, 
+  Upload, 
+  UserPlus, 
+  KeyRound, 
+  MessageSquare, 
+  Building2, 
+  Calendar, 
+  Briefcase, 
+  FlaskConical, 
+  FolderOpen, 
+  HelpCircle, 
+  Link2, 
+  Layout, 
+  Brain, 
+  Sliders, 
+  AlertCircle, 
+  ChevronRight
 } from 'lucide-react';
 
 export const AdminView: React.FC = () => {
   const { 
     currentUser, 
     usersList, 
-    updateUserApproval,
     approveUserWithNotifications,
     bulkUpdateUserApproval,
     deleteUser,
     bulkDeleteUsers,
     isFirestoreLive,
     updateUserRole,
-    resetUserPasswordByAdmin,
-    resendApprovalMessages,
     dispatchedMessages,
     circulars,
     schools,
@@ -130,9 +117,8 @@ export const AdminView: React.FC = () => {
   const [bulkActionModalType, setBulkActionModalType] = useState<BulkActionType | null>(null);
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
 
-  // Reset Password Confirmation State
-  const [resetTargetUser, setResetTargetUser] = useState<{ id: string; name: string } | null>(null);
-  const [isResetting, setIsResetting] = useState(false);
+  // Reset Password Modal State
+  const [resetTargetUser, setResetTargetUser] = useState<UserProfile | null>(null);
 
   const pendingUsers = usersList.filter(u => u.approvalStatus === 'pending');
   const selectedUsers = usersList.filter(u => selectedUserIds.includes(u.id));
@@ -191,21 +177,6 @@ export const AdminView: React.FC = () => {
       console.error('Error executing bulk action:', err);
     } finally {
       setIsBulkProcessing(false);
-    }
-  };
-
-  const handleAdminResetPassword = async () => {
-    if (!resetTargetUser) return;
-    setIsResetting(true);
-    try {
-      await resetUserPasswordByAdmin(resetTargetUser.id);
-      setBulkFeedback(`Reset password for ${resetTargetUser.name} to provisional key GRI@Admin2026. Notifications dispatched.`);
-      setResetTargetUser(null);
-      setTimeout(() => setBulkFeedback(null), 4000);
-    } catch (err) {
-      console.error('Failed to reset password:', err);
-    } finally {
-      setIsResetting(false);
     }
   };
 
@@ -666,9 +637,9 @@ export const AdminView: React.FC = () => {
                               </button>
                             )}
                             <button
-                              onClick={() => setResetTargetUser({ id: user.id, name: user.name })}
+                              onClick={() => setResetTargetUser(user)}
                               className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 transition"
-                              title="Reset Password to Default"
+                              title="Admin-Initiated Password Reset (One-Time Key)"
                             >
                               <KeyRound className="w-3.5 h-3.5" />
                             </button>
@@ -739,6 +710,7 @@ export const AdminView: React.FC = () => {
       <AddUserModal isOpen={isAddUserModalOpen} onClose={() => setIsAddUserModalOpen(false)} />
       <BulkImportUsersModal isOpen={isBulkImportModalOpen} onClose={() => setIsBulkImportModalOpen(false)} />
       <EditUserContactModal user={editContactUser} onClose={() => setEditContactUser(null)} />
+      <AdminResetPasswordModal user={resetTargetUser} isOpen={!!resetTargetUser} onClose={() => setResetTargetUser(null)} />
 
       {/* Bulk Confirm Modal */}
       {bulkActionModalType && (
@@ -749,42 +721,6 @@ export const AdminView: React.FC = () => {
           onCancel={() => setBulkActionModalType(null)}
           isProcessing={isBulkProcessing}
         />
-      )}
-
-      {/* Reset Password Modal */}
-      {resetTargetUser && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 text-xs animate-fadeIn">
-            <h3 className="text-sm font-bold text-white font-display flex items-center gap-2">
-              <KeyRound className="w-4 h-4 text-amber-400" />
-              Reset Account Password
-            </h3>
-            <p className="text-slate-300">
-              Are you sure you want to reset password for <strong>{resetTargetUser.name}</strong>?
-            </p>
-            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-slate-400 font-mono text-[11px]">
-              Temporary Key: <strong className="text-amber-400">GRI@Admin2026</strong>
-              <div className="text-[10px] text-slate-500 mt-1">
-                Dispatches notification to registered SMS and WhatsApp.
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => setResetTargetUser(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAdminResetPassword}
-                disabled={isResetting}
-                className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold"
-              >
-                {isResetting ? 'Resetting...' : 'Confirm Reset'}
-              </button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

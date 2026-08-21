@@ -211,67 +211,77 @@ app.post('/api/v1/auth/change-password', (req: Request, res: Response) => {
   });
 });
 
-// Admin Password Reset Endpoint
+// Admin Password Reset Endpoint (Secure One-Time Temporary Password)
 app.post('/api/v1/users/reset-password', (req: Request, res: Response) => {
-  const { user, defaultPassword, adminName } = req.body;
+  const { user, defaultPassword, adminName, expiryHours = 24, notifyChannels = ['SMS', 'WHATSAPP', 'EMAIL'], reason, forcePasswordChange = true } = req.body;
   if (!user || !user.id) {
     return res.status(400).json({ error: 'User object with ID is required.' });
   }
 
-  const tempPass = defaultPassword || 'GRI@Admin2026';
+  const tempPass = defaultPassword || `GRI#${Math.random().toString(36).substring(2, 6).toUpperCase()}@2026`;
   const timestamp = new Date().toISOString();
   const userName = user.name || 'GRI Member';
+  const roleName = user.role || 'Member';
   const phone = user.phone || '+91 98421 77321';
   const email = user.email || 'user@ruraluniv.ac.in';
+  const expiryNotice = `${expiryHours} hours`;
 
-  const resetMessages = [
+  const availableMessages = [
     {
-      id: `MSG-SMS-RST-${Date.now()}`,
+      id: `MSG-SMS-RST-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       userId: user.id,
       userName,
       recipientPhone: phone,
       recipientEmail: email,
-      channel: 'SMS',
-      type: 'PASSWORD_RESET',
-      title: 'GRI ERP: Password Reset by Admin',
-      body: `GRI ERP: Your password was reset by Administrator (${adminName || 'System Admin'}). Temporary Password: ${tempPass}. Please log in and set your new password.`,
-      status: 'DELIVERED',
+      channel: 'SMS' as const,
+      type: 'PASSWORD_RESET' as const,
+      title: 'GRI Security: Temporary Password Issued',
+      body: `GRI ERP: Hello ${userName}, an admin-initiated password reset was issued by ${adminName || 'Central Administration'}. One-Time Access Key: ${tempPass} (Valid: ${expiryNotice}). You must change this upon your next login.`,
+      status: 'DELIVERED' as const,
       sentAt: timestamp,
+      metadata: { gateway: 'TRAI-DLT-GRI-SMS', adminName, expiryHours, reason }
     },
     {
-      id: `MSG-WA-RST-${Date.now()}`,
+      id: `MSG-WA-RST-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       userId: user.id,
       userName,
       recipientPhone: phone,
       recipientEmail: email,
-      channel: 'WHATSAPP',
-      type: 'PASSWORD_RESET',
-      title: 'GRI ERP: Password Reset Notice',
-      body: `🔑 *GRI ERP Password Reset*\n\nHello *${userName}*,\nYour password has been reset to temporary access key: \`${tempPass}\` by Central Admin.\n\nPlease log in and update to your custom password.`,
-      status: 'DELIVERED',
+      channel: 'WHATSAPP' as const,
+      type: 'PASSWORD_RESET' as const,
+      title: 'GRI Security: One-Time Temporary Access Key',
+      body: `🏛️ *The Gandhigram Rural Institute (Deemed to be University)*\n\n🛡️ *ADMIN-INITIATED PASSWORD RESET*\n\nDear *${userName}* (${roleName.toUpperCase()}),\nAn administrator (*${adminName || 'Central Admin'}*) has generated a one-time temporary access credential for your account.\n\n🔑 *Temporary Password:* \`${tempPass}\`\n⏳ *Validity Window:* ${expiryNotice}\n\n⚠️ *Mandatory Action:* The university security policy requires you to log in at https://ruraluniv.ac.in/ and define your private permanent password immediately.\n\n_If you did not request this, contact the ICT Center immediately._`,
+      status: 'DELIVERED' as const,
       sentAt: timestamp,
+      metadata: { provider: 'Meta Cloud API / GRI WhatsApp Gateway', expiryHours }
     },
     {
-      id: `MSG-EM-RST-${Date.now()}`,
+      id: `MSG-EM-RST-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       userId: user.id,
       userName,
       recipientPhone: phone,
       recipientEmail: email,
-      channel: 'EMAIL',
-      type: 'PASSWORD_RESET',
-      title: 'GRI ERP Account Password Reset Notice',
-      body: `Dear ${userName},\n\nYour GRI account password has been reset by the System Administrator.\n\nTemporary Password: ${tempPass}\n\nYou must log in and change your password to a private user-defined password.\n\nRegards,\nGRI ICT Center`,
-      status: 'DELIVERED',
+      channel: 'EMAIL' as const,
+      type: 'PASSWORD_RESET' as const,
+      title: 'Official Notice: GRI One-Time Temporary Password Generated',
+      body: `Dear ${userName},\n\nThis is an official communication from The Gandhigram Rural Institute (Deemed to be University) regarding your ERP account (${email}).\n\nAn administrator (${adminName || 'System Administrator'}) has reset your password and generated a temporary one-time credential:\n\n- Temporary One-Time Password: ${tempPass}\n- Expiry Period: ${expiryNotice}\n- Reason: ${reason || 'Administrative Security Reset / User Request'}\n\nIMPORTANT SECURITY REQUIREMENT:\nUpon your next login attempt, the portal will immediately lock access and require you to create a secure, user-defined private password.\n\nPlease log in at https://ruraluniv.ac.in/portal to complete your password setup.\n\nSincerely,\nController of Examinations & ICT Center\nThe Gandhigram Rural Institute (Deemed to be University)\nGandhigram - 624 302, Dindigul District, Tamil Nadu`,
+      status: 'DELIVERED' as const,
       sentAt: timestamp,
+      metadata: { smtpHost: 'mail.ruraluniv.ac.in', tls: true, expiryHours }
     }
   ];
 
+  const resetMessages = availableMessages.filter(m => notifyChannels.includes(m.channel));
+
   return res.json({
     success: true,
-    message: `Password reset to general temporary password for ${userName} and notifications sent.`,
+    message: `Secure temporary password generated for ${userName} and dispatched across ${resetMessages.length} channel(s).`,
     tempPassword: tempPass,
-    mustChangePasswordOnLogin: true,
+    mustChangePasswordOnLogin: forcePasswordChange,
     passwordStatus: 'default_temp',
+    passwordResetAt: timestamp,
+    passwordResetBy: adminName || 'System Admin',
+    passwordExpiryHours: expiryHours,
     resetMessages,
   });
 });

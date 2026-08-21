@@ -130,7 +130,16 @@ interface AppState {
   isPasswordChangeModalOpen: boolean;
   setPasswordChangeModalOpen: (open: boolean) => void;
   changeUserPassword: (newPassword: string) => Promise<void>;
-  resetUserPasswordByAdmin: (userId: string, customTempPass?: string) => Promise<void>;
+  resetUserPasswordByAdmin: (
+    userId: string, 
+    customTempPass?: string,
+    options?: {
+      expiryHours?: number;
+      notifyChannels?: ('SMS' | 'WHATSAPP' | 'EMAIL')[];
+      forcePasswordChange?: boolean;
+      reason?: string;
+    }
+  ) => Promise<{ success: boolean; tempPassword: string; messagesCount: number }>;
   resendApprovalMessages: (userId: string) => Promise<void>;
 
   // Multi-Channel Notifications (SMS, WhatsApp, Email, In-App)
@@ -469,16 +478,24 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  resetUserPasswordByAdmin: async (userId, customTempPass) => {
+  resetUserPasswordByAdmin: async (userId, customTempPass, options) => {
     const targetUser = get().usersList.find((u) => u.id === userId);
-    if (!targetUser) return;
+    if (!targetUser) return { success: false, tempPassword: '', messagesCount: 0 };
 
-    const tempPassword = customTempPass || DEFAULT_GENERAL_PASSWORD;
+    const tempPassword = customTempPass || `GRI#${Math.random().toString(36).substring(2, 6).toUpperCase()}@2026`;
+    const forcePasswordChange = options?.forcePasswordChange !== false;
+    const expiryHours = options?.expiryHours || 24;
+    const nowISO = new Date().toISOString();
+    const adminName = get().currentUser.name || 'GRI Central Administration';
+
     const updatedUser: UserProfile = {
       ...targetUser,
       passwordStatus: 'default_temp',
-      mustChangePasswordOnLogin: true,
+      mustChangePasswordOnLogin: forcePasswordChange,
       tempPassword,
+      passwordResetAt: nowISO,
+      passwordResetBy: adminName,
+      passwordExpiryHours: expiryHours,
     };
 
     set((state) => ({
@@ -486,6 +503,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       currentUser: state.currentUser.id === userId ? updatedUser : state.currentUser,
     }));
 
+    let messagesCount = 0;
     try {
       const response = await fetch('/api/v1/users/reset-password', {
         method: 'POST',
@@ -493,13 +511,18 @@ export const useAppStore = create<AppState>((set, get) => ({
         body: JSON.stringify({
           user: updatedUser,
           defaultPassword: tempPassword,
-          adminName: get().currentUser.name,
+          adminName,
+          expiryHours,
+          notifyChannels: options?.notifyChannels || ['SMS', 'WHATSAPP', 'EMAIL'],
+          reason: options?.reason,
+          forcePasswordChange,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
         if (data.resetMessages && Array.isArray(data.resetMessages)) {
+          messagesCount = data.resetMessages.length;
           for (const msg of data.resetMessages) {
             await addDispatchedMessageToFirestore(msg).catch(() => {});
           }
@@ -514,10 +537,18 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     try {
       await saveUserProfile(updatedUser);
-      await get().logAdminAction('UPDATE', 'USER_SECURITY', targetUser.id, targetUser.name, 'Admin reset user password and re-sent credentials.');
+      await get().logAdminAction(
+        'UPDATE', 
+        'USER_SECURITY', 
+        targetUser.id, 
+        targetUser.name, 
+        `Admin generated temporary password for ${targetUser.name} (${targetUser.email}). Must change password on next login: ${forcePasswordChange ? 'Yes' : 'No'}. Expiry: ${expiryHours}h.`
+      );
     } catch (e) {
       console.warn('[Firestore] Reset password user update error:', e);
     }
+
+    return { success: true, tempPassword, messagesCount };
   },
 
   resendApprovalMessages: async (userId) => {

@@ -255,8 +255,6 @@ export const LiveVoiceConversationModal: React.FC<LiveVoiceConversationModalProp
       timer = setTimeout(() => {
         startLiveSession();
       }, 0);
-    } else {
-      endLiveSession();
     }
     return () => {
       clearTimeout(timer);

@@ -135,11 +135,24 @@ export const ChangePasswordModal: React.FC = () => {
         {/* Content Body */}
         <div className="p-6 max-h-[80vh] overflow-y-auto">
           {isMandatory && (
-            <div className="mb-5 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs leading-relaxed flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-              <div>
-                <strong className="font-semibold block mb-0.5">First-Time Setup / Administrator Verification Notice:</strong>
-                Your account was approved with the university general provisional password. To safeguard your academic and institutional records, please define your own private password now.
+            <div className="mb-5 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 text-xs leading-relaxed space-y-2">
+              <div className="flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="font-bold text-sm block mb-1 text-amber-950 dark:text-amber-100">
+                    {currentUser.passwordResetBy ? 'Admin-Initiated One-Time Reset Notice' : 'Mandatory First-Time Password Setup'}
+                  </strong>
+                  <p className="text-slate-700 dark:text-slate-300">
+                    {currentUser.passwordResetBy 
+                      ? `An administrator (${currentUser.passwordResetBy}) generated a secure one-time temporary password for your account. To protect your student and academic records, you must define a private, permanent password before accessing the university portal.`
+                      : 'Your account was approved with a general provisional key. Please define your private permanent password now.'}
+                  </p>
+                  {currentUser.passwordExpiryHours && (
+                    <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-1 font-medium">
+                      ⏳ Temporary Key Policy: Single-use credential with {currentUser.passwordExpiryHours}-hour authorization window.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           )}
