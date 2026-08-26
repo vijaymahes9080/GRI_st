@@ -1,18 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useAppStore } from '../../core/store/appStore';
 import { SCHOOLS_DATA } from '../../core/data/griMasterData';
-import { DepartmentInfo } from '../../types';
 import { 
-  Search, 
-  GraduationCap, 
-  BookOpen, 
-  Users, 
-  ArrowRight, 
-  Sparkles, 
-  Filter,
-  Building2,
-  Phone,
-  Mail
+  Search, GraduationCap, ArrowRight, ArrowUpRight, BookOpen, Users, MapPin, ExternalLink
 } from 'lucide-react';
 
 export const ExploreView: React.FC = () => {
@@ -38,187 +28,135 @@ export const ExploreView: React.FC = () => {
           return matchQuery && matchLevel;
         });
 
-        return {
-          ...school,
-          departments: filteredDepts,
-        };
+        return { ...school, departments: filteredDepts };
       })
       .filter(s => s.departments.length > 0);
   }, [searchQuery, selectedSchool, selectedLevel]);
 
-  const totalFilteredDepts = filteredSchools.reduce((acc, s) => acc + s.departments.length, 0);
-
   return (
-    <div className="space-y-8 pb-16">
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-600/40 text-emerald-400 text-xs font-semibold">
-          <GraduationCap className="w-3.5 h-3.5" />
-          <span>Academic Directory & Curriculum</span>
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-white">
-          Schools & Academic Departments
+    <div className="space-y-8 sm:space-y-12 pb-24 animate-fadeIn max-w-6xl mx-auto px-4 sm:px-6">
+      {/* Editorial Header */}
+      <div className="max-w-3xl space-y-6">
+        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-display font-medium text-[#1A1F1D] tracking-tight leading-[1.1]">
+          Academic <br/>
+          <span className="text-black/30">Excellence.</span>
         </h1>
-        <p className="text-sm text-slate-400 max-w-3xl">
-          Explore all faculties, degree programmes (UG, PG, B.Voc, Doctoral), research specializations, instructional farms, and advanced scientific laboratories.
+        <p className="text-xl text-[#5C6661] font-light leading-relaxed">
+          Explore all faculties, degree programmes, research specializations, and advanced scientific laboratories across our 28+ departments.
         </p>
       </div>
 
-      {/* Filter & Search Bar */}
-      <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-          {/* Search input */}
-          <div className="md:col-span-6 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by department name, code (CS, AGR, CHE) or course..."
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 outline-none"
-            />
-          </div>
-
-          {/* School Selector */}
-          <div className="md:col-span-3">
-            <select
-              value={selectedSchool}
-              onChange={(e) => setSelectedSchool(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-200 outline-none focus:border-emerald-500"
-            >
-              <option value="ALL">All Schools of Study</option>
-              {SCHOOLS_DATA.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Degree Level Selector */}
-          <div className="md:col-span-3">
-            <select
-              value={selectedLevel}
-              onChange={(e) => setSelectedLevel(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-200 outline-none focus:border-emerald-500"
-            >
-              <option value="ALL">All Programme Levels</option>
-              <option value="UG">Undergraduate (UG)</option>
-              <option value="PG">Postgraduate (PG / MCA / MBA)</option>
-              <option value="DOCTORAL">Doctoral (Ph.D.)</option>
-              <option value="CERTIFICATE">Certificates & Diplomas</option>
-            </select>
-          </div>
+      {/* Advanced Filter Bar */}
+      <div className="bg-white rounded-3xl sm:rounded-[2rem] p-4 sm:p-6 shadow-sm border border-[#E5EAE7] flex flex-col md:flex-row gap-4 sticky top-6 z-30">
+        <div className="flex-1 relative">
+          <Search className="w-5 h-5 text-[#5C6661] absolute left-5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search departments, courses, or professors..."
+            className="w-full bg-[#F2F6F4] rounded-full pl-14 pr-6 py-4 text-base text-[#1A1F1D] placeholder-[#5C6661] focus:outline-none focus:ring-2 focus:ring-[#0F4C3A]/20 transition-all"
+          />
         </div>
+        
+        <div className="flex flex-col sm:flex-row gap-4">
+          <select
+            value={selectedSchool}
+            onChange={(e) => setSelectedSchool(e.target.value)}
+            className="bg-white border border-[#E5EAE7] rounded-full px-6 py-4 text-sm font-semibold text-[#1A1F1D] outline-none focus:border-[#0F4C3A] cursor-pointer"
+          >
+            <option value="ALL">All Schools</option>
+            {SCHOOLS_DATA.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
 
-        <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
-          <span>Showing <strong>{totalFilteredDepts}</strong> matching academic departments</span>
-          {(searchQuery || selectedSchool !== 'ALL' || selectedLevel !== 'ALL') && (
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedSchool('ALL');
-                setSelectedLevel('ALL');
-              }}
-              className="text-emerald-400 hover:underline font-semibold"
-            >
-              Reset Filters
-            </button>
-          )}
+          <select
+            value={selectedLevel}
+            onChange={(e) => setSelectedLevel(e.target.value)}
+            className="bg-white border border-[#E5EAE7] rounded-full px-6 py-4 text-sm font-semibold text-[#1A1F1D] outline-none focus:border-[#0F4C3A] cursor-pointer"
+          >
+            <option value="ALL">All Levels</option>
+            <option value="UG">Undergraduate</option>
+            <option value="PG">Postgraduate</option>
+            <option value="DOCTORAL">Doctoral</option>
+          </select>
         </div>
       </div>
 
-      {/* Schools & Departments List */}
-      <div className="space-y-10">
+      {/* List */}
+      <div className="space-y-24 pt-8">
         {filteredSchools.map((school) => (
-          <div key={school.id} className="space-y-4">
-            {/* School Header Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-950 to-slate-900 border-l-4 border-l-emerald-500 border-y border-r border-slate-800">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <h2 className="text-lg sm:text-xl font-bold font-display text-white">
-                    {school.name}
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">{school.description}</p>
-                </div>
-                <div className="text-xs text-slate-300 sm:text-right flex-shrink-0">
-                  <span className="text-slate-500 block text-[10px]">Dean of School</span>
-                  <strong className="text-emerald-400 font-semibold">{school.deanName}</strong>
-                </div>
+          <section key={school.id} className="relative">
+            <div className="mb-12 border-b-2 border-[#1A1F1D] pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <h2 className="text-3xl sm:text-4xl font-display font-medium text-[#1A1F1D] mb-2">
+                  {school.name}
+                </h2>
+                <p className="text-[#5C6661] max-w-2xl">{school.description}</p>
+              </div>
+              <div className="text-right">
+                <span className="block text-xs uppercase tracking-wider text-[#5C6661] mb-1">Dean of School</span>
+                <strong className="text-lg font-bold text-[#1A1F1D]">{school.deanName}</strong>
               </div>
             </div>
 
-            {/* Department Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12">
               {school.departments.map((dept) => (
-                <div
-                  key={dept.code}
-                  className="p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition flex flex-col justify-between space-y-4 group"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 text-xs font-mono font-bold rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
-                            {dept.code}
-                          </span>
-                          <span className="text-[11px] text-slate-400">
-                            {dept.faculty.length} Faculty Members
-                          </span>
-                        </div>
-                        <h3 className="text-base font-bold text-white mt-1 group-hover:text-emerald-300 transition">
-                          {dept.name}
-                        </h3>
-                      </div>
-                    </div>
+                <div key={dept.code} className="group relative">
+                  <div className="flex items-start justify-between mb-4">
+                    <span className="px-3 py-1 rounded-full bg-[#E5F0EB] text-[#0F4C3A] text-xs font-bold font-mono tracking-wider">
+                      {dept.code}
+                    </span>
+                    <button 
+                      onClick={() => setSelectedDepartment(dept)}
+                      className="w-10 h-10 rounded-full bg-white border border-[#E5EAE7] flex items-center justify-center group-hover:bg-[#0F4C3A] group-hover:border-[#0F4C3A] group-hover:text-white transition-all shadow-sm"
+                    >
+                      <ArrowUpRight className="w-5 h-5 text-[#1A1F1D] group-hover:text-white transition-colors" />
+                    </button>
+                  </div>
+                  
+                  <h3 
+                    className="text-2xl font-bold text-[#1A1F1D] mb-3 group-hover:text-[#0F4C3A] cursor-pointer transition-colors"
+                    onClick={() => setSelectedDepartment(dept)}
+                  >
+                    {dept.name}
+                  </h3>
+                  <p className="text-[#5C6661] text-sm leading-relaxed mb-6 line-clamp-3">
+                    {dept.overview}
+                  </p>
 
-                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
-                      {dept.overview}
-                    </p>
-
-                    {/* Programmes Pills */}
-                    <div className="space-y-1.5 pt-1">
-                      <span className="text-[11px] font-semibold uppercase text-slate-500 block">
-                        Degrees Offered:
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {dept.programmes.slice(0, 4).map((p, i) => (
+                      <span key={i} className="text-xs px-3 py-1.5 rounded-lg bg-black/5 text-[#1A1F1D] font-medium border border-black/5">
+                        {p.name}
                       </span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {dept.programmes.map((p, i) => (
-                          <span
-                            key={i}
-                            className="text-[11px] px-2 py-0.5 rounded-md bg-slate-950 text-slate-300 border border-slate-800 font-medium"
-                          >
-                            {p.name}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Head info */}
-                    <div className="pt-2 text-xs text-slate-400 flex items-center justify-between border-t border-slate-800/80">
-                      <span>HoD: <strong className="text-slate-200">{dept.head}</strong></span>
-                      <span className="text-slate-500 font-mono text-[11px]">{dept.phone}</span>
-                    </div>
+                    ))}
+                    {dept.programmes.length > 4 && (
+                      <span className="text-xs px-3 py-1.5 rounded-lg bg-black/5 text-[#5C6661] font-medium">
+                        +{dept.programmes.length - 4} more
+                      </span>
+                    )}
                   </div>
 
-                  {/* Deep View CTA */}
-                  <button
-                    onClick={() => setSelectedDepartment(dept)}
-                    className="w-full py-2 px-3 rounded-xl bg-slate-800/80 hover:bg-emerald-600 text-slate-200 hover:text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 border border-slate-700 hover:border-emerald-500"
-                  >
-                    <span>View Syllabus, Faculty & Labs</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="pt-4 border-t border-[#E5EAE7] flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 text-[#5C6661]">
+                      <Users className="w-4 h-4" />
+                      <span>Head: <strong className="text-[#1A1F1D]">{dept.head}</strong></span>
+                    </div>
+                    <span className="text-[#5C6661]">{dept.faculty.length} Faculty</span>
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         ))}
 
         {filteredSchools.length === 0 && (
-          <div className="p-12 text-center bg-slate-900 rounded-2xl border border-slate-800 text-slate-400 space-y-3">
-            <Building2 className="w-8 h-8 mx-auto text-slate-600" />
-            <h3 className="text-base font-semibold text-slate-300">No departments match your filters</h3>
-            <p className="text-xs">Try clearing the search query or changing the School / Programme level filter.</p>
+          <div className="py-24 text-center">
+            <Search className="w-12 h-12 text-[#E5EAE7] mx-auto mb-6" />
+            <h3 className="text-2xl font-display font-medium text-[#1A1F1D] mb-2">No departments found</h3>
+            <p className="text-[#5C6661]">Try adjusting your search or filters to find what you're looking for.</p>
           </div>
         )}
       </div>

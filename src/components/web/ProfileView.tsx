@@ -3,24 +3,8 @@ import { useAppStore } from '../../core/store/appStore';
 import { SAMPLE_USERS } from '../../core/data/griMasterData';
 import { UserRole } from '../../types';
 import { 
-  User, 
-  CheckCircle, 
-  Clock, 
-  UserPlus, 
-  Check, 
-  Radio,
-  KeyRound,
-  ShieldCheck,
-  Smartphone,
-  AlertCircle,
-  Lock,
-  Mail,
-  MessageSquare,
-  Send,
-  Save,
-  CheckCircle2,
-  LogOut,
-  Trash2
+  User, CheckCircle, Clock, UserPlus, Check, Radio,
+  KeyRound, ShieldCheck, Smartphone, Lock, CheckCircle2, LogOut
 } from 'lucide-react';
 import { EditUserContactModal } from '../admin/EditUserContactModal';
 
@@ -93,54 +77,52 @@ export const ProfileView: React.FC = () => {
   const isDefaultPassword = currentUser.passwordStatus === 'default_temp' || currentUser.mustChangePasswordOnLogin;
 
   return (
-    <div className="space-y-8 pb-16">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-600/40 text-emerald-400 text-xs font-semibold">
-            <User className="w-3.5 h-3.5" />
-            <span>Firebase Authentication & Institutional Identity</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-white">
-            User Profile & Communication Governance
+    <div className="space-y-8 sm:space-y-12 pb-24 animate-fadeIn max-w-6xl mx-auto px-4 sm:px-6">
+      
+      {/* Editorial Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 max-w-4xl">
+        <div className="space-y-4">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-display font-medium text-[#1A1F1D] tracking-tight leading-[1.1]">
+            Identity & <br/>
+            <span className="text-black/30">Governance.</span>
           </h1>
-          <p className="text-sm text-slate-400">
-            Manage your registered phone (for SMS & WhatsApp), official email ID, security password, and institutional profile.
+          <p className="text-xl text-[#5C6661] font-light leading-relaxed max-w-2xl">
+            Manage your institutional profile, communication channels, and security credentials.
           </p>
         </div>
-
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300">
-            <Radio className={`w-3.5 h-3.5 ${isFirestoreLive ? 'text-emerald-400 animate-pulse' : 'text-amber-400'}`} />
-            <span>Database: <strong className="text-emerald-400">{isFirestoreLive ? 'Live Firestore' : 'Active'}</strong></span>
-          </div>
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-[#E5EAE7] text-sm text-[#5C6661] shadow-sm">
+          <Radio className={`w-4 h-4 ${isFirestoreLive ? 'text-[#0F4C3A] animate-pulse' : 'text-[#B45309]'}`} />
+          <span>Database: <strong className={isFirestoreLive ? 'text-[#0F4C3A]' : 'text-[#B45309]'}>{isFirestoreLive ? 'Live Firestore' : 'Active'}</strong></span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left 5 Cols: Current User Card & Firebase Sign-in */}
+        
+        {/* Left 5 Cols: Current User Profile Card */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/60 p-6 rounded-3xl border border-slate-800 space-y-6 shadow-2xl relative overflow-hidden">
-            <div className="flex items-center gap-4">
+          <div className="bg-[#0F4C3A] p-6 sm:p-8 rounded-3xl sm:rounded-[2rem] text-white space-y-8 shadow-xl relative overflow-hidden">
+            
+            {/* User Identify Info */}
+            <div className="flex items-center gap-6">
               {currentUser.avatarUrl ? (
                 <img 
                   src={currentUser.avatarUrl} 
                   alt={currentUser.name} 
                   referrerPolicy="no-referrer"
-                  className="w-16 h-16 rounded-2xl object-cover border border-emerald-400/40 shadow-lg" 
+                  className="w-20 h-20 rounded-full object-cover border-4 border-white/20 shadow-md" 
                 />
               ) : (
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-600 to-amber-600 flex items-center justify-center text-2xl font-bold text-white shadow-lg border border-emerald-400/40">
+                <div className="w-20 h-20 rounded-full bg-white text-[#0F4C3A] flex items-center justify-center text-3xl font-display font-medium shadow-md">
                   {currentUser.name.charAt(0)}
                 </div>
               )}
               <div>
-                <h2 className="text-lg font-bold text-white leading-snug">{currentUser.name}</h2>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 capitalize">
+                <h2 className="text-2xl font-bold font-display leading-snug">{currentUser.name}</h2>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-white/20 uppercase tracking-widest">
                     {currentUser.role}
                   </span>
-                  <span className="text-xs font-mono text-slate-400">
+                  <span className="text-sm font-mono text-white/70">
                     {currentUser.regNumber || currentUser.designation || 'ID Verified'}
                   </span>
                 </div>
@@ -148,214 +130,135 @@ export const ProfileView: React.FC = () => {
             </div>
 
             {/* Profile Attributes */}
-            <div className="space-y-3 text-xs text-slate-300 bg-slate-950/70 p-4 rounded-2xl border border-slate-800">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Department:</span>
-                <span className="font-semibold text-slate-100 text-right truncate max-w-[200px]">
-                  {currentUser.department}
-                </span>
+            <div className="space-y-4 text-sm bg-white/10 p-6 rounded-[1.5rem]">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <span className="text-white/70">Department</span>
+                <span className="font-bold text-right max-w-[200px] truncate">{currentUser.department}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-400">Verification Status:</span>
-                <span className={`font-bold capitalize flex items-center gap-1 ${
-                  currentUser.approvalStatus === 'approved' ? 'text-emerald-400' : 'text-amber-400'
+                <span className="text-white/70">Verification Status</span>
+                <span className={`font-bold capitalize flex items-center gap-2 ${
+                  currentUser.approvalStatus === 'approved' ? 'text-[#34D399]' : 'text-[#FCD34D]'
                 }`}>
-                  {currentUser.approvalStatus === 'approved' ? <CheckCircle className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
+                  {currentUser.approvalStatus === 'approved' ? <CheckCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
                   {currentUser.approvalStatus}
                 </span>
               </div>
             </div>
 
-            {/* Registered Communication Channels (SMS, WhatsApp, Email) */}
-            <div className="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Smartphone className="w-4 h-4 text-sky-400" />
-                  <h4 className="font-bold text-xs text-white">Registered Channels</h4>
+            {/* Channels */}
+            <div className="bg-white text-[#1A1F1D] p-6 rounded-[1.5rem] space-y-4 shadow-inner">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 text-[#0369A1]">
+                  <Smartphone className="w-5 h-5" />
+                  <h4 className="font-bold text-sm">Registered Channels</h4>
                 </div>
                 <button
                   onClick={() => setIsContactModalOpen(true)}
-                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold border border-slate-700 transition"
+                  className="px-3 py-1 rounded-full bg-[#F2F6F4] hover:bg-[#E5EAE7] text-[#5C6661] text-xs font-bold transition-colors"
                 >
                   Edit Contacts
                 </button>
               </div>
 
               {testStatus && (
-                <div className="p-2 rounded-lg bg-sky-950/70 border border-sky-800 text-sky-300 text-[11px] flex items-center gap-1.5 animate-fadeIn">
-                  <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span>{testStatus}</span>
+                <div className="p-3 rounded-xl bg-[#E0F2FE] text-[#0369A1] text-xs font-bold flex items-center gap-2 animate-fadeIn">
+                  <CheckCircle2 className="w-4 h-4" /> {testStatus}
                 </div>
               )}
 
-              <div className="space-y-2 text-xs">
-                {/* Phone: SMS & WhatsApp */}
-                <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+              <div className="space-y-3">
+                <div className="p-4 rounded-2xl bg-[#F2F6F4] flex flex-col gap-3">
                   <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-sky-950 text-sky-400 border border-sky-800">
-                        SMS & WhatsApp Phone
-                      </span>
-                    </div>
-                    <p className="font-mono text-slate-100 text-xs mt-1">
-                      {currentUser.phone || '+91 98421 77321'}
-                    </p>
+                    <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-[#E0F2FE] text-[#0369A1] uppercase tracking-widest">SMS & WhatsApp</span>
+                    <p className="font-mono text-sm font-bold mt-2">{currentUser.phone || '+91 98421 77321'}</p>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => handleQuickTest('SMS')}
-                      title="Send test SMS notification"
-                      className="p-1.5 rounded-lg bg-sky-900/40 hover:bg-sky-800/60 text-sky-300 text-[10px] font-semibold border border-sky-700/50"
-                    >
-                      Test SMS
-                    </button>
-                    <button
-                      onClick={() => handleQuickTest('WHATSAPP')}
-                      title="Send test WhatsApp notice"
-                      className="p-1.5 rounded-lg bg-emerald-900/40 hover:bg-emerald-800/60 text-emerald-300 text-[10px] font-semibold border border-emerald-700/50"
-                    >
-                      Test WA
-                    </button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => handleQuickTest('SMS')} className="flex-1 py-1.5 rounded-lg bg-white border border-[#E5EAE7] text-[#0369A1] text-xs font-bold hover:shadow-sm">Test SMS</button>
+                    <button onClick={() => handleQuickTest('WHATSAPP')} className="flex-1 py-1.5 rounded-lg bg-[#E5F0EB] text-[#0F4C3A] text-xs font-bold hover:shadow-sm">Test WA</button>
                   </div>
                 </div>
 
-                {/* Email */}
-                <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div className="p-4 rounded-2xl bg-[#F2F6F4] flex flex-col gap-3">
                   <div>
-                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">
-                      Official Email ID
-                    </span>
-                    <p className="font-mono text-emerald-400 text-xs mt-1 truncate max-w-[180px]">
-                      {currentUser.email}
-                    </p>
+                    <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-[#E5F0EB] text-[#0F4C3A] uppercase tracking-widest">Official Email</span>
+                    <p className="text-sm font-bold mt-2 truncate">{currentUser.email}</p>
                   </div>
-                  <button
-                    onClick={() => handleQuickTest('EMAIL')}
-                    title="Send test email notification"
-                    className="p-1.5 rounded-lg bg-emerald-900/40 hover:bg-emerald-800/60 text-emerald-300 text-[10px] font-semibold border border-emerald-700/50"
-                  >
-                    Test Email
-                  </button>
+                  <button onClick={() => handleQuickTest('EMAIL')} className="w-full py-1.5 rounded-lg bg-white border border-[#E5EAE7] text-[#0F4C3A] text-xs font-bold hover:shadow-sm">Test Email</button>
                 </div>
               </div>
             </div>
 
-            {/* Password Status Card */}
-            <div className={`p-4 rounded-2xl border space-y-3 ${
-              isDefaultPassword 
-                ? 'bg-amber-950/40 border-amber-800/80 text-amber-200' 
-                : 'bg-emerald-950/30 border-emerald-800/80 text-emerald-200'
+            {/* Password Status */}
+            <div className={`p-6 rounded-[1.5rem] ${
+              isDefaultPassword ? 'bg-[#FFFBEB] text-[#92400E]' : 'bg-[#E5F0EB] text-[#0F4C3A]'
             }`}>
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <div className={`p-2 rounded-xl ${isDefaultPassword ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
-                    <KeyRound className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-xs">
-                      {isDefaultPassword ? 'Provisional Password Active' : 'User-Defined Password Active'}
-                    </h4>
-                    <p className="text-[11px] opacity-80 mt-0.5">
-                      {isDefaultPassword 
-                        ? 'Account requires private password configuration.' 
-                        : 'Securely protected by custom credentials.'}
-                    </p>
-                  </div>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h4 className="font-bold text-sm mb-1">{isDefaultPassword ? 'Provisional Password Active' : 'Private Password Set'}</h4>
+                  <p className="text-xs opacity-80">{isDefaultPassword ? 'Please configure a private password.' : 'Account secured with custom credentials.'}</p>
                 </div>
-
                 <button
-                  id="open-change-password-btn"
                   onClick={() => setPasswordChangeModalOpen(true)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                    isDefaultPassword
-                      ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md'
-                      : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+                  className={`px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 flex-shrink-0 transition-colors ${
+                    isDefaultPassword ? 'bg-[#B45309] text-white hover:bg-[#92400E]' : 'bg-[#0F4C3A] text-white hover:bg-[#0A3327]'
                   }`}
                 >
-                  <Lock className="w-3 h-3" />
-                  <span>{isDefaultPassword ? 'Set Private Password' : 'Change Password'}</span>
+                  <Lock className="w-3 h-3" /> Change
                 </button>
               </div>
-
               {isDefaultPassword && (
-                <div className="text-[11px] bg-slate-950/60 p-2.5 rounded-xl border border-amber-800/50 flex items-center justify-between">
-                  <span>Current Provisional Key:</span>
-                  <code className="font-mono font-bold text-amber-300 bg-amber-950 px-2 py-0.5 rounded">
-                    {currentUser.tempPassword || 'GRI@Admin2026'}
-                  </code>
+                <div className="mt-4 p-3 bg-white rounded-xl text-xs flex justify-between items-center shadow-sm">
+                  <span className="font-medium">Current Provisional Key:</span>
+                  <code className="font-mono font-bold bg-[#FFFBEB] px-2 py-1 rounded">{currentUser.tempPassword || 'GRI@Admin2026'}</code>
                 </div>
               )}
             </div>
 
-            {/* Academic stats for students */}
-            {currentUser.role === 'student' && (
-              <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                  <span className="text-slate-500 block text-[10px]">CGPA</span>
-                  <strong className="text-emerald-400 text-base">{currentUser.cgpa || 8.84}</strong>
-                </div>
-                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                  <span className="text-slate-500 block text-[10px]">Attendance</span>
-                  <strong className="text-sky-400 text-base">{currentUser.attendance || 91.2}%</strong>
-                </div>
-                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                  <span className="text-slate-500 block text-[10px]">Semester</span>
-                  <strong className="text-amber-400 text-base">Sem {currentUser.semester || 4}</strong>
-                </div>
-              </div>
-            )}
-
-            {/* Institutional Identity Gateway & Sign-Out Actions */}
-            <div className="space-y-2.5 pt-2">
+            {/* Actions */}
+            <div className="space-y-3 pt-4">
               <button
-                id="btn-open-institutional-gateway-profile"
                 onClick={() => setLoginModalOpen(true)}
-                className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-950/40"
+                className="w-full py-4 rounded-full bg-white text-[#0F4C3A] font-bold hover:bg-[#F2F6F4] transition-colors flex items-center justify-center gap-2 shadow-lg"
               >
-                <Lock className="w-4 h-4" />
-                <span>Institutional Identity & Sign-In Gateway</span>
+                <ShieldCheck className="w-5 h-5" /> Identity & Sign-In Gateway
               </button>
 
               {currentUser.role !== 'guest' && (
                 <button
-                  id="btn-profile-logout"
                   onClick={async () => {
                     await doLogout();
                     setTestStatus('Session purged & all tokens wiped successfully.');
                     setTimeout(() => setTestStatus(null), 4000);
                   }}
-                  className="w-full py-2.5 px-4 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-300 hover:text-white font-semibold text-xs flex items-center justify-center gap-2 transition"
+                  className="w-full py-4 rounded-full bg-[#BE123C] text-white font-bold hover:bg-[#9F1239] transition-colors flex items-center justify-center gap-2"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Sign Out & Clear All Session Cache</span>
+                  <LogOut className="w-4 h-4" /> Sign Out
                 </button>
               )}
             </div>
+
           </div>
         </div>
 
         {/* Right 7 Cols: Persona Switcher & New Account Simulation */}
-        <div className="lg:col-span-7 space-y-6">
-          <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 space-y-4">
-            <div className="flex items-center justify-between">
+        <div className="lg:col-span-7 space-y-8">
+          
+          <div className="bg-white p-6 sm:p-8 lg:p-12 rounded-3xl sm:rounded-[2rem] border border-[#E5EAE7] shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
               <div>
-                <h3 className="text-base font-bold text-white font-display">
-                  Quick Institutional Persona Switcher
-                </h3>
-                <p className="text-xs text-slate-400">
-                  Select a test identity below to test role permissions, contact channels, and password workflows:
-                </p>
+                <h3 className="text-2xl font-display font-medium text-[#1A1F1D]">Persona Switcher</h3>
+                <p className="text-[#5C6661] mt-2">Test role permissions and workflows.</p>
               </div>
               <button
                 onClick={() => setShowRegisterForm(!showRegisterForm)}
-                className="px-3 py-1.5 rounded-xl bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600/30 text-xs font-semibold flex items-center gap-1.5 transition"
+                className="px-6 py-3 rounded-full bg-[#0F4C3A] text-white font-bold text-sm flex items-center gap-2 hover:bg-[#0A3327] transition-colors shadow-md whitespace-nowrap"
               >
-                <UserPlus className="w-3.5 h-3.5" />
-                <span>Register New</span>
+                <UserPlus className="w-4 h-4" /> Register New
               </button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {SAMPLE_USERS.map((user) => {
                 const isSelected = currentUser.id === user.id;
                 const isUserDefault = user.passwordStatus === 'default_temp';
@@ -364,46 +267,43 @@ export const ProfileView: React.FC = () => {
                   <div
                     key={user.id}
                     onClick={() => loginAsUser(user)}
-                    className={`p-3.5 rounded-2xl border transition cursor-pointer flex items-center justify-between gap-3 ${
+                    className={`p-6 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-4 ${
                       isSelected
-                        ? 'bg-emerald-950/40 border-emerald-500/60 shadow-lg'
-                        : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                        ? 'border-[#0F4C3A] bg-[#E5F0EB] shadow-md'
+                        : 'border-[#E5EAE7] bg-white hover:border-[#0F4C3A]'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs ${
-                        isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300'
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg font-display ${
+                        isSelected ? 'bg-[#0F4C3A] text-white' : 'bg-[#F2F6F4] text-[#0F4C3A]'
                       }`}>
                         {user.name.charAt(0)}
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-xs font-bold text-white">{user.name}</h4>
-                          <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 capitalize">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <h4 className="font-bold text-[#1A1F1D]">{user.name}</h4>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest ${isSelected ? 'bg-[#0F4C3A] text-white' : 'bg-[#E5EAE7] text-[#5C6661]'}`}>
                             {user.role}
                           </span>
                           {isUserDefault && (
-                            <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-800">
-                              Provisional Key
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest bg-[#FFFBEB] text-[#B45309]">
+                              Provisional
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-slate-400 truncate max-w-[250px]">
+                        <p className="text-sm text-[#5C6661] truncate max-w-[280px]">
                           {user.department} {user.phone ? `• ${user.phone}` : ''}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="hidden sm:block">
                       {isSelected ? (
-                        <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1">
-                          <Check className="w-3.5 h-3.5" />
-                          Active
+                        <span className="w-8 h-8 rounded-full bg-[#0F4C3A] text-white flex items-center justify-center">
+                          <Check className="w-5 h-5" />
                         </span>
                       ) : (
-                        <span className="text-[11px] text-slate-500 hover:text-slate-300">
-                          Switch
-                        </span>
+                        <span className="text-sm font-bold text-[#0F4C3A]">Switch</span>
                       )}
                     </div>
                   </div>
@@ -414,53 +314,49 @@ export const ProfileView: React.FC = () => {
 
           {/* Registration Form */}
           {showRegisterForm && (
-            <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 space-y-4 animate-fadeIn">
-              <h3 className="text-base font-bold text-white font-display flex items-center gap-2">
-                <UserPlus className="w-4 h-4 text-emerald-400" />
-                Register New User (SMS, WhatsApp phone & Email ID to Firestore)
+            <div className="bg-white p-6 sm:p-8 lg:p-12 rounded-3xl sm:rounded-[2rem] border border-[#E5EAE7] shadow-xl animate-fadeIn">
+              <h3 className="text-2xl font-display font-medium text-[#1A1F1D] mb-8">
+                Register New User
               </h3>
 
               {registeredSuccess && (
-                <div className="p-3 rounded-xl bg-emerald-950 border border-emerald-700 text-emerald-300 text-xs flex items-center gap-2">
-                  <Check className="w-4 h-4" />
-                  <span>Account registered with SMS, WhatsApp & Email in Firestore! Sent to Central Admin for verification.</span>
+                <div className="mb-8 p-4 rounded-2xl bg-[#E5F0EB] text-[#0F4C3A] font-medium flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5" />
+                  Account registered to Firestore. Pending Admin Approval.
                 </div>
               )}
 
-              <form onSubmit={handleRegister} className="space-y-3 text-xs">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <form onSubmit={handleRegister} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">Full Name *</label>
+                    <label className="block text-sm font-bold text-[#1A1F1D] mb-2">Full Name *</label>
                     <input
                       type="text"
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
-                      placeholder="e.g. Ananya Ramesh"
                       required
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-200 outline-none focus:border-emerald-500"
+                      className="w-full bg-[#F2F6F4] rounded-xl p-4 text-[#1A1F1D] outline-none focus:ring-2 focus:ring-[#0F4C3A]/20"
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">Registered Email ID *</label>
+                    <label className="block text-sm font-bold text-[#1A1F1D] mb-2">Email ID *</label>
                     <input
                       type="email"
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
-                      placeholder="ananya@ruraluniv.ac.in"
                       required
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-200 outline-none focus:border-emerald-500 font-mono"
+                      className="w-full bg-[#F2F6F4] rounded-xl p-4 text-[#1A1F1D] outline-none focus:ring-2 focus:ring-[#0F4C3A]/20 font-mono"
                     />
-                    <span className="text-[10px] text-slate-500">For institutional circulars & notifications.</span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">Role *</label>
+                    <label className="block text-sm font-bold text-[#1A1F1D] mb-2">Role *</label>
                     <select
                       value={newRole}
                       onChange={(e) => setNewRole(e.target.value as any)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-200 outline-none focus:border-emerald-500"
+                      className="w-full bg-[#F2F6F4] rounded-xl p-4 text-[#1A1F1D] outline-none focus:ring-2 focus:ring-[#0F4C3A]/20"
                     >
                       <option value="student">Student</option>
                       <option value="faculty">Faculty Member</option>
@@ -469,37 +365,32 @@ export const ProfileView: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">
-                      Phone Number (for SMS & WhatsApp Notices) *
-                    </label>
+                    <label className="block text-sm font-bold text-[#1A1F1D] mb-2">Phone Number *</label>
                     <input
                       type="text"
                       value={newPhone}
                       onChange={(e) => setNewPhone(e.target.value)}
-                      placeholder="+91 98421 XXXXX"
                       required
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-200 outline-none focus:border-emerald-500 font-mono"
+                      className="w-full bg-[#F2F6F4] rounded-xl p-4 text-[#1A1F1D] outline-none focus:ring-2 focus:ring-[#0F4C3A]/20 font-mono"
                     />
-                    <span className="text-[10px] text-slate-500">Registered phone for SMS emergency & WhatsApp alerts.</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Register / Staff ID</label>
+                  <label className="block text-sm font-bold text-[#1A1F1D] mb-2">Register / Staff ID</label>
                   <input
                     type="text"
                     value={newRegNo}
                     onChange={(e) => setNewRegNo(e.target.value)}
-                    placeholder="2026GRI5012"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-200 outline-none focus:border-emerald-500"
+                    className="w-full bg-[#F2F6F4] rounded-xl p-4 text-[#1A1F1D] outline-none focus:ring-2 focus:ring-[#0F4C3A]/20"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-lg shadow-emerald-900/40"
+                  className="w-full py-4 rounded-full bg-[#0F4C3A] hover:bg-[#0A3327] text-white font-bold text-lg transition-colors shadow-lg mt-4"
                 >
-                  Submit Registration for Admin Approval
+                  Submit Registration
                 </button>
               </form>
             </div>
@@ -507,7 +398,6 @@ export const ProfileView: React.FC = () => {
         </div>
       </div>
 
-      {/* Edit Contacts Modal */}
       <EditUserContactModal
         user={currentUser}
         isOpen={isContactModalOpen}
@@ -516,4 +406,3 @@ export const ProfileView: React.FC = () => {
     </div>
   );
 };
-

@@ -4,11 +4,10 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
@@ -17,121 +16,101 @@ import {
   Lock,
   Eye,
   EyeOff,
-  UserCheck,
-  ShieldCheck,
-  Building2,
-  BookOpen,
-  ArrowRight,
   AlertCircle,
-  UserPlus,
+  ArrowRight,
+  Shield,
+  User,
+  Settings,
 } from 'lucide-react-native';
-import { useAuthStore, UserRole, User } from '../../core/auth/authStore';
-import { apiClient } from '../../core/api';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { useAuthStore } from '../../core/auth/authStore';
+import { UserRole } from '../../core/auth/authStore';
+import { api } from '../../core/api/client';
+import { themeTokens } from '../../core/theme/tokens';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { setAuth } = useAuthStore();
+  const { colors } = themeTokens;
 
-  const [selectedRole, setSelectedRole] = useState<'STUDENT' | 'FACULTY' | 'STAFF' | 'ADMIN'>('STUDENT');
+  const [selectedRole, setSelectedRole] = useState<'STUDENT' | 'FACULTY' | 'ADMIN'>('STUDENT');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const roleOptions: { key: 'STUDENT' | 'FACULTY' | 'STAFF' | 'ADMIN'; label: string; icon: any }[] = [
-    { key: 'STUDENT', label: 'Student', icon: GraduationCap },
-    { key: 'FACULTY', label: 'Faculty', icon: BookOpen },
-    { key: 'STAFF', label: 'Staff', icon: Building2 },
-    { key: 'ADMIN', label: 'Admin', icon: ShieldCheck },
-  ];
+  const roleOptions = [
+    { key: 'STUDENT', label: 'Student', icon: User },
+    { key: 'FACULTY', label: 'Faculty', icon: GraduationCap },
+    { key: 'ADMIN', label: 'Admin', icon: Settings },
+  ] as const;
 
-  const handleSelectRole = (role: 'STUDENT' | 'FACULTY' | 'STAFF' | 'ADMIN') => {
+  const handleSelectRole = (role: 'STUDENT' | 'FACULTY' | 'ADMIN') => {
     setSelectedRole(role);
-    setErrorMsg(null);
+    setErrorMsg('');
     setEmail('');
     setPassword('');
   };
 
   const fillDemoCredentials = (role: 'STUDENT' | 'FACULTY' | 'ADMIN') => {
     setSelectedRole(role);
-    setErrorMsg(null);
     if (role === 'STUDENT') {
       setEmail('student@test.edu');
-      setPassword('StudentPass#123');
-    } else if (role === 'ADMIN') {
-      setEmail('admin@ruraluniv.ac.in');
-      setPassword('Admin@GRI2026');
-    } else {
+      setPassword('password123');
+    } else if (role === 'FACULTY') {
       setEmail('faculty@test.edu');
-      setPassword('FacultyPass#123');
+      setPassword('password123');
+    } else {
+      setEmail('admin@test.edu');
+      setPassword('password123');
     }
   };
 
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      setErrorMsg('Please enter both Email/Roll Number and Password.');
+    if (!email.trim() || !password) {
+      setErrorMsg('Please enter both email and password.');
       return;
     }
 
     setIsLoading(true);
-    setErrorMsg(null);
+    setErrorMsg('');
 
     try {
-      // Online PostgreSQL API Login
-      const response = await apiClient.post('/auth/login', {
-        email: email.trim(),
-        password: password.trim(),
+      const response = await api.post('/auth/login', {
+        username: email.trim(),
+        password,
       });
 
-      const data = response.data;
-
-      if (data && data.access_token) {
-        const roleUpper = (data.role || selectedRole).toUpperCase() as UserRole;
-        const userObj: User = {
-          id: data.user_id || 'usr_' + Date.now(),
-          username: email.split('@')[0],
-          email: data.email || email,
-          fullName: data.full_name || 'GRI Authorized User',
-          role: roleUpper,
-          department: roleUpper === 'STUDENT' ? 'Computer Science & Applications' : 'University Administration',
-          rollNumber: roleUpper === 'STUDENT' ? 'GRI-2026-8841' : 'EMP-2026-0102',
-        };
-
-        setAuth(userObj, data.access_token, data.refresh_token || data.access_token);
+      if (response.data && response.data.access_token) {
+        setAuth(response.data.user, response.data.access_token, response.data.refresh_token);
         router.replace('/(tabs)/home');
-        return;
+      } else {
+        throw new Error('Invalid authentication response');
       }
     } catch (err: any) {
-      console.warn('[LoginScreen] Online backend login attempt result:', err?.response?.data || err.message);
-
-      // Fallback Dev / Offline Mock Sign-In if server is connecting or mock mode enabled
+      // Fallback Dev / Offline Mock Sign-In
       if (email.trim() && password.length >= 6) {
         const roleUpper = selectedRole as UserRole;
-        const mockUser: User = {
+        const mockUser = {
           id: 'dev_' + Date.now(),
           username: email.split('@')[0],
           email: email.trim(),
           fullName:
             selectedRole === 'STUDENT'
-              ? 'Vijay Maheswari'
+              ? 'Vijay Kumar'
               : selectedRole === 'FACULTY'
               ? 'Dr. K. Arumugam'
-              : selectedRole === 'ADMIN'
-              ? 'System Administrator'
-              : 'Senior Staff Officer',
+              : 'System Administrator',
           role: roleUpper,
-          department: selectedRole === 'STUDENT' ? 'Computer Science & Applications' : 'Gandhigram Rural Institute',
-          rollNumber: selectedRole === 'STUDENT' ? '21304012' : 'FAC-2026-9080',
+          department: selectedRole === 'STUDENT' ? 'BCA (Hons)' : 'Computer Science',
+          rollNumber: selectedRole === 'STUDENT' ? '21BCA042' : 'FAC-2026',
         };
-
-        setAuth(mockUser, 'mock_access_token_dev_2026', 'mock_refresh_token_dev_2026');
+        setAuth(mockUser, 'mock_access_token', 'mock_refresh_token');
         router.replace('/(tabs)/home');
         return;
       }
-
-      const backendDetail = err?.response?.data?.detail;
-      setErrorMsg(typeof backendDetail === 'string' ? backendDetail : 'Invalid credentials or account non-active.');
+      setErrorMsg('Invalid credentials or account inactive.');
     } finally {
       setIsLoading(false);
     }
@@ -139,160 +118,151 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={{ flex: 1, backgroundColor: colors.surface }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView className="flex-1 bg-khadi-blue" contentContainerStyle={{ flexGrow: 1 }}>
-        {/* Header Branding */}
-        <View className="pt-14 pb-8 px-6 items-center">
-          <View className="bg-white/15 p-4 rounded-full mb-3 border border-white/20">
-            <GraduationCap size={44} color="#FFFFFF" />
-          </View>
-          <Text className="text-2xl font-bold text-white text-center">
-            Gandhigram Rural Institute
-          </Text>
-          <Text className="text-xs text-blue-100 text-center font-medium mt-1">
-            Unified Multi-User Enterprise Portal
-          </Text>
-        </View>
-
-        {/* Form Container */}
-        <View className="flex-1 bg-gray-50 rounded-t-3xl p-6 shadow-2xl">
-          <Text className="text-xl font-bold text-gray-900 mb-1 text-center">
-            Account Sign In
-          </Text>
-          <Text className="text-xs text-gray-500 mb-6 text-center">
-            Select your user role and enter your institutional credentials
-          </Text>
-
-          {/* Role Tabs */}
-          <View className="flex-row bg-gray-200 p-1.5 rounded-2xl mb-6">
-            {roleOptions.map((item) => {
-              const IconComp = item.icon;
-              const isSelected = selectedRole === item.key;
-              return (
-                <TouchableOpacity
-                  key={item.key}
-                  onPress={() => handleSelectRole(item.key)}
-                  className={`flex-1 py-2.5 rounded-xl items-center flex-row justify-center ${
-                    isSelected ? 'bg-white shadow-sm' : ''
-                  }`}
-                  activeOpacity={0.7}
-                >
-                  <IconComp size={14} color={isSelected ? '#518214' : '#6B7280'} />
-                  <Text
-                    className={`text-xs font-bold ml-1.5 ${
-                      isSelected ? 'text-[#518214]' : 'text-gray-600'
-                    }`}
-                  >
-                    {item.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {/* Error Banner */}
-          {errorMsg && (
-            <View className="bg-red-50 border border-red-200 p-3.5 rounded-xl mb-4 flex-row items-center">
-              <AlertCircle size={18} color="#D32F2F" />
-              <Text className="text-xs text-red-700 font-semibold ml-2 flex-1">{errorMsg}</Text>
+      <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+        <View className="flex-1 max-w-md w-full self-center px-6 pt-20 pb-8 justify-center">
+          
+          <Animated.View entering={FadeInDown.delay(100).duration(600)} className="items-center mb-10">
+            <View className="w-20 h-20 bg-primary-50 rounded-3xl items-center justify-center mb-6 shadow-sm border border-primary-100">
+              <Shield size={36} color={colors.primary} />
             </View>
-          )}
-
-          {/* Email / Username Input */}
-          <Text className="text-xs font-bold text-gray-700 uppercase mb-1.5">
-            {selectedRole === 'STUDENT' ? 'Email or Register Number' : 'Institutional Email'}
-          </Text>
-          <View className="flex-row items-center bg-white border border-gray-300 rounded-xl px-3.5 py-3 mb-4 shadow-sm">
-            <Mail size={18} color="#6B7280" />
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              placeholder={selectedRole === 'STUDENT' ? '21304012 or student@test.edu' : 'user@ruraluniv.ac.in'}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              className="flex-1 ml-2.5 text-sm text-gray-900 font-medium"
-            />
-          </View>
-
-          {/* Password Input */}
-          <Text className="text-xs font-bold text-gray-700 uppercase mb-1.5">Password</Text>
-          <View className="flex-row items-center bg-white border border-gray-300 rounded-xl px-3.5 py-3 mb-2 shadow-sm">
-            <Lock size={18} color="#6B7280" />
-            <TextInput
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-              placeholder="••••••••"
-              className="flex-1 ml-2.5 text-sm text-gray-900 font-medium"
-            />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="p-1">
-              {showPassword ? <EyeOff size={18} color="#6B7280" /> : <Eye size={18} color="#6B7280" />}
-            </TouchableOpacity>
-          </View>
-
-          {/* Forgot Password Link */}
-          <TouchableOpacity
-            onPress={() => router.push('/auth/forgot_password' as any)}
-            className="align-self-end mb-6"
-          >
-            <Text className="text-xs font-semibold text-[#518214]">Forgot Password?</Text>
-          </TouchableOpacity>
-
-          {/* Login Action Button */}
-          <TouchableOpacity
-            onPress={handleLogin}
-            disabled={isLoading}
-            className="bg-[#518214] py-4 rounded-xl items-center flex-row justify-center shadow-md mb-4"
-            activeOpacity={0.8}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
-            ) : (
-              <>
-                <Text className="text-white font-bold text-base uppercase mr-2">Sign In to GRI</Text>
-                <ArrowRight size={18} color="#FFFFFF" />
-              </>
-            )}
-          </TouchableOpacity>
-
-          {/* Register Link */}
-          <View className="flex-row justify-center items-center mt-2 mb-6">
-            <Text className="text-xs text-gray-600 font-medium">New User or Admin Account? </Text>
-            <TouchableOpacity onPress={() => router.push('/auth/register' as any)}>
-              <Text className="text-xs font-bold text-[#911C03]">Register / Request Access</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Quick Demo Switcher */}
-          <View className="border-t border-gray-200 pt-4">
-            <Text className="text-[11px] font-bold text-gray-500 uppercase text-center mb-2.5">
-              Fill Test Credentials (Development)
+            <Text className="text-3xl font-bold text-slate-900 text-center mb-2 tracking-tight">
+              GRI Portal
             </Text>
-            <View className="flex-row justify-between">
-              <TouchableOpacity
-                onPress={() => fillDemoCredentials('STUDENT')}
-                className="bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-xl flex-1 mr-1.5 items-center"
-              >
-                <Text className="text-[11px] font-bold text-[#518214]">Student Demo</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => fillDemoCredentials('FACULTY')}
-                className="bg-amber-50 border border-amber-200 px-3 py-2 rounded-xl flex-1 mx-1.5 items-center"
-              >
-                <Text className="text-[11px] font-bold text-amber-800">Faculty Demo</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => fillDemoCredentials('ADMIN')}
-                className="bg-rose-50 border border-rose-200 px-3 py-2 rounded-xl flex-1 ml-1.5 items-center"
-              >
-                <Text className="text-[11px] font-bold text-rose-700">Admin Demo</Text>
+            <Text className="text-base text-slate-500 text-center font-medium">
+              Gandhigram Rural Institute
+            </Text>
+          </Animated.View>
+
+          <Animated.View entering={FadeInDown.delay(200).duration(600)} className="mb-8">
+            <View className="flex-row bg-slate-100 p-1.5 rounded-2xl">
+              {roleOptions.map((item) => {
+                const IconComp = item.icon;
+                const isSelected = selectedRole === item.key;
+                return (
+                  <TouchableOpacity
+                    key={item.key}
+                    onPress={() => handleSelectRole(item.key)}
+                    className={`flex-1 py-3 rounded-xl items-center flex-row justify-center ${
+                      isSelected ? 'bg-white shadow-sm border border-slate-200/50' : ''
+                    }`}
+                    activeOpacity={0.8}
+                  >
+                    <IconComp size={16} color={isSelected ? colors.primary : colors.textMuted} />
+                    <Text
+                      className={`text-sm font-bold ml-2 ${
+                        isSelected ? 'text-slate-900' : 'text-slate-500'
+                      }`}
+                    >
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </Animated.View>
+
+          <Animated.View entering={FadeInDown.delay(300).duration(600)}>
+            {errorMsg ? (
+              <View className="bg-red-50 border border-red-100 p-4 rounded-2xl mb-6 flex-row items-center">
+                <AlertCircle size={20} color={colors.error} />
+                <Text className="text-sm text-red-700 font-medium ml-3 flex-1 leading-relaxed">{errorMsg}</Text>
+              </View>
+            ) : null}
+
+            <View className="mb-5">
+              <Text className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">
+                {selectedRole === 'STUDENT' ? 'Registration Number or Email' : 'Institutional Email'}
+              </Text>
+              <View className="flex-row items-center bg-slate-50 h-14 border border-slate-200 rounded-2xl px-4 shadow-sm focus:border-primary-400 focus:bg-white">
+                <Mail size={20} color={colors.textMuted} />
+                <TextInput
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder={selectedRole === 'STUDENT' ? 'e.g. 21BCA042' : 'user@ruraluniv.ac.in'}
+                  placeholderTextColor={colors.textMuted}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  className="flex-1 ml-3 h-full text-base font-medium text-slate-900"
+                />
+              </View>
+            </View>
+
+            <View className="mb-2">
+              <Text className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">
+                Password
+              </Text>
+              <View className="flex-row items-center bg-slate-50 h-14 border border-slate-200 rounded-2xl px-4 shadow-sm focus:border-primary-400 focus:bg-white">
+                <Lock size={20} color={colors.textMuted} />
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  placeholder="••••••••"
+                  placeholderTextColor={colors.textMuted}
+                  className="flex-1 ml-3 h-full text-base font-medium text-slate-900"
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="p-2 -mr-2">
+                  {showPassword ? <EyeOff size={20} color={colors.textMuted} /> : <Eye size={20} color={colors.textMuted} />}
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              onPress={() => router.push('/auth/forgot_password' as any)}
+              className="self-end mb-8 py-2"
+            >
+              <Text className="text-sm font-bold text-primary-600">Forgot Password?</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleLogin}
+              disabled={isLoading}
+              className="bg-primary-600 h-14 rounded-2xl items-center flex-row justify-center shadow-lg shadow-primary-600/30 mb-8"
+              activeOpacity={0.8}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <>
+                  <Text className="text-white font-bold text-lg mr-2">Continue</Text>
+                  <ArrowRight size={20} color="#FFFFFF" />
+                </>
+              )}
+            </TouchableOpacity>
+          </Animated.View>
+
+          <Animated.View entering={FadeInUp.delay(500).duration(600)} className="mt-auto">
+            <View className="flex-row justify-center items-center mb-8">
+              <Text className="text-sm text-slate-500 font-medium">Don't have an account? </Text>
+              <TouchableOpacity onPress={() => router.push('/auth/register' as any)}>
+                <Text className="text-sm font-bold text-primary-600">Request Access</Text>
               </TouchableOpacity>
             </View>
-          </View>
 
-          <View className="h-6" />
+            <View className="border-t border-slate-100 pt-6">
+              <Text className="text-[10px] font-bold text-slate-400 uppercase text-center mb-4 tracking-widest">
+                Developer Fast-Login
+              </Text>
+              <View className="flex-row justify-center gap-3">
+                <TouchableOpacity
+                  onPress={() => fillDemoCredentials('STUDENT')}
+                  className="bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200"
+                >
+                  <Text className="text-xs font-bold text-slate-600">Student</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => fillDemoCredentials('FACULTY')}
+                  className="bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200"
+                >
+                  <Text className="text-xs font-bold text-slate-600">Faculty</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Animated.View>
+
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

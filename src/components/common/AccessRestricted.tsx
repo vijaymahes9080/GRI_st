@@ -2,55 +2,27 @@ import React from 'react';
 import { useAppStore } from '../../core/store/appStore';
 import { UserRole, Permission } from '../../types';
 import { 
-  ShieldAlert, 
-  Lock, 
-  LogIn, 
-  Home, 
-  UserCheck, 
-  HelpCircle, 
-  ArrowLeft, 
-  AlertTriangle,
-  FileKey2,
-  Building2,
-  Mail
+  ShieldAlert, Lock, LogIn, Home, UserCheck, HelpCircle, ArrowLeft, AlertTriangle, FileKey2
 } from 'lucide-react';
 import { usePermissions } from '../../core/auth/usePermissions';
 import { AppPermission } from '../../core/auth/permissions';
 
 export interface AccessRestrictedProps {
-  /** Title of the restricted access message */
   title?: string;
-  /** Primary description or explanation of the restriction */
   message?: string;
-  /** The specific resource, page, or module being accessed */
   resourceName?: string;
-  /** The role or roles required to access this resource */
   requiredRole?: UserRole | UserRole[] | string;
-  /** The specific permission or permissions required */
   requiredPermission?: Permission | Permission[] | string;
-  /** Explicit departmental or organisational scope required (e.g., 'Department: Computer Science') */
   requiredScope?: string;
-  /** Optional custom action text for the primary button */
   primaryActionText?: string;
-  /** Custom handler for the primary action button */
   onPrimaryAction?: () => void;
-  /** Optional custom action text for the secondary button */
   secondaryActionText?: string;
-  /** Custom handler for the secondary action button */
   onSecondaryAction?: () => void;
-  /** Whether to render as an inline compact card or full-page banner */
   compact?: boolean;
-  /** Support contact email or office */
   supportContact?: string;
-  /** Unique HTML id */
   id?: string;
 }
 
-/**
- * Standardized Access Restricted component for GRI Institutional Portal.
- * Displays clear feedback and resolution pathways when a user attempts to
- * navigate to a view, route, or feature outside their authorized permission scope.
- */
 export const AccessRestricted: React.FC<AccessRestrictedProps> = ({
   title = 'Access Restricted',
   message,
@@ -70,7 +42,6 @@ export const AccessRestricted: React.FC<AccessRestrictedProps> = ({
 
   const isGuest = currentUser.role === 'guest';
 
-  // Format required roles into a readable string
   const formatRequiredRoles = () => {
     if (!requiredRole) return null;
     if (Array.isArray(requiredRole)) {
@@ -79,7 +50,6 @@ export const AccessRestricted: React.FC<AccessRestrictedProps> = ({
     return String(requiredRole).replace('_', ' ').toUpperCase();
   };
 
-  // Format required permissions into a readable string
   const formatRequiredPermissions = () => {
     if (!requiredPermission) return null;
     if (Array.isArray(requiredPermission)) {
@@ -110,60 +80,59 @@ export const AccessRestricted: React.FC<AccessRestrictedProps> = ({
     } else if (isGuest) {
       setTab('home');
     } else {
-      setLoginModalOpen(true); // Allows switching or re-authenticating
+      setLoginModalOpen(true);
     }
   };
 
-  // Compact inline mode (for widgets, tab panels, or card sub-sections)
   if (compact) {
     return (
       <div 
         id={id}
-        className="rounded-2xl bg-slate-900/90 border border-slate-800 p-5 shadow-lg space-y-4 animate-fadeIn"
+        className="rounded-[2rem] bg-white border border-[#E5EAE7] p-8 shadow-sm space-y-6 animate-fadeIn"
       >
-        <div className="flex items-start gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700/60 flex items-center justify-center text-emerald-400 flex-shrink-0">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-full bg-[#FEF2F2] flex items-center justify-center text-[#BE123C] flex-shrink-0">
             <Lock className="w-5 h-5" />
           </div>
-          <div className="space-y-1 flex-1">
+          <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2">
-              <h4 className="text-sm font-bold text-white font-display">{title}</h4>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-950 text-emerald-300 border border-slate-700">
+              <h4 className="text-lg font-bold text-[#1A1F1D] font-display">{title}</h4>
+              <span className="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-[#FEF2F2] text-[#BE123C]">
                 Scope Restricted
               </span>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-sm text-[#5C6661] leading-relaxed">
               {displayMessage}
             </p>
             {resourceName && (
-              <div className="text-[11px] text-slate-300 pt-1">
-                Target Resource: <span className="font-mono text-emerald-400 font-semibold">{resourceName}</span>
+              <div className="text-xs text-[#5C6661] pt-2">
+                Target Resource: <span className="font-mono text-[#0F4C3A] font-bold">{resourceName}</span>
               </div>
             )}
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800 text-xs">
-          <div className="text-[11px] text-slate-500">
-            Current Identity: <span className="text-slate-300 capitalize">{currentUser.name}</span> ({currentUser.role})
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-[#E5EAE7] text-sm">
+          <div className="text-[#5C6661]">
+            Current Identity: <span className="text-[#1A1F1D] font-bold capitalize">{currentUser.name}</span> ({currentUser.role})
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {isGuest ? (
               <button
                 type="button"
                 onClick={handlePrimaryAction}
-                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs flex items-center gap-1.5 transition"
+                className="px-6 py-2.5 rounded-full bg-[#0F4C3A] hover:bg-[#0A3327] text-white font-bold text-xs flex items-center gap-2 transition-colors shadow-sm"
               >
-                <LogIn className="w-3.5 h-3.5" />
+                <LogIn className="w-4 h-4" />
                 <span>Sign In to Unlock</span>
               </button>
             ) : (
               <button
                 type="button"
                 onClick={handlePrimaryAction}
-                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-xs flex items-center gap-1.5 transition border border-slate-700"
+                className="px-6 py-2.5 rounded-full bg-white hover:bg-[#F2F6F4] text-[#1A1F1D] border border-[#E5EAE7] font-bold text-xs flex items-center gap-2 transition-colors"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
+                <ArrowLeft className="w-4 h-4" />
                 <span>Return to Home</span>
               </button>
             )}
@@ -173,114 +142,106 @@ export const AccessRestricted: React.FC<AccessRestrictedProps> = ({
     );
   }
 
-  // Full-page / Standalone banner mode
   return (
     <div 
       id={id}
-      className="max-w-2xl mx-auto py-10 px-4 animate-fadeIn text-center space-y-6"
+      className="max-w-2xl mx-auto py-12 px-4 animate-fadeIn text-center space-y-8"
     >
-      <div className="bg-slate-900/95 backdrop-blur border border-slate-800 rounded-3xl p-8 sm:p-10 shadow-2xl space-y-6 relative overflow-hidden">
-        {/* Background ambient decoration */}
-        <div className="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-slate-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-white border border-[#E5EAE7] rounded-[2rem] p-8 sm:p-12 shadow-sm space-y-8 relative overflow-hidden">
 
-        {/* Security Shield Icon */}
-        <div className="relative mx-auto w-20 h-20 rounded-3xl bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700/60 flex items-center justify-center text-emerald-400 shadow-xl shadow-slate-950/50">
+        <div className="relative mx-auto w-24 h-24 rounded-full bg-[#FEF2F2] flex items-center justify-center text-[#BE123C]">
           <ShieldAlert className="w-10 h-10" />
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-slate-950 border border-emerald-600 flex items-center justify-center text-emerald-400">
-            <Lock className="w-3.5 h-3.5" />
+          <div className="absolute 0 right-0 w-8 h-8 rounded-full bg-white border-2 border-[#BE123C] flex items-center justify-center text-[#BE123C]">
+            <Lock className="w-4 h-4" />
           </div>
         </div>
 
-        {/* Title and Description */}
-        <div className="space-y-2.5">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300 text-xs font-semibold">
-            <AlertTriangle className="w-3.5 h-3.5 text-emerald-400" />
+        <div className="space-y-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F2F6F4] text-[#5C6661] text-xs font-bold uppercase tracking-widest">
+            <AlertTriangle className="w-4 h-4 text-[#B45309]" />
             <span>Institutional Access Control</span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-white tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-display font-medium text-[#1A1F1D] tracking-tight">
             {title}
           </h2>
 
           {resourceName && (
-            <div className="inline-block px-3 py-1 rounded-lg bg-slate-950 border border-slate-800 text-xs text-emerald-400 font-medium font-mono">
+            <div className="inline-block px-4 py-2 rounded-xl bg-[#F2F6F4] text-xs text-[#0F4C3A] font-bold font-mono">
               Target: {resourceName}
             </div>
           )}
 
-          <p className="text-slate-300 text-sm sm:text-base max-w-lg mx-auto leading-relaxed pt-1">
+          <p className="text-[#5C6661] text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
             {displayMessage}
           </p>
         </div>
 
-        {/* Context Details Card */}
-        <div className="p-4 sm:p-5 bg-slate-950/90 rounded-2xl border border-slate-800 text-left text-xs space-y-3.5">
-          <div className="flex items-center justify-between text-slate-400 font-semibold border-b border-slate-800/80 pb-2">
-            <span className="flex items-center gap-1.5 text-slate-300">
-              <FileKey2 className="w-3.5 h-3.5 text-emerald-400" />
+        <div className="p-6 bg-[#FDFDFB] rounded-[1.5rem] border border-[#E5EAE7] text-left text-sm space-y-4">
+          <div className="flex items-center justify-between font-bold text-[#1A1F1D] border-b border-[#E5EAE7] pb-3">
+            <span className="flex items-center gap-2">
+              <FileKey2 className="w-5 h-5 text-[#0F4C3A]" />
               <span>Session Authorization Context</span>
             </span>
-            <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-slate-400">
+            <span className="text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full bg-[#F2F6F4] text-[#5C6661]">
               Policy Enforced
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <span className="text-slate-500 block">Authenticated User:</span>
-              <span className="text-slate-200 font-medium">{currentUser.name}</span>
+              <span className="text-[#5C6661] block text-xs mb-1 uppercase tracking-widest font-bold">Authenticated User</span>
+              <span className="text-[#1A1F1D] font-bold">{currentUser.name}</span>
             </div>
             <div>
-              <span className="text-slate-500 block">Active Role:</span>
-              <span className="text-emerald-400 font-mono font-bold uppercase">{currentUser.role}</span>
+              <span className="text-[#5C6661] block text-xs mb-1 uppercase tracking-widest font-bold">Active Role</span>
+              <span className="text-[#0F4C3A] font-bold uppercase">{currentUser.role}</span>
             </div>
             <div>
-              <span className="text-slate-500 block">Department Scope:</span>
-              <span className="text-slate-200">{currentUser.department || 'General Public'}</span>
+              <span className="text-[#5C6661] block text-xs mb-1 uppercase tracking-widest font-bold">Department Scope</span>
+              <span className="text-[#1A1F1D]">{currentUser.department || 'General Public'}</span>
             </div>
             <div>
-              <span className="text-slate-500 block">Account Status:</span>
-              <span className="text-emerald-400 capitalize">{currentUser.approvalStatus || 'Active'}</span>
+              <span className="text-[#5C6661] block text-xs mb-1 uppercase tracking-widest font-bold">Account Status</span>
+              <span className="text-[#0F4C3A] font-bold capitalize">{currentUser.approvalStatus || 'Active'}</span>
             </div>
           </div>
 
           {(requiredRole || requiredPermission || requiredScope) && (
-            <div className="pt-2.5 border-t border-slate-800/80 text-[11px] space-y-1.5">
-              <div className="text-slate-400 font-semibold">Required Access Criteria:</div>
+            <div className="pt-4 border-t border-[#E5EAE7] space-y-2 text-sm">
+              <div className="text-[#1A1F1D] font-bold mb-2">Required Access Criteria:</div>
               {requiredRole && (
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-500">Required Role:</span>
-                  <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-emerald-400 font-mono font-bold">
+                  <span className="text-[#5C6661]">Required Role:</span>
+                  <span className="px-2 py-1 rounded bg-[#E5F0EB] text-[#0F4C3A] font-bold font-mono text-xs">
                     {formatRequiredRoles()}
                   </span>
                 </div>
               )}
               {requiredPermission && (
                 <div className="flex items-start gap-2">
-                  <span className="text-slate-500 flex-shrink-0">Permission:</span>
-                  <span className="text-slate-300 font-mono break-all">
+                  <span className="text-[#5C6661] flex-shrink-0">Permission:</span>
+                  <span className="text-[#1A1F1D] font-mono font-bold text-xs">
                     {formatRequiredPermissions()}
                   </span>
                 </div>
               )}
               {requiredScope && (
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-500">Scope:</span>
-                  <span className="text-slate-300">{requiredScope}</span>
+                  <span className="text-[#5C6661]">Scope:</span>
+                  <span className="text-[#1A1F1D] font-bold">{requiredScope}</span>
                 </div>
               )}
             </div>
           )}
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
           <button
             id="btn-access-restricted-primary"
             type="button"
             onClick={handlePrimaryAction}
-            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/50 transition cursor-pointer"
+            className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#0F4C3A] hover:bg-[#0A3327] text-white font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-sm"
           >
             {isGuest ? (
               <>
@@ -299,7 +260,7 @@ export const AccessRestricted: React.FC<AccessRestrictedProps> = ({
             id="btn-access-restricted-secondary"
             type="button"
             onClick={handleSecondaryAction}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 border border-slate-700 transition cursor-pointer"
+            className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white hover:bg-[#F2F6F4] text-[#1A1F1D] border border-[#E5EAE7] font-bold text-sm flex items-center justify-center gap-2 transition-colors"
           >
             {isGuest ? (
               <>
@@ -315,11 +276,10 @@ export const AccessRestricted: React.FC<AccessRestrictedProps> = ({
           </button>
         </div>
 
-        {/* Support helpdesk footnote */}
-        <div className="pt-4 border-t border-slate-800/80 flex items-center justify-center gap-2 text-[11px] text-slate-500">
-          <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
-          <span>Need access authorization? Contact Samadhan Grievance Cell at</span>
-          <a href={`mailto:${supportContact}`} className="text-emerald-400 hover:underline font-medium">
+        <div className="pt-6 border-t border-[#E5EAE7] flex items-center justify-center gap-2 text-sm text-[#5C6661]">
+          <HelpCircle className="w-4 h-4" />
+          <span>Need access authorization? Contact</span>
+          <a href={`mailto:${supportContact}`} className="text-[#0F4C3A] hover:underline font-bold">
             {supportContact}
           </a>
         </div>
@@ -328,11 +288,6 @@ export const AccessRestricted: React.FC<AccessRestrictedProps> = ({
   );
 };
 
-/**
- * Route / Component protection wrapper.
- * Automatically checks whether the current active user possesses the required
- * role and/or permissions, rendering AccessRestricted if unauthorized.
- */
 export interface ProtectedRouteProps {
   children: React.ReactNode;
   allowedRoles?: UserRole[];
@@ -353,7 +308,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { currentUser } = useAppStore();
   const { canAll } = usePermissions();
 
-  // Role verification
   if (allowedRoles && allowedRoles.length > 0) {
     const isRoleAllowed = allowedRoles.includes(currentUser.role) || currentUser.role === 'super_admin';
     if (!isRoleAllowed) {
@@ -368,7 +322,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }
 
-  // Permissions verification
   if (requiredPermissions && requiredPermissions.length > 0) {
     const hasAll = canAll(requiredPermissions as AppPermission[]);
     if (!hasAll) {

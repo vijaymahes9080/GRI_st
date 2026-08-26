@@ -47,49 +47,49 @@ export const Navbar: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 text-slate-100">
+    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-[#E5EAE7] text-[#1A1F1D]">
       {/* Top utility bar */}
-      <div className="bg-slate-950/80 px-4 py-1.5 border-b border-slate-800/80 text-xs flex items-center justify-between">
-        <div className="flex items-center space-x-3 text-slate-400">
-          <span className="inline-flex items-center gap-1 text-emerald-400 font-medium">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      <div className="bg-[#0F4C3A] px-4 py-2 text-[11px] flex items-center justify-between text-white/90 font-medium">
+        <div className="flex items-center space-x-4">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#34D399] animate-pulse"></span>
             NAAC "A++" (3.61 CGPA)
           </span>
-          <span className="hidden sm:inline text-slate-600">|</span>
+          <span className="hidden sm:inline opacity-40">|</span>
           <span className="hidden sm:inline">{INSTITUTION_INFO.ministry}</span>
-          <span className="hidden md:inline text-slate-600">|</span>
-          <span className="hidden md:inline italic text-amber-300/90 font-serif">"{INSTITUTION_INFO.mottoTamil} — {INSTITUTION_INFO.mottoEnglish}"</span>
+          <span className="hidden md:inline opacity-40">|</span>
+          <span className="hidden md:inline italic font-serif">"{INSTITUTION_INFO.mottoTamil} — {INSTITUTION_INFO.mottoEnglish}"</span>
         </div>
 
-        <div className="flex items-center space-x-3">
-          <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-800/80 text-[10px] text-emerald-400">
-            <span className={`w-1.5 h-1.5 rounded-full ${isFirestoreLive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
-            <span>{isFirestoreLive ? 'Firestore Live' : 'Connecting'}</span>
+        <div className="flex items-center space-x-4">
+          <div className="hidden sm:flex items-center gap-2">
+            <span className={`w-1.5 h-1.5 rounded-full ${isFirestoreLive ? 'bg-[#34D399] animate-pulse' : 'bg-[#FBBF24]'}`}></span>
+            <span>{isFirestoreLive ? 'System Online' : 'Connecting'}</span>
           </div>
 
           <button
             onClick={() => setSearchOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700 transition"
+            className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
             title="Search Portal (Ctrl + K)"
           >
-            <Search className="w-3 h-3 text-slate-400" />
-            <span className="hidden sm:inline">Search portal...</span>
-            <kbd className="hidden sm:inline-block px-1 py-0.2 text-[10px] bg-slate-900 text-slate-400 rounded border border-slate-700 font-mono">⌘K</kbd>
+            <Search className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline text-white">Search</span>
+            <kbd className="hidden sm:inline-block opacity-60 font-mono">⌘K</kbd>
           </button>
 
           <button
             onClick={toggleViewMode}
-            className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-600/40 text-emerald-300 hover:bg-emerald-900/60 text-xs transition"
+            className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
           >
             {viewMode === 'desktop' ? (
               <>
-                <Smartphone className="w-3 h-3" />
-                <span>Mobile View</span>
+                <Smartphone className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Mobile</span>
               </>
             ) : (
               <>
-                <Monitor className="w-3 h-3" />
-                <span>Full Web View</span>
+                <Monitor className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Desktop</span>
               </>
             )}
           </button>
@@ -97,52 +97,49 @@ export const Navbar: React.FC = () => {
       </div>
 
       {/* Main navigation header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20">
           {/* Logo & University Branding */}
           <div 
             onClick={() => setTab('home')} 
-            className="flex items-center space-x-3 cursor-pointer group select-none"
+            className="flex items-center space-x-4 cursor-pointer group select-none"
           >
-            <GRIEmblem className="w-10 h-10 group-hover:scale-105 transition-transform" />
+            <GRIEmblem className="w-12 h-12 transition-transform duration-500 ease-out group-hover:scale-105" />
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-display font-bold text-base sm:text-lg tracking-tight text-white group-hover:text-emerald-400 transition-colors">
+              <div className="flex items-center gap-2">
+                <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-[#1A1F1D]">
                   GANDHIGRAM RURAL INSTITUTE
                 </span>
-                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded">
-                  Deemed Univ
-                </span>
               </div>
-              <p className="text-[11px] text-slate-400 font-medium hidden sm:block">
-                Estd. 1956 • Gandhigram, Dindigul, Tamil Nadu
+              <p className="text-[11px] text-[#5C6661] font-medium hidden sm:block mt-0.5 uppercase tracking-wider">
+                Deemed to be University • Estd. 1956
               </p>
             </div>
           </div>
 
           {/* Desktop Nav Items */}
-          <nav className="hidden lg:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-2">
             {navItems.map((item) => {
               const isActive = currentTab === item.id;
               return (
                 <button
                   key={item.id}
                   onClick={() => setTab(item.id)}
-                  className={`relative flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`relative flex items-center space-x-2.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
                     isActive
-                      ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 shadow-inner'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                      ? 'bg-[#0F4C3A] text-white shadow-md shadow-[#0F4C3A]/20'
+                      : 'text-[#4A5550] hover:text-[#0F4C3A] hover:bg-[#F2F6F4]'
                   }`}
                 >
-                  <span>{item.icon}</span>
+                  <span className={`${isActive ? 'opacity-100' : 'opacity-70'}`}>{item.icon}</span>
                   <span>{item.label}</span>
                   {item.badge && item.badge > 0 ? (
-                    <span className="ml-1 px-1.5 py-0.2 text-[10px] font-bold bg-rose-600 text-white rounded-full animate-bounce">
+                    <span className="ml-1 px-1.5 py-0.5 text-[10px] font-bold bg-[#EF4444] text-white rounded-full">
                       {item.badge}
                     </span>
                   ) : null}
-                  {item.id === 'ai_chat' && (
-                    <Sparkles className="w-3 h-3 text-amber-400 animate-pulse ml-0.5" />
+                  {item.id === 'ai_chat' && !isActive && (
+                    <Sparkles className="w-3.5 h-3.5 text-[#0F4C3A] animate-pulse ml-0.5" />
                   )}
                 </button>
               );
@@ -150,39 +147,39 @@ export const Navbar: React.FC = () => {
           </nav>
 
           {/* User Status / Profile Switcher Button */}
-          <div className="hidden sm:flex items-center space-x-2">
+          <div className="hidden sm:flex items-center space-x-3">
             {currentUser.role === 'guest' ? (
               <button
                 id="btn-navbar-guest-login"
                 onClick={() => setLoginModalOpen(true)}
-                className="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-md shadow-emerald-950/50"
+                className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-[#0F4C3A] hover:bg-[#16604B] text-white font-semibold text-sm transition-all shadow-md shadow-[#0F4C3A]/20"
               >
-                <User className="w-3.5 h-3.5" />
-                <span>Student / Staff Login</span>
+                <User className="w-4 h-4" />
+                <span>Sign In</span>
               </button>
             ) : (
-              <div className="flex items-center space-x-1.5">
+              <div className="flex items-center space-x-2">
                 <button
                   id="btn-navbar-profile"
                   onClick={() => setLoginModalOpen(true)}
                   title="Switch identity or update institutional profile"
-                  className="flex items-center space-x-2.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 transition"
+                  className="flex items-center space-x-3 px-3 py-2 rounded-xl hover:bg-[#F2F6F4] transition-colors"
                 >
                   {currentUser.avatarUrl ? (
                     <img 
                       src={currentUser.avatarUrl} 
                       alt={currentUser.name} 
                       referrerPolicy="no-referrer"
-                      className="w-7 h-7 rounded-full object-cover border border-emerald-500" 
+                      className="w-9 h-9 rounded-full object-cover ring-2 ring-[#0F4C3A]/10" 
                     />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-emerald-700 flex items-center justify-center text-xs font-bold text-white border border-emerald-500">
+                    <div className="w-9 h-9 rounded-full bg-[#E5F0EB] flex items-center justify-center text-sm font-bold text-[#0F4C3A] ring-2 ring-[#0F4C3A]/10">
                       {currentUser.name.charAt(0)}
                     </div>
                   )}
                   <div className="text-left leading-tight">
-                    <div className="text-xs font-semibold text-slate-200 truncate max-w-[110px]">{currentUser.name}</div>
-                    <div className="text-[10px] text-emerald-400 capitalize font-mono">{currentUser.role}</div>
+                    <div className="text-sm font-bold text-[#1A1F1D] truncate max-w-[130px]">{currentUser.name}</div>
+                    <div className="text-[10px] text-[#5C6661] uppercase tracking-wider font-semibold">{currentUser.role}</div>
                   </div>
                 </button>
 
@@ -190,7 +187,7 @@ export const Navbar: React.FC = () => {
                   id="btn-navbar-logout"
                   onClick={() => doLogout()}
                   title="Sign out & Purge session data"
-                  className="p-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/50 text-rose-300 hover:text-white transition"
+                  className="p-2.5 rounded-xl text-[#5C6661] hover:text-[#EF4444] hover:bg-[#FEF2F2] transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -199,12 +196,12 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* Mobile menu toggle */}
-          <div className="flex lg:hidden items-center space-x-2">
+          <div className="flex lg:hidden items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white border border-slate-700"
+              className="p-2.5 rounded-xl text-[#1A1F1D] hover:bg-[#F2F6F4]"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
@@ -212,27 +209,27 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile dropdown menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-slate-900 border-b border-slate-800 px-4 pt-2 pb-4 space-y-2">
+        <div className="lg:hidden absolute left-0 right-0 top-full max-h-[80vh] overflow-y-auto bg-white border-b border-[#E5EAE7] px-4 pt-2 pb-6 space-y-3 shadow-2xl">
           {currentUser.role !== 'guest' && (
-            <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-between">
+            <div className="p-4 bg-[#F8FAF9] rounded-2xl flex items-center justify-between">
               <div>
-                <div className="text-xs font-bold text-slate-200">{currentUser.name}</div>
-                <div className="text-[10px] text-emerald-400 font-mono capitalize">{currentUser.role}</div>
+                <div className="text-sm font-bold text-[#1A1F1D]">{currentUser.name}</div>
+                <div className="text-[10px] text-[#5C6661] uppercase tracking-wider font-semibold mt-1">{currentUser.role}</div>
               </div>
               <button
                 onClick={() => {
                   doLogout();
                   setMobileMenuOpen(false);
                 }}
-                className="px-2.5 py-1.5 rounded-xl bg-rose-900/50 border border-rose-700/60 text-rose-200 text-xs font-semibold flex items-center gap-1"
+                className="px-4 py-2 rounded-xl bg-white border border-[#E5EAE7] text-[#EF4444] text-xs font-bold flex items-center gap-2 shadow-sm"
               >
-                <LogOut className="w-3.5 h-3.5" />
+                <LogOut className="w-4 h-4" />
                 <span>Sign Out</span>
               </button>
             </div>
           )}
 
-          <div className="space-y-1">
+          <div className="space-y-1 mt-2">
             {navItems.map((item) => {
               const isActive = currentTab === item.id;
               return (
@@ -242,18 +239,18 @@ export const Navbar: React.FC = () => {
                     setTab(item.id);
                     setMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium ${
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-sm font-semibold transition-colors ${
                     isActive
-                      ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30'
-                      : 'text-slate-300 hover:bg-slate-800'
+                      ? 'bg-[#0F4C3A] text-white'
+                      : 'text-[#4A5550] hover:bg-[#F2F6F4]'
                   }`}
                 >
-                  <div className="flex items-center space-x-2.5">
-                    {item.icon}
+                  <div className="flex items-center space-x-3">
+                    <span className={`${isActive ? 'opacity-100' : 'opacity-60'}`}>{item.icon}</span>
                     <span>{item.label}</span>
                   </div>
                   {item.badge && item.badge > 0 ? (
-                    <span className="px-1.5 py-0.5 text-xs font-bold bg-rose-600 text-white rounded-full">
+                    <span className="px-2 py-0.5 text-[10px] font-bold bg-[#EF4444] text-white rounded-full">
                       {item.badge}
                     </span>
                   ) : null}

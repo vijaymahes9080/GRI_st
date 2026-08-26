@@ -281,7 +281,7 @@ export const AdminView: React.FC = () => {
     <div className="space-y-6 animate-fadeIn pb-12">
       {/* Top Banner: Master Identity & Real-Time Sync Indicator */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-64 sm:h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="flex items-center gap-4">
@@ -440,7 +440,7 @@ export const AdminView: React.FC = () => {
           )}
 
           {/* Quick Hub Navigator */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
             <div
               onClick={() => setActiveTab('circulars')}
               className="p-5 rounded-3xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 cursor-pointer transition space-y-2 group"
@@ -593,30 +593,30 @@ export const AdminView: React.FC = () => {
           </div>
 
           {/* Users Table */}
-          <div className="overflow-x-auto bg-slate-900 rounded-2xl border border-slate-800 shadow-xl">
-            <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto bg-white rounded-2xl border border-slate-200 shadow-sm">
+            <table className="w-full text-left text-xs min-w-[600px] sm:min-w-full">
               <thead>
-                <tr className="bg-slate-950 border-b border-slate-800 text-slate-400 font-bold uppercase text-[11px]">
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[11px]">
                   <th className="p-3.5 w-8">
-                    <button onClick={toggleSelectAll} className="text-slate-400 hover:text-white">
+                    <button onClick={toggleSelectAll} className="text-slate-400 hover:text-slate-600 transition">
                       {isAllFilteredSelected ? (
-                        <CheckSquare className="w-4 h-4 text-emerald-400" />
+                        <CheckSquare className="w-4 h-4 text-emerald-600" />
                       ) : (
-                        <Square className="w-4 h-4 text-slate-600" />
+                        <Square className="w-4 h-4 text-slate-300" />
                       )}
                     </button>
                   </th>
                   <th className="p-3.5">User Identity</th>
                   <th className="p-3.5">Role & Department</th>
-                  <th className="p-3.5">Contact (SMS / WhatsApp)</th>
-                  <th className="p-3.5">Approval Status</th>
+                  <th className="p-3.5 hidden sm:table-cell">Contact (SMS / WhatsApp)</th>
+                  <th className="p-3.5 hidden sm:table-cell">Approval Status</th>
                   <th className="p-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 text-slate-300">
+              <tbody className="divide-y divide-slate-100 text-slate-700">
                 {filteredUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-slate-500">
+                    <td colSpan={6} className="p-6 sm:p-8 text-center text-slate-500">
                       No user accounts found matching your query.
                     </td>
                   </tr>
@@ -624,28 +624,28 @@ export const AdminView: React.FC = () => {
                   filteredUsers.map((user) => {
                     const isSelected = selectedUserIds.includes(user.id);
                     return (
-                      <tr key={user.id} className={`hover:bg-slate-800/40 transition ${isSelected ? 'bg-emerald-950/20' : ''}`}>
+                      <tr key={user.id} className={`hover:bg-slate-50 transition ${isSelected ? 'bg-emerald-50' : ''}`}>
                         <td className="p-3.5">
-                          <button onClick={() => toggleSelectUser(user.id)} className="text-slate-400 hover:text-white">
+                          <button onClick={() => toggleSelectUser(user.id)} className="text-slate-400 hover:text-slate-600 transition">
                             {isSelected ? (
-                              <CheckSquare className="w-4 h-4 text-emerald-400" />
+                              <CheckSquare className="w-4 h-4 text-emerald-600" />
                             ) : (
-                              <Square className="w-4 h-4 text-slate-600" />
+                              <Square className="w-4 h-4 text-slate-300" />
                             )}
                           </button>
                         </td>
                         <td className="p-3.5">
-                          <div className="font-bold text-white text-xs">{user.name}</div>
-                          <div className="text-[11px] text-slate-400 font-mono">{user.email}</div>
+                          <div className="font-bold text-slate-900 text-xs">{user.name}</div>
+                          <div className="text-[11px] text-slate-500 font-mono">{user.email}</div>
                           {user.regNumber && (
-                            <div className="text-[10px] text-slate-500 font-mono">Reg: {user.regNumber}</div>
+                            <div className="text-[10px] text-slate-400 font-mono">Reg: {user.regNumber}</div>
                           )}
                         </td>
                         <td className="p-3.5">
                           <select
                             value={user.role}
                             onChange={(e) => updateUserRole(user.id, e.target.value as UserRole)}
-                            className="bg-slate-950 border border-slate-800 rounded px-2 py-0.5 text-[11px] font-bold text-slate-200 outline-none focus:border-emerald-500"
+                            className="bg-white border border-slate-200 rounded px-2 py-0.5 text-[11px] font-bold text-slate-700 outline-none focus:border-emerald-500 shadow-sm"
                           >
                             <option value="STUDENT">STUDENT</option>
                             <option value="FACULTY">FACULTY</option>
@@ -654,32 +654,32 @@ export const AdminView: React.FC = () => {
                             <option value="DEPARTMENT_ADMIN">DEPT ADMIN</option>
                             <option value="SUPER_ADMIN">SUPER ADMIN</option>
                           </select>
-                          <div className="text-[10px] text-slate-400 mt-0.5">{user.department}</div>
+                          <div className="text-[10px] text-slate-500 mt-1">{user.department}</div>
                         </td>
-                        <td className="p-3.5">
-                          <div className="text-slate-200 font-mono text-[11px]">{user.phone || 'No phone'}</div>
+                        <td className="p-3.5 hidden sm:table-cell">
+                          <div className="text-slate-700 font-mono text-[11px]">{user.phone || 'No phone'}</div>
                           <button
                             onClick={() => setEditContactUser(user)}
-                            className="text-[10px] text-emerald-400 hover:underline"
+                            className="text-[10px] text-emerald-600 hover:underline mt-0.5"
                           >
                             Edit Contact
                           </button>
                         </td>
-                        <td className="p-3.5">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
-                            user.approvalStatus === 'approved' ? 'bg-emerald-950 text-emerald-400 border-emerald-800' :
-                            user.approvalStatus === 'pending' ? 'bg-amber-950 text-amber-400 border-amber-800' :
-                            'bg-rose-950 text-rose-400 border-rose-800'
+                        <td className="p-3.5 hidden sm:table-cell">
+                          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
+                            user.approvalStatus === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                            user.approvalStatus === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                            'bg-rose-50 text-rose-700 border-rose-200'
                           }`}>
                             {user.approvalStatus || 'approved'}
                           </span>
                         </td>
                         <td className="p-3.5 text-right">
-                          <div className="inline-flex items-center gap-1 justify-end">
+                          <div className="inline-flex items-center gap-1.5 justify-end">
                             {user.approvalStatus === 'pending' && (
                               <button
                                 onClick={() => approveUserWithNotifications(user.id)}
-                                className="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px]"
+                                className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] shadow-sm transition"
                                 title="Approve & Send Credentials"
                               >
                                 Approve
@@ -687,7 +687,7 @@ export const AdminView: React.FC = () => {
                             )}
                             <button
                               onClick={() => setResetTargetUser(user)}
-                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 transition"
+                              className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition"
                               title="Admin-Initiated Password Reset (One-Time Key)"
                             >
                               <KeyRound className="w-3.5 h-3.5" />
@@ -696,7 +696,7 @@ export const AdminView: React.FC = () => {
                               onClick={() => {
                                 if (window.confirm(`Delete user ${user.name}?`)) deleteUser(user.id);
                               }}
-                              className="p-1.5 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-400 border border-rose-800 transition"
+                              className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition"
                               title="Delete User"
                             >
                               <Trash2 className="w-3.5 h-3.5" />

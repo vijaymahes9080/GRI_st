@@ -56,12 +56,12 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
+    <div className="min-h-screen bg-[#FDFDFB] text-[#1A1F1D] flex flex-col font-sans selection:bg-[#E5F0EB] selection:text-[#0F4C3A]">
       {/* Top Main Navigation */}
       <Navbar />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10">
         {viewMode === 'mobile_sim' ? (
           <MobileSimulator />
         ) : (
@@ -124,56 +124,56 @@ export const App: React.FC = () => {
       />
 
       {/* Institutional Enterprise Footer */}
-      <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 text-xs mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <footer className="bg-[#0F4C3A] text-white/80 text-xs mt-auto rounded-t-[2.5rem] mt-24">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
             {/* University Bio */}
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold">
-                  <GraduationCap className="w-5 h-5" />
+            <div className="space-y-4 pr-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white font-bold backdrop-blur-md">
+                  <GraduationCap className="w-6 h-6" />
                 </div>
-                <h3 className="font-display font-bold text-white text-sm">
-                  The Gandhigram Rural Institute
+                <h3 className="font-display font-bold text-white text-base leading-tight">
+                  The Gandhigram<br/>Rural Institute
                 </h3>
               </div>
-              <p className="text-slate-400 leading-relaxed text-[11px]">
+              <p className="text-white/60 leading-relaxed text-xs">
                 {INSTITUTION_INFO.subName} • {INSTITUTION_INFO.accreditation}. Founded in 1956 by Dr. T.S. Soundram and Dr. G. Ramachandran under the guidance of Mahatma Gandhi.
               </p>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-950/80 border border-emerald-800 text-emerald-400 text-[10px] font-semibold">
-                <Award className="w-3 h-3" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#E5F0EB]/10 border border-[#E5F0EB]/20 text-[#E5F0EB] text-[10px] font-semibold tracking-wide uppercase">
+                <Award className="w-3.5 h-3.5" />
                 <span>NAAC 'A++' Grade (CGPA: 3.61)</span>
               </div>
             </div>
 
             {/* Quick Links */}
-            <div className="space-y-3">
-              <h4 className="font-bold uppercase tracking-wider text-slate-200 text-xs">
+            <div className="space-y-4">
+              <h4 className="font-bold uppercase tracking-wider text-white text-xs opacity-90">
                 Academic & Admissions
               </h4>
-              <ul className="space-y-1.5 text-[11px]">
+              <ul className="space-y-2.5 text-xs opacity-70 font-medium">
                 <li>
-                  <button onClick={() => setTab('services')} className="hover:text-emerald-400 transition">
+                  <button onClick={() => setTab('services')} className="hover:text-white transition">
                     Admissions 2026-27 (Samarth Portal)
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => setTab('explore')} className="hover:text-emerald-400 transition">
+                  <button onClick={() => setTab('explore')} className="hover:text-white transition">
                     Schools of Study & 28+ Departments
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => setTab('services')} className="hover:text-emerald-400 transition">
+                  <button onClick={() => setTab('services')} className="hover:text-white transition">
                     End Semester Examination (ESE) Schedule
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => setTab('services')} className="hover:text-emerald-400 transition">
+                  <button onClick={() => setTab('services')} className="hover:text-white transition">
                     e-Sanad Verification & Transcripts
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => setTab('services')} className="hover:text-emerald-400 transition">
+                  <button onClick={() => setTab('services')} className="hover:text-white transition">
                     Dr. Radhakrishnan Central Library OPAC
                   </button>
                 </li>
@@ -181,50 +181,50 @@ export const App: React.FC = () => {
             </div>
 
             {/* Gandhian Pillars */}
-            <div className="space-y-3">
-              <h4 className="font-bold uppercase tracking-wider text-slate-200 text-xs">
+            <div className="space-y-4">
+              <h4 className="font-bold uppercase tracking-wider text-white text-xs opacity-90">
                 Gandhian Outreach
               </h4>
-              <ul className="space-y-1.5 text-[11px]">
+              <ul className="space-y-2.5 text-xs opacity-70 font-medium">
                 <li>
-                  <span className="text-slate-300 font-medium">Shanti Sena (Peace Brigade)</span>
+                  <span className="hover:text-white cursor-pointer transition">Shanti Sena (Peace Brigade)</span>
                 </li>
                 <li>
-                  <span className="text-slate-300 font-medium">Nai Talim (Work-Based Learning)</span>
+                  <span className="hover:text-white cursor-pointer transition">Nai Talim (Work-Based Learning)</span>
                 </li>
                 <li>
-                  <span className="text-slate-300 font-medium">Unnat Bharat Abhiyan (UBA Regional Cell)</span>
+                  <span className="hover:text-white cursor-pointer transition">Unnat Bharat Abhiyan (UBA Regional Cell)</span>
                 </li>
                 <li>
-                  <span className="text-slate-300 font-medium">Krishi Vigyan Kendra (ICAR-KVK)</span>
+                  <span className="hover:text-white cursor-pointer transition">Krishi Vigyan Kendra (ICAR-KVK)</span>
                 </li>
                 <li>
-                  <span className="text-slate-300 font-medium">Village Field Placement Scheme</span>
+                  <span className="hover:text-white cursor-pointer transition">Village Field Placement Scheme</span>
                 </li>
               </ul>
             </div>
 
             {/* Contact Information */}
-            <div className="space-y-3">
-              <h4 className="font-bold uppercase tracking-wider text-slate-200 text-xs">
+            <div className="space-y-4">
+              <h4 className="font-bold uppercase tracking-wider text-white text-xs opacity-90">
                 University Campus
               </h4>
-              <div className="space-y-2 text-[11px]">
-                <div className="flex items-start gap-2">
-                  <MapPin className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span>{INSTITUTION_INFO.location}</span>
+              <div className="space-y-3 text-xs opacity-70 font-medium">
+                <div className="flex items-start gap-2.5 group cursor-pointer hover:text-white transition">
+                  <MapPin className="w-4 h-4 mt-0.5 opacity-80" />
+                  <span className="leading-relaxed">{INSTITUTION_INFO.location}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                <div className="flex items-center gap-2.5 group cursor-pointer hover:text-white transition">
+                  <Phone className="w-4 h-4 opacity-80" />
                   <span>{INSTITUTION_INFO.phone}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                <div className="flex items-center gap-2.5 group cursor-pointer hover:text-white transition">
+                  <Mail className="w-4 h-4 opacity-80" />
                   <span>{INSTITUTION_INFO.email}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <a href={INSTITUTION_INFO.website} target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline">
+                <div className="flex items-center gap-2.5 group cursor-pointer hover:text-white transition">
+                  <Globe className="w-4 h-4 opacity-80" />
+                  <a href={INSTITUTION_INFO.website} target="_blank" rel="noreferrer">
                     {INSTITUTION_INFO.website}
                   </a>
                 </div>
@@ -233,13 +233,13 @@ export const App: React.FC = () => {
           </div>
 
           {/* Bottom copyright */}
-          <div className="mt-8 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px]">
+          <div className="mt-16 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] opacity-60 font-medium">
             <div>
               © 2026 The Gandhigram Rural Institute (Deemed to be University). All rights reserved.
             </div>
-            <div className="flex items-center space-x-4 text-slate-400">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <span>Anti-Ragging Helpline: 1800-180-5522</span>
-              <span>•</span>
+              <span className="hidden sm:inline">•</span>
               <span>Grievance Cell: samadhan@ruraluniv.ac.in</span>
             </div>
           </div>

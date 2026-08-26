@@ -3,22 +3,8 @@ import { useAppStore } from '../../core/store/appStore';
 import { canAccessCircular } from '../../core/auth/permissions';
 import { CircularItem } from '../../types';
 import { 
-  Bell, 
-  Search, 
-  Bookmark, 
-  BookmarkCheck, 
-  Download, 
-  Share2, 
-  Filter, 
-  Sparkles,
-  Calendar,
-  AlertCircle,
-  FileText,
-  Shield,
-  Eye,
-  Lock,
-  GraduationCap,
-  Building2
+  Bell, Search, Bookmark, BookmarkCheck, Download, 
+  AlertCircle, Shield, Calendar
 } from 'lucide-react';
 
 export const AlertsView: React.FC = () => {
@@ -32,7 +18,6 @@ export const AlertsView: React.FC = () => {
 
   const filteredCirculars = useMemo(() => {
     return circulars.filter((circ) => {
-      // First, enforce granular circular access control based on user identity & hierarchy
       const hasAccess = canAccessCircular(circ, currentUser);
       if (!hasAccess) return false;
 
@@ -50,220 +35,200 @@ export const AlertsView: React.FC = () => {
   }, [circulars, searchQuery, selectedCategory, selectedAudience, showBookmarksOnly, bookmarkedIds, currentUser]);
 
   return (
-    <div className="space-y-8 pb-16">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-950/80 border border-rose-600/40 text-rose-400 text-xs font-semibold">
-            <Bell className="w-3.5 h-3.5" />
-            <span>Official University Bulletin</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-white">
-            Circulars, Notifications & Press Releases
-          </h1>
-          <p className="text-sm text-slate-400">
-            Real-time administrative notices, examination guidelines, admission alerts, and holiday calendars.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300">
-            <span className={`w-2 h-2 rounded-full ${isFirestoreLive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
-            <span>Firestore: <strong className="text-emerald-400">{isFirestoreLive ? 'Live Sync' : 'Ready'}</strong></span>
-          </div>
-
-          <button
-            onClick={() => setShowBookmarksOnly(!showBookmarksOnly)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border transition ${
-              showBookmarksOnly
-                ? 'bg-amber-600/20 text-amber-300 border-amber-500/40'
-                : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
-            }`}
-          >
-            <Bookmark className="w-4 h-4" />
-            <span>Saved Notices ({bookmarkedIds.length})</span>
-          </button>
-        </div>
+    <div className="space-y-8 sm:space-y-12 pb-24 animate-fadeIn max-w-5xl mx-auto px-4 sm:px-6">
+      
+      {/* Editorial Header */}
+      <div className="space-y-6">
+        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-display font-medium text-[#1A1F1D] tracking-tight leading-[1.1]">
+          Circulars & <br/>
+          <span className="text-black/30">Notifications.</span>
+        </h1>
+        <p className="text-xl text-[#5C6661] font-light leading-relaxed max-w-2xl">
+          Real-time administrative notices, examination guidelines, admission alerts, and official releases.
+        </p>
       </div>
 
       {/* Guest Notice Banner */}
       {currentUser.role === 'guest' && (
-        <div className="p-4 rounded-2xl bg-sky-950/60 border border-sky-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-3">
-            <Shield className="w-5 h-5 text-sky-400 flex-shrink-0" />
+        <div className="bg-[#E0F2FE] p-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
+          <div className="flex items-center gap-4">
+            <Shield className="w-8 h-8 text-[#0369A1] flex-shrink-0" />
             <div>
-              <p className="font-bold text-white">Public Institutional View</p>
-              <p className="text-slate-300">You are currently viewing open university circulars and admission notices. Department-specific internal circulars and confidential faculty notifications require verified institutional login.</p>
+              <p className="font-bold text-[#1A1F1D] text-lg">Public Institutional View</p>
+              <p className="text-[#0369A1]">You are viewing open circulars. Department-specific internal circulars require verified login.</p>
             </div>
           </div>
           <button
             onClick={() => setLoginModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold whitespace-nowrap transition shadow-sm flex-shrink-0"
+            className="px-6 py-3 rounded-full bg-white text-[#0369A1] font-bold whitespace-nowrap transition-colors shadow-sm hover:bg-[#FDFDFB]"
           >
-            Student & Staff Login
+            Staff / Student Login
           </button>
         </div>
       )}
 
       {/* Filter and Search Bar */}
-      <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+      <div className="bg-white p-6 sm:p-8 rounded-3xl sm:rounded-[2rem] border border-[#E5EAE7] space-y-6 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+          
           {/* Search box */}
           <div className="md:col-span-6 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+            <Search className="w-5 h-5 text-[#5C6661] absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search circulars by subject, keyword, or authority..."
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-emerald-500"
+              placeholder="Search circulars by subject, keyword..."
+              className="w-full bg-[#F2F6F4] rounded-full pl-12 pr-6 py-4 text-[#1A1F1D] outline-none focus:ring-2 focus:ring-[#0F4C3A]/20"
             />
           </div>
 
-          {/* Category Selector */}
+          {/* Filters */}
           <div className="md:col-span-3">
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-200 outline-none focus:border-emerald-500"
+              className="w-full bg-[#F2F6F4] rounded-full px-6 py-4 text-[#1A1F1D] font-medium outline-none focus:ring-2 focus:ring-[#0F4C3A]/20"
             >
               <option value="ALL">All Categories</option>
-              <option value="EXAM">Examination (ESE)</option>
-              <option value="ADMISSIONS">Admissions 2026-27</option>
-              <option value="ACADEMIC">Academic & Syllabus</option>
-              <option value="OUTREACH">Shanti Sena / Outreach</option>
-              <option value="TENDER">Tenders & Procurement</option>
-              <option value="CAREER">Recruitment / Careers</option>
+              <option value="EXAM">Examination</option>
+              <option value="ADMISSIONS">Admissions</option>
+              <option value="ACADEMIC">Academic</option>
+              <option value="TENDER">Tenders</option>
               <option value="ADMIN">Administration</option>
             </select>
           </div>
 
-          {/* Audience Filter */}
           <div className="md:col-span-3">
             <select
               value={selectedAudience}
               onChange={(e) => setSelectedAudience(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-200 outline-none focus:border-emerald-500"
+              className="w-full bg-[#F2F6F4] rounded-full px-6 py-4 text-[#1A1F1D] font-medium outline-none focus:ring-2 focus:ring-[#0F4C3A]/20"
             >
-              <option value="ALL">Target Audience: All</option>
-              <option value="STUDENT">Students Only</option>
-              <option value="FACULTY">Faculty & Researchers</option>
-              <option value="STAFF">Administrative Staff</option>
+              <option value="ALL">All Audiences</option>
+              <option value="STUDENT">Students</option>
+              <option value="FACULTY">Faculty</option>
+              <option value="STAFF">Staff</option>
             </select>
           </div>
         </div>
 
-        {/* Quick Category Chips */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-1">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
-                selectedCategory === cat
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        {/* Quick Filters */}
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-[#E5EAE7]">
+          <div className="flex flex-wrap items-center gap-2">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-colors ${
+                  selectedCategory === cat
+                    ? 'bg-[#0F4C3A] text-white'
+                    : 'bg-white text-[#5C6661] hover:bg-[#F2F6F4] border border-[#E5EAE7]'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setShowBookmarksOnly(!showBookmarksOnly)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-colors ${
+              showBookmarksOnly
+                ? 'bg-[#FEF3C7] text-[#92400E]'
+                : 'bg-white text-[#5C6661] hover:bg-[#F2F6F4] border border-[#E5EAE7]'
+            }`}
+          >
+            <Bookmark className="w-4 h-4" /> Saved ({bookmarkedIds.length})
+          </button>
         </div>
       </div>
 
       {/* Circulars List */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         {filteredCirculars.map((circ) => {
           const isSaved = bookmarkedIds.includes(circ.id);
           return (
             <div
               key={circ.id}
-              className={`p-5 rounded-2xl bg-slate-900 border transition space-y-3 ${
-                circ.isImportant ? 'border-rose-900/60 bg-gradient-to-r from-slate-900 via-slate-900 to-rose-950/20' : 'border-slate-800'
+              className={`p-6 sm:p-10 rounded-3xl sm:rounded-[2rem] bg-white border transition-all ${
+                circ.isImportant ? 'border-[#BE123C] shadow-sm' : 'border-[#E5EAE7] shadow-sm hover:border-[#0F4C3A]'
               }`}
             >
-              {/* Header tags */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
-                    circ.category === 'EXAM' ? 'bg-rose-950 text-rose-300 border-rose-800' :
-                    circ.category === 'ADMISSIONS' ? 'bg-amber-950 text-amber-300 border-amber-800' :
-                    circ.category === 'TENDER' ? 'bg-sky-950 text-sky-300 border-sky-800' :
-                    'bg-slate-800 text-slate-300 border-slate-700'
-                  }`}>
-                    {circ.category}
-                  </span>
-
-                  {circ.targetRole && circ.targetRole !== 'ALL' && (
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
-                      Target: {circ.targetRole}
+              
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+                <div className="flex-1 space-y-4">
+                  
+                  {/* Meta Badges */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-[#F2F6F4] text-[#5C6661]">
+                      {circ.category}
                     </span>
-                  )}
+                    {circ.targetRole && circ.targetRole !== 'ALL' && (
+                      <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-[#E5F0EB] text-[#0F4C3A]">
+                        Target: {circ.targetRole}
+                      </span>
+                    )}
+                    {circ.isImportant && (
+                      <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-[#FEF2F2] text-[#BE123C] flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" /> HIGH PRIORITY
+                      </span>
+                    )}
+                  </div>
 
-                  {circ.isImportant && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-600 text-white flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      HIGH PRIORITY
+                  {/* Title & Body */}
+                  <div>
+                    <h3 className="text-2xl font-bold text-[#1A1F1D] leading-tight mb-3">
+                      {circ.title}
+                    </h3>
+                    <p className="text-base text-[#5C6661] leading-relaxed">
+                      {circ.description}
+                    </p>
+                  </div>
+
+                  {/* Footer Meta */}
+                  <div className="flex flex-wrap items-center gap-6 pt-4 text-sm text-[#5C6661]">
+                    <span className="flex items-center gap-2 font-medium">
+                      <Calendar className="w-4 h-4" /> {circ.publishDate}
                     </span>
-                  )}
+                    {circ.author && (
+                      <span>Issued by: <strong className="text-[#1A1F1D]">{circ.author}</strong></span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-1">
+                {/* Actions */}
+                <div className="flex sm:flex-col items-center gap-3">
+                  <button
+                    onClick={() => alert(`Notice ${circ.id} downloaded in official PDF format.`)}
+                    className="w-12 h-12 flex items-center justify-center rounded-full bg-[#0F4C3A] text-white hover:bg-[#0A3327] transition-colors shadow-sm"
+                    title="Download PDF"
+                  >
+                    <Download className="w-5 h-5" />
+                  </button>
                   <button
                     onClick={() => toggleBookmark(circ.id)}
-                    className={`p-1.5 rounded-lg border transition ${
+                    className={`w-12 h-12 flex items-center justify-center rounded-full border transition-colors ${
                       isSaved
-                        ? 'bg-amber-500/20 text-amber-400 border-amber-500/40'
-                        : 'bg-slate-800 text-slate-400 hover:text-white border-slate-700'
+                        ? 'bg-[#FEF3C7] border-[#FEF3C7] text-[#92400E]'
+                        : 'bg-white border-[#E5EAE7] text-[#5C6661] hover:bg-[#F2F6F4]'
                     }`}
                     title={isSaved ? 'Remove from Saved' : 'Save Notice'}
                   >
-                    {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+                    {isSaved ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
                   </button>
                 </div>
               </div>
 
-              {/* Title & Body */}
-              <div>
-                <h3 className="text-base font-bold text-white leading-snug">
-                  {circ.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
-                  {circ.description}
-                </p>
-              </div>
-
-              {/* Meta & Download CTA */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-3 border-t border-slate-800/80 text-xs text-slate-400">
-                <div className="flex items-center gap-3">
-                  <span className="flex items-center gap-1 font-medium text-slate-300">
-                    <Calendar className="w-3.5 h-3.5 text-emerald-400" />
-                    Published: {circ.publishDate}
-                  </span>
-                  {circ.author && (
-                    <span className="text-slate-400">Issued by: <strong>{circ.author}</strong></span>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => alert(`Notice ${circ.id} downloaded in official PDF format.`)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition"
-                  >
-                    <Download className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Download Official Circular PDF</span>
-                  </button>
-                </div>
-              </div>
             </div>
           );
         })}
 
         {filteredCirculars.length === 0 && (
-          <div className="p-12 text-center bg-slate-900 rounded-2xl border border-slate-800 text-slate-400 space-y-3">
-            <Bell className="w-8 h-8 mx-auto text-slate-600" />
-            <h3 className="text-base font-semibold text-slate-300">No circulars match your search criteria</h3>
-            <p className="text-xs">Try resetting your filters or search keywords.</p>
+          <div className="p-16 text-center bg-white rounded-3xl sm:rounded-[2rem] border border-[#E5EAE7] text-[#5C6661] space-y-4 shadow-sm">
+            <Bell className="w-12 h-12 mx-auto text-[#E5EAE7]" />
+            <h3 className="text-xl font-bold text-[#1A1F1D]">No circulars found.</h3>
+            <p>Try adjusting your search or filters.</p>
           </div>
         )}
       </div>

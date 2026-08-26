@@ -1,130 +1,170 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
-  BookOpen,
-  FileCheck,
-  CreditCard,
-  Library,
-  Building2,
-  Briefcase,
-  Bot,
-  MapPin,
-  Bus,
-  AlertCircle,
+  Search,
   Bell,
-  CheckCircle2,
+  Calendar,
+  BookOpen,
+  FileText,
+  CreditCard,
+  Briefcase,
+  MapPin,
+  Clock,
+  ArrowRight,
+  TrendingUp,
 } from 'lucide-react-native';
-import { Header } from '../../components/Header';
+import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { Card } from '../../components/Card';
 import { useResponsive } from '../../core/responsive/useResponsive';
+import { themeTokens } from '../../core/theme/tokens';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { isTablet } = useResponsive();
-  
-  const modules = [
-    { title: 'Academics & Attendance', icon: BookOpen, color: '#518214', route: '/(tabs)/academics' },
-    { title: 'Exams & Results', icon: FileCheck, color: '#911C03', route: '/(tabs)/examinations' },
-    { title: 'Samarth & Fee Portal', icon: CreditCard, color: '#0D47A1', route: '/(tabs)/academics' },
-    { title: 'Hostel & Outpass', icon: Building2, color: '#F16236', route: '/(tabs)/hostel' },
-    { title: 'AI Assistant (RAG)', icon: Bot, color: '#C2185B', route: '/(tabs)/ai_chat' },
-    { title: 'Library OPAC', icon: Library, color: '#6A1B9A', route: '/(tabs)/academics' },
-    { title: 'Placements & Drives', icon: Briefcase, color: '#00838F', route: '/(tabs)/profile' },
-    { title: 'Village Outreach', icon: MapPin, color: '#33691E', route: '/(tabs)/home' },
-    { title: 'Transport & Bus', icon: Bus, color: '#F57F17', route: '/(tabs)/home' },
-    { title: 'Grievance Portal', icon: AlertCircle, color: '#C62828', route: '/(tabs)/profile' },
+  const { colors } = themeTokens;
+
+  const quickActions = [
+    { title: 'Timetable', icon: Calendar, color: '#3B82F6', route: '/(tabs)/academics' },
+    { title: 'Attendance', icon: TrendingUp, color: '#10B981', route: '/(tabs)/academics' },
+    { title: 'Results', icon: FileText, color: '#8B5CF6', route: '/(tabs)/examinations' },
+    { title: 'Fees', icon: CreditCard, color: '#F59E0B', route: '/(tabs)/services' },
+    { title: 'Library', icon: BookOpen, color: '#EC4899', route: '/(tabs)/services' },
+    { title: 'Placements', icon: Briefcase, color: '#14B8A6', route: '/(tabs)/profile' },
   ];
 
   return (
     <View className="flex-1 bg-slate-50">
-      <Header
-        title="Dashboard"
-        subtitle="Gandhigram Rural Institute"
-        variant="white"
-        rightAction={
-          <TouchableOpacity className="p-2 bg-slate-100 rounded-full border border-slate-200">
-            <Bell size={20} color="#475569" />
-          </TouchableOpacity>
-        }
-      />
-      
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: isTablet ? 24 : 16 }} showsVerticalScrollIndicator={false}>
-        <View style={{ maxWidth: 1200, width: '100%', alignSelf: 'center' }}>
+      <ScrollView className="flex-1" contentContainerStyle={{ padding: isTablet ? 32 : 20, paddingTop: 60 }} showsVerticalScrollIndicator={false}>
+        <View style={{ maxWidth: 800, width: '100%', alignSelf: 'center' }}>
           
-          {/* Official Website Live Banner */}
-          <View className="bg-red-900 p-4 rounded-xl mb-6 shadow-sm border border-red-800 flex-row">
-            <View className="flex-1">
-              <View className="flex-row items-center mb-2">
-                <CheckCircle2 size={16} color="#FFCC80" />
-                <Text className="text-xs font-bold text-amber-200 ml-1.5 tracking-widest uppercase">
-                  Important Update
+          {/* Header Section */}
+          <Animated.View entering={FadeIn.duration(400)} className="flex-row items-center justify-between mb-8">
+            <View className="flex-row items-center flex-1">
+              <View className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden mr-4 border-2 border-white shadow-sm">
+                <Image 
+                  source={{ uri: 'https://i.pravatar.cc/150?u=a042581f4e29026704d' }} 
+                  style={{ width: '100%', height: '100%' }} 
+                />
+              </View>
+              <View>
+                <Text className="text-sm font-medium text-slate-500 mb-0.5">Good morning,</Text>
+                <Text className="text-xl font-bold text-slate-900">Vijay Kumar</Text>
+              </View>
+            </View>
+            
+            <TouchableOpacity className="p-3 bg-white rounded-full shadow-sm border border-slate-100">
+              <View className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full z-10 border border-white" />
+              <Bell size={22} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </Animated.View>
+
+          {/* Smart Search */}
+          <Animated.View entering={FadeInDown.delay(100).duration(400)} className="mb-8">
+            <View className="flex-row items-center bg-white h-14 rounded-2xl px-4 shadow-sm border border-slate-100">
+              <Search size={20} color={colors.textMuted} />
+              <TextInput 
+                placeholder="Search courses, faculty, or notices..."
+                placeholderTextColor={colors.textMuted}
+                className="flex-1 ml-3 h-full text-base font-medium text-slate-900"
+              />
+            </View>
+          </Animated.View>
+
+          {/* Important Notice */}
+          <Animated.View entering={FadeInDown.delay(200).duration(400)} className="mb-8">
+            <View className="bg-primary-500 p-5 rounded-3xl flex-row items-center justify-between shadow-lg shadow-primary-500/20 overflow-hidden">
+              <View className="absolute -right-10 -top-10 w-32 h-32 bg-white/10 rounded-full" />
+              <View className="flex-1 pr-6 z-10">
+                <Text className="text-xs font-bold text-primary-100 tracking-widest uppercase mb-1.5">
+                  End Semester
+                </Text>
+                <Text className="text-white font-bold text-lg mb-2">
+                  Hall Tickets Available
+                </Text>
+                <Text className="text-sm text-primary-100 leading-relaxed">
+                  Download your hall ticket from the examination portal before May 15th.
                 </Text>
               </View>
-              <Text className="text-white font-bold text-base mb-1">
-                End Semester Examinations & Samarth Portal
-              </Text>
-              <Text className="text-sm text-red-100 leading-relaxed">
-                All students are advised to download hall tickets and clear semester fees before examination commencement.
-              </Text>
+              <TouchableOpacity className="bg-white p-3 rounded-full shadow-sm z-10">
+                <ArrowRight size={20} color={colors.primary} />
+              </TouchableOpacity>
             </View>
-          </View>
+          </Animated.View>
 
-          <View style={{ flexDirection: isTablet ? 'row' : 'column', gap: 16, marginBottom: 24 }}>
-            {/* Quick Stats Grid */}
-            <View className="flex-1 flex-row gap-4">
-              <View className="flex-1 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <Text className="text-xs text-slate-500 font-medium uppercase tracking-wider">Attendance Rate</Text>
-                <Text className="text-3xl font-bold text-emerald-700 mt-1">92.4%</Text>
+          {/* Academic Progress */}
+          <Animated.View entering={FadeInDown.delay(300).duration(400)} className="mb-8">
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-lg font-bold text-slate-900">Today's Overview</Text>
+            </View>
+            <View className="flex-row gap-4">
+              <Card elevation="sm" className="flex-1 bg-white p-5 rounded-3xl" onPress={() => {}}>
+                <View className="w-10 h-10 rounded-full bg-emerald-50 items-center justify-center mb-3">
+                  <TrendingUp size={20} color={colors.success} />
+                </View>
+                <Text className="text-3xl font-bold text-slate-900">92%</Text>
+                <Text className="text-sm font-medium text-slate-500 mt-1">Attendance</Text>
+              </Card>
+              <Card elevation="sm" className="flex-1 bg-white p-5 rounded-3xl" onPress={() => {}}>
+                <View className="w-10 h-10 rounded-full bg-orange-50 items-center justify-center mb-3">
+                  <Clock size={20} color={colors.warning} />
+                </View>
+                <Text className="text-sm font-bold text-slate-900 mb-1" numberOfLines={1}>CS301 - Data Structures</Text>
+                <Text className="text-xs font-medium text-slate-500 mb-2">10:30 AM • Room 402</Text>
+                <View className="bg-orange-100 px-2 py-1 rounded self-start">
+                  <Text className="text-xs font-bold text-orange-700">Next Class</Text>
+                </View>
+              </Card>
+            </View>
+          </Animated.View>
+
+          {/* Quick Actions */}
+          <Animated.View entering={FadeInDown.delay(400).duration(400)} className="mb-8">
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-lg font-bold text-slate-900">Quick Actions</Text>
+            </View>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
+              {quickActions.map((action, index) => {
+                const Icon = action.icon;
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => router.push(action.route as any)}
+                    style={{ width: isTablet ? 'calc(25% - 12px)' : 'calc(33.333% - 11px)', alignItems: 'center' }}
+                    activeOpacity={0.7}
+                  >
+                    <View className="w-16 h-16 rounded-2xl bg-white items-center justify-center shadow-sm border border-slate-100 mb-2">
+                      <Icon size={26} color={action.color} strokeWidth={2} />
+                    </View>
+                    <Text className="text-xs font-semibold text-slate-600 text-center">{action.title}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </Animated.View>
+
+          {/* Campus Gateway */}
+          <Animated.View entering={FadeInDown.delay(500).duration(400)} className="mb-10">
+            <Card 
+              onPress={() => router.push('/(tabs)/discover')}
+              className="bg-primary-50 p-6 rounded-3xl flex-row items-center justify-between overflow-hidden border border-primary-100"
+              elevation="none"
+            >
+              <View className="absolute right-0 top-0 opacity-5">
+                <MapPin size={120} color={colors.primary} />
               </View>
-              <View className="flex-1 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <Text className="text-xs text-slate-500 font-medium uppercase tracking-wider">Cumulative CGPA</Text>
-                <Text className="text-3xl font-bold text-red-800 mt-1">8.85</Text>
+              <View className="flex-1 pr-6 z-10">
+                <Text className="text-lg font-bold text-primary-900 mb-1.5">Campus Map & Services</Text>
+                <Text className="text-sm text-primary-700 leading-relaxed">
+                  Navigate facilities, find departments, and access institutional services.
+                </Text>
               </View>
-            </View>
-          </View>
-
-          {/* Explore GRI Gateway */}
-          <Card 
-            onPress={() => router.push('/(tabs)/discover')}
-            className="bg-khadi-blue p-5 rounded-xl border border-blue-900 shadow-sm flex-row items-center justify-between mb-8"
-          >
-            <View className="flex-1 pr-4">
-              <Text className="text-lg font-bold text-white mb-1">Explore Full University</Text>
-              <Text className="text-sm text-blue-100 leading-relaxed">
-                Browse all Schools, Departments, Centres, Administration, Tenders, and Campus Facilities in the complete directory.
-              </Text>
-            </View>
-            <View className="bg-white/20 p-3 rounded-full">
-              <MapPin size={24} color="#FFFFFF" />
-            </View>
-          </Card>
-
-          {/* Domain Modules Grid */}
-          <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-lg font-bold text-slate-800">University Services</Text>
-          </View>
-
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
-            {modules.map((mod, index) => {
-              const Icon = mod.icon;
-              return (
-                <Card
-                  key={index}
-                  onPress={() => router.push(mod.route as any)}
-                  className="bg-white border-slate-200 shadow-sm"
-                  style={{ width: isTablet ? 'calc(25% - 12px)' : 'calc(50% - 8px)', padding: 16, alignItems: 'center', marginBottom: 0 }}
-                >
-                  <View className="p-3 rounded-xl mb-3" style={{ backgroundColor: `${mod.color}15` }}>
-                    <Icon size={24} color={mod.color} />
-                  </View>
-                  <Text className="text-sm font-semibold text-slate-700 text-center">{mod.title}</Text>
-                </Card>
-              );
-            })}
-          </View>
-
-          <View className="h-8" />
+              <View className="bg-white p-4 rounded-full z-10 shadow-sm border border-primary-100">
+                <MapPin size={24} color={colors.primary} />
+              </View>
+            </Card>
+          </Animated.View>
+          
         </View>
       </ScrollView>
     </View>

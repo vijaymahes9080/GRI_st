@@ -1,18 +1,32 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { User, ShieldCheck, Bell, Lock, HelpCircle, LogOut, ChevronRight } from 'lucide-react-native';
-import { Header } from '../../components/Header';
-import { Card } from '../../components/Card';
-import { useAuthStore, UserRole } from '../../core/auth/authStore';
+import {
+  User,
+  ShieldCheck,
+  Lock,
+  Bell,
+  HelpCircle,
+  ChevronRight,
+  LogOut,
+  Settings,
+  BookOpen,
+  Award,
+  CreditCard,
+  QrCode
+} from 'lucide-react-native';
+import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import { useAuthStore } from '../../core/auth/authStore';
 import { useResponsive } from '../../core/responsive/useResponsive';
+import { themeTokens } from '../../core/theme/tokens';
+import { Card } from '../../components/Card';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, logout, updateUser } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const { isTablet } = useResponsive();
-  const [showRoleModal, setShowRoleModal] = React.useState(false);
-  
+  const { colors } = themeTokens;
+
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out of GRI Portal?', [
       { text: 'Cancel', style: 'cancel' },
@@ -27,143 +41,140 @@ export default function ProfileScreen() {
     ]);
   };
 
-  const allRoles: { role: UserRole; title: string; desc: string }[] = [
-    { role: 'STUDENT', title: 'Student', desc: 'Attendance, Grades, Fees & Hall Ticket' },
-    { role: 'FACULTY', title: 'Faculty', desc: 'Class Attendance, CFA Marks & Roster' },
-    { role: 'RESEARCH_SCHOLAR', title: 'Research Scholar', desc: 'Ph.D. Progress, Thesis & Fellowship' },
-    { role: 'DEPARTMENT_ADMIN', title: 'Department Admin', desc: 'Departmental Notices & Timetables' },
-    { role: 'EXAM_STAFF', title: 'Exam Staff', desc: 'Seating, Exam Schedules & Revaluation' },
-    { role: 'HOSTEL_STAFF', title: 'Hostel Warden', desc: 'Outpass Approvals & Mess Fees' },
-    { role: 'FINANCE_STAFF', title: 'Finance Staff', desc: 'Fee Ledger & Payment Receipts' },
-    { role: 'UNIVERSITY_ADMIN', title: 'University Admin', desc: 'University Dashboard & Content CMS' },
-    { role: 'LIBRARIAN', title: 'Librarian', desc: 'OPAC Search & Book Transactions' },
-    { role: 'PLACEMENT_OFFICER', title: 'Placement Officer', desc: 'Campus Drives & Interviews' },
-    { role: 'ALUMNI', title: 'Alumni', desc: 'Networking, Events & Mentorship' },
-    { role: 'PENSIONER', title: 'Pensioner', desc: 'Life Certificate & Pension Status' },
-    { role: 'SYSTEM_ADMIN', title: 'System Admin', desc: 'RBAC Permissions & Audit Logs' },
-  ];
-
-  const [showPreferences, setShowPreferences] = React.useState(false);
-  const [preferences, setPreferences] = React.useState({
-    push: true,
-    email: true,
-    whatsapp: true,
-    sms: true,
-    emergency: true,
-  });
-
-  const menuItems = [
-    { title: 'View Assigned Role & RBAC Scope', icon: ShieldCheck, action: () => setShowRoleModal(true) },
-    { title: 'Security & Biometrics', icon: Lock, action: () => Alert.alert('Biometrics', 'Fingerprint & Hardware Keystore enabled') },
-    { title: 'Notification Preferences', icon: Bell, action: () => setShowPreferences(!showPreferences) },
-    { title: 'Help & Grievance Portal', icon: HelpCircle, action: () => router.push('/(tabs)/services' as any) },
+  const menuGroups = [
+    {
+      title: 'Academic Profile',
+      items: [
+        { title: 'My Courses & Grades', icon: BookOpen, color: colors.primary, action: () => router.push('/(tabs)/academics' as any) },
+        { title: 'Certificates & Awards', icon: Award, color: colors.warning, action: () => {} },
+        { title: 'Fee Payments', icon: CreditCard, color: colors.success, action: () => router.push('/(tabs)/services' as any) },
+      ]
+    },
+    {
+      title: 'Preferences & Security',
+      items: [
+        { title: 'Notification Settings', icon: Bell, color: colors.info, action: () => {} },
+        { title: 'Security & Privacy', icon: Lock, color: colors.textSecondary, action: () => {} },
+        { title: 'RBAC Scope & Role', icon: ShieldCheck, color: colors.tertiary, action: () => {} },
+        { title: 'Help & Grievances', icon: HelpCircle, color: colors.secondary, action: () => router.push('/(tabs)/services' as any) },
+      ]
+    }
   ];
 
   return (
     <View className="flex-1 bg-slate-50">
-      <Header title="My Profile" subtitle="GRI Unified Identity" variant="white" />
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: isTablet ? 24 : 16 }} showsVerticalScrollIndicator={false}>
-        
+      <ScrollView className="flex-1" contentContainerStyle={{ padding: isTablet ? 32 : 20, paddingTop: 60 }} showsVerticalScrollIndicator={false}>
         <View style={{ maxWidth: 800, width: '100%', alignSelf: 'center' }}>
-          {/* User Card */}
-          <Card className="p-6 mb-8 border-slate-200 bg-white flex-row items-center shadow-sm">
-            <View className="bg-khadi-blue p-4 rounded-xl mr-6">
-              <User size={36} color="#FFFFFF" />
-            </View>
-            <View className="flex-1">
-              <Text className="text-xl font-bold text-slate-900 tracking-tight">{user?.fullName || 'Authenticated User'}</Text>
-              <View className="bg-emerald-100 px-3 py-1 rounded-md self-start mt-2 mb-2">
-                <Text className="text-xs font-bold text-emerald-800 tracking-wider uppercase">{user?.role || 'STUDENT'}</Text>
+          
+          <Animated.View entering={FadeIn.duration(400)} className="flex-row items-center justify-between mb-6">
+            <Text className="text-3xl font-bold text-slate-900">My Profile</Text>
+            <TouchableOpacity className="p-3 bg-white rounded-full shadow-sm border border-slate-100">
+              <Settings size={22} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </Animated.View>
+
+          {/* Digital ID Card */}
+          <Animated.View entering={FadeInDown.delay(100).duration(400)} className="mb-8">
+            <View className="bg-white border border-primary-200 rounded-3xl overflow-hidden shadow-sm">
+              {/* Pattern Background */}
+              <View className="absolute inset-0 opacity-5">
+                <View className="absolute -right-20 -top-20 w-64 h-64 border-[40px] border-primary-900 rounded-full" />
+                <View className="absolute -left-10 -bottom-10 w-40 h-40 border-[20px] border-primary-900 rounded-full" />
               </View>
-              <Text className="text-sm text-slate-600">{user?.department || 'Gandhigram Rural Institute'}</Text>
-              <Text className="text-sm font-medium text-slate-500 mt-1">ID: {user?.rollNumber || 'GRI-2026'}</Text>
-            </View>
-          </Card>
-
-          {/* Menu Items */}
-          <Text className="text-lg font-bold text-slate-900 mb-4 px-1">Settings & Options</Text>
-          <View className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-8">
-            {menuItems.map((item, idx) => {
-              const Icon = item.icon;
-              return (
-                <TouchableOpacity
-                  key={idx}
-                  onPress={item.action}
-                  className={`p-4 flex-row items-center justify-between bg-white ${idx !== menuItems.length - 1 ? 'border-b border-slate-100' : ''}`}
-                  activeOpacity={0.7}
-                >
-                  <View className="flex-row items-center">
-                    <View className="bg-slate-50 p-2.5 rounded-lg mr-4 border border-slate-100">
-                      <Icon size={20} color="#475569" />
-                    </View>
-                    <Text className="text-base font-medium text-slate-800">{item.title}</Text>
+              
+              <View className="p-6">
+                <View className="flex-row justify-between items-start mb-6">
+                  <View className="bg-primary-50 px-3 py-1.5 rounded-lg border border-primary-100">
+                    <Text className="text-primary-800 text-xs font-bold tracking-widest uppercase">
+                      Gandhigram Rural Institute
+                    </Text>
                   </View>
-                  <ChevronRight size={18} color="#94A3B8" />
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+                  <QrCode size={32} color={colors.primary} />
+                </View>
 
-          {/* Logout Button */}
-          <TouchableOpacity
-            onPress={handleLogout}
-            className="bg-red-50 border border-red-200 p-4 rounded-xl flex-row items-center justify-center shadow-sm"
-            activeOpacity={0.7}
-          >
-            <LogOut size={20} color="#DC2626" />
-            <Text className="text-base font-bold text-red-600 ml-2">Sign Out of GRI Portal</Text>
-          </TouchableOpacity>
-          <View className="h-12" />
+                <View className="flex-row items-center mb-6">
+                  <View className="w-20 h-20 rounded-2xl bg-slate-100 border-2 border-primary-100 shadow-sm overflow-hidden mr-5">
+                    <Image 
+                      source={{ uri: 'https://i.pravatar.cc/150?u=a042581f4e29026704d' }} 
+                      style={{ width: '100%', height: '100%' }} 
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-2xl font-bold text-slate-900 mb-1">
+                      {user?.fullName || 'Vijay Kumar'}
+                    </Text>
+                    <Text className="text-primary-700 font-medium mb-1">
+                      {user?.rollNumber || '21BCA042'} • {user?.role || 'STUDENT'}
+                    </Text>
+                    <Text className="text-sm text-slate-500" numberOfLines={1}>
+                      {user?.department || 'Dept. of Computer Science'}
+                    </Text>
+                  </View>
+                </View>
+
+                <View className="flex-row bg-slate-50 rounded-2xl p-4 mt-2 border border-slate-100">
+                  <View className="flex-1 border-r border-slate-200">
+                    <Text className="text-slate-500 text-xs mb-1 uppercase tracking-wider font-semibold">Programme</Text>
+                    <Text className="text-slate-900 font-bold">BCA (Hons)</Text>
+                  </View>
+                  <View className="flex-1 pl-4">
+                    <Text className="text-slate-500 text-xs mb-1 uppercase tracking-wider font-semibold">Validity</Text>
+                    <Text className="text-slate-900 font-bold">2023 - 2026</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Animated.View>
+
+          {/* Menus */}
+          {menuGroups.map((group, groupIdx) => (
+            <Animated.View 
+              key={groupIdx} 
+              entering={FadeInDown.delay(200 + groupIdx * 100).duration(400)} 
+              className="mb-8"
+            >
+              <Text className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 ml-2">
+                {group.title}
+              </Text>
+              <View className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                {group.items.map((item, idx) => {
+                  const Icon = item.icon;
+                  const isLast = idx === group.items.length - 1;
+                  return (
+                    <TouchableOpacity
+                      key={idx}
+                      onPress={item.action}
+                      activeOpacity={0.7}
+                      className={`flex-row items-center justify-between p-4 bg-white ${!isLast ? 'border-b border-slate-50' : ''}`}
+                    >
+                      <View className="flex-row items-center">
+                        <View className="w-10 h-10 rounded-2xl bg-slate-50 items-center justify-center mr-4 border border-slate-100">
+                          <Icon size={20} color={item.color} />
+                        </View>
+                        <Text className="text-base font-medium text-slate-800">{item.title}</Text>
+                      </View>
+                      <ChevronRight size={20} color={colors.textMuted} />
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </Animated.View>
+          ))}
+
+          {/* Logout Action */}
+          <Animated.View entering={FadeInDown.delay(500).duration(400)} className="mb-10">
+            <TouchableOpacity
+              onPress={handleLogout}
+              activeOpacity={0.7}
+              className="bg-red-50 border border-red-100 p-4 rounded-2xl flex-row items-center justify-center shadow-sm"
+            >
+              <LogOut size={20} color={colors.error} />
+              <Text className="text-base font-bold text-red-600 ml-2">Sign Out</Text>
+            </TouchableOpacity>
+          </Animated.View>
+          
         </View>
       </ScrollView>
-
-      {/* Read-Only RBAC Scope Security Audit Modal */}
-      <React.Fragment>
-        {showRoleModal && (
-          <View className="absolute inset-0 bg-slate-900/60 items-center justify-center p-4 z-50">
-            <View className="bg-white w-full max-w-md rounded-2xl p-6 shadow-xl max-h-[80%]">
-              <Text className="text-xl font-bold text-slate-900 mb-2 text-center">Authenticated RBAC Scope</Text>
-              <Text className="text-sm text-slate-500 mb-6 text-center">
-                Verified identity permissions signed by GRI Authentication Server
-              </Text>
-              
-              <View className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl mb-6">
-                <Text className="text-xs font-bold text-emerald-800 tracking-wider uppercase mb-2">Active Institutional Role</Text>
-                <Text className="text-xl font-extrabold text-emerald-700">{user?.role || 'STUDENT'}</Text>
-                <Text className="text-sm text-emerald-900 mt-2">
-                  User ID: <Text className="font-medium">{user?.id || 'Verified'}</Text>
-                </Text>
-                <Text className="text-sm text-emerald-900 mt-1">
-                  Email: <Text className="font-medium">{user?.email || 'Verified'}</Text>
-                </Text>
-              </View>
-              
-              <Text className="text-xs font-bold text-slate-500 tracking-wider uppercase mb-3">Role Access Control Details</Text>
-              
-              <ScrollView className="mb-6" showsVerticalScrollIndicator={false}>
-                {allRoles
-                  .filter((r) => r.role === user?.role)
-                  .map((r, i) => (
-                    <View key={i} className="p-4 rounded-xl border bg-slate-50 border-slate-200 mb-2 flex-row items-center justify-between">
-                      <View className="flex-1 pr-4">
-                        <Text className="text-sm font-bold text-slate-900">{r.title}</Text>
-                        <Text className="text-sm text-slate-500 mt-1 leading-relaxed">{r.desc}</Text>
-                      </View>
-                      <ShieldCheck size={24} color="#059669" />
-                    </View>
-                  ))}
-              </ScrollView>
-              
-              <TouchableOpacity
-                onPress={() => setShowRoleModal(false)}
-                className="bg-slate-100 p-4 rounded-xl items-center border border-slate-200"
-              >
-                <Text className="text-base font-bold text-slate-700">Close</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-      </React.Fragment>
     </View>
   );
 }

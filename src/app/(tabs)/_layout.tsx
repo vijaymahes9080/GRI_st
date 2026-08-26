@@ -1,20 +1,19 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Platform, StyleSheet } from 'react-native';
-import { Tabs, useRouter } from 'expo-router';
-import { Home, Compass, Layers, Bell, User } from 'lucide-react-native';
-import { useAppConfig } from '../../core/config/useAppConfig';
-import { useAuthStore } from '../../core/auth/authStore';
+import { Tabs } from 'expo-router';
+import { Home, Compass, Layers, User, BookOpen } from 'lucide-react-native';
 import { useResponsive } from '../../core/responsive/useResponsive';
+import { themeTokens } from '../../core/theme/tokens';
 
 function CustomTabBar({ state, descriptors, navigation }) {
   const { isTablet } = useResponsive();
-  const { theme } = useAppConfig();
+  const { colors } = themeTokens;
 
   if (isTablet) {
     return (
-      <View style={[styles.sidebar, { backgroundColor: theme?.surfaceColor || '#FFFFFF' }]}>
+      <View style={[styles.sidebar, { backgroundColor: colors.surface }]}>
         <View className="mb-8 px-4 mt-8">
-          <Text className="text-2xl font-bold text-khadi-blue">GRI Portal</Text>
+          <Text className="text-2xl font-bold text-primary-500">GRI Portal</Text>
           <Text className="text-xs text-slate-500 mt-1">Gandhigram Rural Institute</Text>
         </View>
         <View className="flex-1 px-3">
@@ -24,7 +23,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
             
             const label = options.title !== undefined ? options.title : route.name;
             const isFocused = state.index === index;
-            const tintColor = theme?.primaryColor || '#0D47A1';
+            const tintColor = colors.primary;
             
             const onPress = () => {
               const event = navigation.emit({
@@ -47,10 +46,10 @@ function CustomTabBar({ state, descriptors, navigation }) {
                   isFocused && { backgroundColor: `${tintColor}15` }
                 ]}
               >
-                {options.tabBarIcon && options.tabBarIcon({ color: isFocused ? tintColor : '#6B7280', size: 22 })}
+                {options.tabBarIcon && options.tabBarIcon({ color: isFocused ? tintColor : colors.textSecondary, size: 22 })}
                 <Text style={[
                   styles.sidebarLabel,
-                  { color: isFocused ? tintColor : '#4B5563', fontWeight: isFocused ? '600' : '500' }
+                  { color: isFocused ? tintColor : colors.textSecondary, fontWeight: isFocused ? '600' : '500' }
                 ]}>
                   {label}
                 </Text>
@@ -63,14 +62,14 @@ function CustomTabBar({ state, descriptors, navigation }) {
   }
 
   return (
-    <View style={[styles.bottomBar, { backgroundColor: theme?.surfaceColor || '#FFFFFF' }]}>
+    <View style={[styles.bottomBar, { backgroundColor: colors.surface }]}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         if (options.href === null) return null;
         
         const label = options.title !== undefined ? options.title : route.name;
         const isFocused = state.index === index;
-        const tintColor = theme?.primaryColor || '#0D47A1';
+        const tintColor = colors.primary;
         
         const onPress = () => {
           const event = navigation.emit({
@@ -87,12 +86,15 @@ function CustomTabBar({ state, descriptors, navigation }) {
           <TouchableOpacity
             key={route.key}
             onPress={onPress}
+            activeOpacity={0.7}
             style={styles.bottomBarItem}
           >
-            {options.tabBarIcon && options.tabBarIcon({ color: isFocused ? tintColor : '#9CA3AF', size: 24 })}
+            <View style={[styles.iconContainer, isFocused && { backgroundColor: `${tintColor}15` }]}>
+              {options.tabBarIcon && options.tabBarIcon({ color: isFocused ? tintColor : colors.textMuted, size: 22 })}
+            </View>
             <Text style={[
               styles.bottomBarLabel,
-              { color: isFocused ? tintColor : '#9CA3AF', fontWeight: isFocused ? '600' : '500' }
+              { color: isFocused ? tintColor : colors.textMuted, fontWeight: isFocused ? '600' : '500' }
             ]}>
               {label}
             </Text>
@@ -111,87 +113,101 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 260,
     borderRightWidth: 1,
-    borderRightColor: '#E5E7EB',
+    borderRightColor: '#F1F5F9', // surfaceMuted
     zIndex: 10,
   },
   sidebarItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 4,
   },
   sidebarLabel: {
-    marginLeft: 12,
+    marginLeft: 14,
     fontSize: 15,
   },
   bottomBar: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-    paddingBottom: Platform.OS === 'ios' ? 24 : 12,
+    borderTopColor: '#F1F5F9', // surfaceMuted
+    paddingBottom: Platform.OS === 'ios' ? 28 : 16,
     paddingTop: 12,
+    elevation: 16,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
   },
   bottomBarItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  iconContainer: {
+    padding: 8,
+    borderRadius: 16,
+    marginBottom: 4,
+  },
   bottomBarLabel: {
     fontSize: 10,
-    marginTop: 4,
-  }
+  },
 });
 
 export default function TabsLayout() {
   const { isTablet } = useResponsive();
 
   return (
-    <View style={{ flex: 1, flexDirection: isTablet ? 'row' : 'column' }}>
+    <View style={{ flex: 1, flexDirection: isTablet ? 'row' : 'column', backgroundColor: themeTokens.colors.background }}>
       <Tabs
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{
           headerShown: false,
-          sceneContainerStyle: isTablet ? { marginLeft: 260 } : undefined,
+          sceneContainerStyle: {
+            backgroundColor: themeTokens.colors.background,
+            ...(isTablet ? { marginLeft: 260 } : {}),
+          },
         }}
       >
         <Tabs.Screen
           name="home"
           options={{
             title: 'Home',
-            tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => <Home size={size} color={color} strokeWidth={2.5} />,
+          }}
+        />
+        <Tabs.Screen
+          name="academics"
+          options={{
+            title: 'Academics',
+            tabBarIcon: ({ color, size }) => <BookOpen size={size} color={color} strokeWidth={2.5} />,
           }}
         />
         <Tabs.Screen
           name="discover"
           options={{
-            title: 'Explore',
-            tabBarIcon: ({ color, size }) => <Compass size={size} color={color} />,
+            title: 'Campus',
+            tabBarIcon: ({ color, size }) => <Compass size={size} color={color} strokeWidth={2.5} />,
           }}
         />
         <Tabs.Screen
           name="services"
           options={{
             title: 'Services',
-            tabBarIcon: ({ color, size }) => <Layers size={size} color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="alerts"
-          options={{
-            title: 'Alerts',
-            tabBarIcon: ({ color, size }) => <Bell size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => <Layers size={size} color={color} strokeWidth={2.5} />,
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
             title: 'Profile',
-            tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => <User size={size} color={color} strokeWidth={2.5} />,
           }}
         />
-        <Tabs.Screen name="academics" options={{ href: null }} />
+        
+        {/* Hidden routes from tab bar */}
+        <Tabs.Screen name="alerts" options={{ href: null }} />
         <Tabs.Screen name="ai_chat" options={{ href: null }} />
         <Tabs.Screen name="index" options={{ href: null }} />
         <Tabs.Screen name="examinations" options={{ href: null }} />

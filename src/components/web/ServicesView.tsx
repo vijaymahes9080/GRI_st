@@ -7,21 +7,9 @@ import {
   CAREERS_MOCK 
 } from '../../core/data/griMasterData';
 import { 
-  Layers, 
-  Calendar, 
-  FileText, 
-  BookOpen, 
-  HelpCircle, 
-  Briefcase, 
-  Download, 
-  Printer, 
-  Search, 
-  CheckCircle2, 
-  Clock, 
-  Send,
-  Building,
-  ShieldCheck,
-  Users
+  Layers, Calendar, FileText, BookOpen, HelpCircle, Briefcase, 
+  Printer, Search, CheckCircle2, Send, ShieldCheck, Users, 
+  ArrowRight, Download
 } from 'lucide-react';
 import { ExamHallTicketModal } from './ExamHallTicketModal';
 import { AccessRestricted } from '../common/AccessRestricted';
@@ -31,10 +19,8 @@ export const ServicesView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'exam' | 'admissions' | 'library' | 'grievance' | 'tenders'>('exam');
   const [isHallTicketOpen, setIsHallTicketOpen] = useState(false);
   
-  // Library search state
   const [libraryQuery, setLibraryQuery] = useState('');
   
-  // Grievance form state
   const [grievanceCategory, setGrievanceCategory] = useState('Academic');
   const [grievanceSubject, setGrievanceSubject] = useState('');
   const [grievanceDesc, setGrievanceDesc] = useState('');
@@ -63,40 +49,39 @@ export const ServicesView: React.FC = () => {
     setTimeout(() => setGrievanceSubmittedMsg(false), 4000);
   };
 
+  const tabs = [
+    { id: 'exam', label: 'Examinations', icon: <Calendar className="w-4 h-4" /> },
+    { id: 'admissions', label: 'Admissions', icon: <FileText className="w-4 h-4" /> },
+    { id: 'library', label: 'Library', icon: <BookOpen className="w-4 h-4" /> },
+    { id: 'grievance', label: 'Samadhan', icon: <HelpCircle className="w-4 h-4" /> },
+    { id: 'tenders', label: 'Careers & Tenders', icon: <Briefcase className="w-4 h-4" /> },
+  ];
+
   return (
-    <div className="space-y-8 pb-16">
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-600/40 text-emerald-400 text-xs font-semibold">
-          <Layers className="w-3.5 h-3.5" />
-          <span>University Portal Services</span>
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-white">
-          Student, Examination & Administrative Hub
+    <div className="space-y-8 sm:space-y-12 pb-24 animate-fadeIn max-w-6xl mx-auto px-4 sm:px-6">
+      {/* Editorial Header */}
+      <div className="max-w-3xl space-y-6">
+        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-display font-medium text-[#1A1F1D] tracking-tight leading-[1.1]">
+          Student & <br/>
+          <span className="text-black/30">Services Hub.</span>
         </h1>
-        <p className="text-sm text-slate-400 max-w-3xl">
-          Direct digital services for End-Semester Examinations (ESE), official Hall Ticket generation, Library OPAC, Grievance Redressal (Samadhan), and Admission fees.
+        <p className="text-xl text-[#5C6661] font-light leading-relaxed">
+          Access essential digital services, examinations, library resources, and administrative tools in one place.
         </p>
       </div>
 
-      {/* Services Nav Tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-3">
-        {[
-          { id: 'exam', label: 'ESE Examination & Timetable', icon: <Calendar className="w-4 h-4" /> },
-          { id: 'admissions', label: 'Admissions 2026-27 & Fees', icon: <FileText className="w-4 h-4" /> },
-          { id: 'library', label: 'Central Library OPAC', icon: <BookOpen className="w-4 h-4" /> },
-          { id: 'grievance', label: 'Grievance Redressal (Samadhan)', icon: <HelpCircle className="w-4 h-4" /> },
-          { id: 'tenders', label: 'Tenders & Careers', icon: <Briefcase className="w-4 h-4" /> },
-        ].map((tab) => {
+      {/* Navigation Pills */}
+      <div className="flex flex-wrap items-center gap-2">
+        {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition ${
+              className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-all ${
                 isActive
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/40'
-                  : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                  ? 'bg-[#0F4C3A] text-white shadow-md'
+                  : 'bg-white text-[#5C6661] hover:bg-[#F2F6F4] border border-[#E5EAE7]'
               }`}
             >
               {tab.icon}
@@ -106,107 +91,89 @@ export const ServicesView: React.FC = () => {
         })}
       </div>
 
-      {/* Tab 1: ESE Examination Portal */}
+      {/* Content Areas */}
+      
+      {/* 1. EXAMINATIONS */}
       {activeTab === 'exam' && (
-        <div className="space-y-6 animate-fadeIn">
-          {/* Quick Actions Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between space-y-4">
+        <div className="space-y-8 sm:space-y-12 animate-fadeIn">
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-[#E5F0EB] p-6 sm:p-8 rounded-3xl sm:rounded-[2rem] flex flex-col justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
-                  Nov/Dec 2026 ESE
-                </span>
-                <h3 className="font-bold text-white text-base mt-2">Download Hall Ticket</h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  Admit card with verified course codes, exam centre allocation and candidate photo barcode.
-                </p>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#0F4C3A] mb-4 block">Nov/Dec 2026 ESE</span>
+                <h3 className="text-2xl font-bold text-[#1A1F1D] mb-2">Hall Ticket</h3>
+                <p className="text-sm text-[#0F4C3A]/70 mb-8">Generate your official admit card with barcode verification.</p>
               </div>
               <button
                 onClick={() => setIsHallTicketOpen(true)}
-                className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center justify-center gap-2 transition"
+                className="w-full py-4 rounded-full bg-[#0F4C3A] text-white font-bold flex items-center justify-center gap-2 hover:bg-[#0A3327] transition-colors"
               >
-                <Printer className="w-4 h-4" />
-                <span>Generate Official Hall Ticket</span>
+                <Printer className="w-5 h-5" /> Generate Ticket
               </button>
             </div>
 
-            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between space-y-4">
+            <div className="bg-[#FDF6E3] p-6 sm:p-8 rounded-3xl sm:rounded-[2rem] flex flex-col justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-950 px-2 py-0.5 rounded border border-amber-800">
-                  Continuous Assessment
-                </span>
-                <h3 className="font-bold text-white text-base mt-2">Internal CIA Marks</h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  View CIA-1, CIA-2, Seminar & Assignment continuous internal assessment gradebook.
-                </p>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#B45309] mb-4 block">Assessment</span>
+                <h3 className="text-2xl font-bold text-[#1A1F1D] mb-2">CIA Marks</h3>
+                <p className="text-sm text-[#B45309]/70 mb-8">View internal assessment scores for current semester.</p>
               </div>
-              <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-300 flex items-center justify-between">
-                <span>CIA Status: <strong className="text-emerald-400">Locked & Approved</strong></span>
-                <span className="text-[11px] text-slate-500">Max: 40/40</span>
+              <div className="p-4 rounded-2xl bg-white/50 text-sm font-medium text-[#B45309] flex items-center justify-between">
+                <span>Status: <strong className="text-[#1A1F1D]">Approved</strong></span>
+                <span>Max: 40</span>
               </div>
             </div>
 
-            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between space-y-4">
+            <div className="bg-[#E0F2FE] p-6 sm:p-8 rounded-3xl sm:rounded-[2rem] flex flex-col justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-sky-400 bg-sky-950 px-2 py-0.5 rounded border border-sky-800">
-                  Government Verification
-                </span>
-                <h3 className="font-bold text-white text-base mt-2">e-Sanad & Transcripts</h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  Ministry of External Affairs online contactless document apostille and degree verification.
-                </p>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#0369A1] mb-4 block">Verification</span>
+                <h3 className="text-2xl font-bold text-[#1A1F1D] mb-2">e-Sanad</h3>
+                <p className="text-sm text-[#0369A1]/70 mb-8">Contactless degree apostille via Govt. of India portal.</p>
               </div>
               <button
-                onClick={() => alert('e-Sanad portal integration active. Request token: E-SANAD-GRI-2026')}
-                className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-2 border border-slate-700 transition"
+                onClick={() => alert('e-Sanad portal integration active.')}
+                className="w-full py-4 rounded-full bg-white text-[#0369A1] font-bold flex items-center justify-center gap-2 hover:bg-white/80 transition-colors shadow-sm"
               >
-                <ShieldCheck className="w-4 h-4 text-sky-400" />
-                <span>Verify with e-Sanad API</span>
+                <ShieldCheck className="w-5 h-5" /> Access e-Sanad
               </button>
             </div>
           </div>
 
-          {/* Timetable Schedule Table */}
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
-            <div className="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+          {/* Timetable Table */}
+          <div className="bg-white rounded-3xl sm:rounded-[2rem] border border-[#E5EAE7] overflow-hidden shadow-sm">
+            <div className="p-6 sm:p-8 border-b border-[#E5EAE7] flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-white text-sm sm:text-base">
-                  Official End Semester Examination (ESE) Timetable
-                </h3>
-                <p className="text-xs text-slate-400">Notified by Office of the Controller of Examinations</p>
+                <h3 className="text-2xl font-display font-medium text-[#1A1F1D]">Official Timetable</h3>
+                <p className="text-[#5C6661]">Controller of Examinations (Nov/Dec 2026)</p>
               </div>
-              <span className="text-xs font-mono font-semibold text-emerald-400 bg-emerald-950 px-2.5 py-1 rounded border border-emerald-800">
-                Session: Nov/Dec 2026
-              </span>
             </div>
-
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-slate-950/60 border-b border-slate-800 text-slate-400 font-bold uppercase text-[11px]">
-                    <th className="p-3.5">Course Code</th>
-                    <th className="p-3.5">Subject Title</th>
-                    <th className="p-3.5">Degree & Sem</th>
-                    <th className="p-3.5">Exam Date</th>
-                    <th className="p-3.5">Session</th>
-                    <th className="p-3.5">Hall No.</th>
+                  <tr className="bg-[#F2F6F4] text-[#5C6661] text-xs uppercase tracking-wider font-bold">
+                    <th className="px-8 py-4">Code</th>
+                    <th className="px-8 py-4">Subject</th>
+                    <th className="px-8 py-4">Degree</th>
+                    <th className="px-8 py-4">Date</th>
+                    <th className="px-8 py-4">Session</th>
+                    <th className="px-8 py-4">Hall</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800 text-slate-300">
+                <tbody className="divide-y divide-[#E5EAE7] text-[#1A1F1D] text-sm font-medium">
                   {EXAM_SCHEDULE_MOCK.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-slate-800/40 transition">
-                      <td className="p-3.5 font-mono font-bold text-emerald-400">{item.courseCode}</td>
-                      <td className="p-3.5 font-semibold text-white">{item.subjectTitle}</td>
-                      <td className="p-3.5">{item.degree} (Sem {item.semester})</td>
-                      <td className="p-3.5 font-bold text-slate-100">{item.examDate}</td>
-                      <td className="p-3.5">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          item.session.startsWith('FN') ? 'bg-amber-950 text-amber-300 border border-amber-800' : 'bg-sky-950 text-sky-300 border border-sky-800'
+                    <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-8 py-5 text-[#0F4C3A] font-bold">{item.courseCode}</td>
+                      <td className="px-8 py-5">{item.subjectTitle}</td>
+                      <td className="px-8 py-5 text-[#5C6661]">{item.degree}</td>
+                      <td className="px-8 py-5">{item.examDate}</td>
+                      <td className="px-8 py-5">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          item.session.startsWith('FN') ? 'bg-[#FEF3C7] text-[#92400E]' : 'bg-[#E0F2FE] text-[#0369A1]'
                         }`}>
                           {item.session}
                         </span>
                       </td>
-                      <td className="p-3.5 font-medium text-slate-400">{item.hall}</td>
+                      <td className="px-8 py-5">{item.hall}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -216,97 +183,75 @@ export const ServicesView: React.FC = () => {
         </div>
       )}
 
-      {/* Tab 2: Admissions & Fees */}
+      {/* 2. ADMISSIONS */}
       {activeTab === 'admissions' && (
-        <div className="space-y-6 animate-fadeIn">
-          <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-amber-950/40 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <span className="px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/30">
-                Academic Year 2026-2027
+        <div className="space-y-8 animate-fadeIn">
+          <div className="bg-[#0F4C3A] p-6 sm:p-8 lg:p-12 rounded-3xl sm:rounded-[2rem] text-white flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="max-w-2xl space-y-4">
+              <span className="px-4 py-2 rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-widest border border-white/20">
+                Admissions 2026-27
               </span>
-              <h2 className="text-xl font-bold font-display text-white">
-                Admissions to UG, PG, B.Voc, Diplomas & Ph.D.
+              <h2 className="text-3xl sm:text-5xl font-display font-medium">
+                Join Gandhigram.
               </h2>
-              <p className="text-xs text-slate-300">
-                Admissions strictly conducted via CUET (Common University Entrance Test) scores and GRI Institutional Merit Quota.
+              <p className="text-white/80 text-lg leading-relaxed">
+                Admissions are strictly conducted via CUET (Common University Entrance Test) scores and GRI Institutional Merit Quota.
               </p>
             </div>
-            <a
-              href="#apply"
-              onClick={(e) => {
-                e.preventDefault();
-                alert('Samarth Admission Portal active: https://griadmission.samarth.edu.in');
-              }}
-              className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 transition flex-shrink-0"
-            >
-              <FileText className="w-4 h-4" />
-              <span>Samarth Application Portal</span>
-            </a>
+            <button className="px-8 py-4 rounded-full bg-white text-[#0F4C3A] font-bold text-lg whitespace-nowrap hover:bg-[#F2F6F4] transition-colors shadow-xl">
+              Apply via Samarth
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
-              <h3 className="font-bold text-white text-sm uppercase text-emerald-400">UG Programmes</h3>
-              <ul className="space-y-2 text-xs text-slate-300">
-                <li className="flex justify-between border-b border-slate-800 pb-1">
-                  <span>B.Sc. (Hons) Agriculture</span>
-                  <strong className="text-white">₹22,500/sem</strong>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-white p-6 sm:p-8 rounded-3xl sm:rounded-[2rem] border border-[#E5EAE7] shadow-sm">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-[#0F4C3A] mb-6">Undergraduate</h3>
+              <ul className="space-y-4 text-sm">
+                <li className="flex justify-between border-b border-[#F2F6F4] pb-2">
+                  <span className="text-[#1A1F1D] font-medium">B.Sc. Agriculture</span>
+                  <strong className="text-[#0F4C3A]">₹22,500</strong>
                 </li>
-                <li className="flex justify-between border-b border-slate-800 pb-1">
-                  <span>B.Sc. Computer Science</span>
-                  <strong className="text-white">₹12,000/sem</strong>
+                <li className="flex justify-between border-b border-[#F2F6F4] pb-2">
+                  <span className="text-[#1A1F1D] font-medium">B.Sc. Computer Science</span>
+                  <strong className="text-[#0F4C3A]">₹12,000</strong>
                 </li>
-                <li className="flex justify-between border-b border-slate-800 pb-1">
-                  <span>B.Sc. Chemistry / Physics</span>
-                  <strong className="text-white">₹11,000/sem</strong>
-                </li>
-                <li className="flex justify-between">
-                  <span>B.A. Tamil / Rural Studies</span>
-                  <strong className="text-white">₹5,000/sem</strong>
+                <li className="flex justify-between border-b border-[#F2F6F4] pb-2">
+                  <span className="text-[#1A1F1D] font-medium">B.Sc. Chemistry</span>
+                  <strong className="text-[#0F4C3A]">₹11,000</strong>
                 </li>
               </ul>
             </div>
-
-            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
-              <h3 className="font-bold text-white text-sm uppercase text-sky-400">PG Programmes</h3>
-              <ul className="space-y-2 text-xs text-slate-300">
-                <li className="flex justify-between border-b border-slate-800 pb-1">
-                  <span>MCA (Master of Computer Apps)</span>
-                  <strong className="text-white">₹24,000/sem</strong>
+            <div className="bg-white p-6 sm:p-8 rounded-3xl sm:rounded-[2rem] border border-[#E5EAE7] shadow-sm">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-[#0369A1] mb-6">Postgraduate</h3>
+              <ul className="space-y-4 text-sm">
+                <li className="flex justify-between border-b border-[#F2F6F4] pb-2">
+                  <span className="text-[#1A1F1D] font-medium">MCA</span>
+                  <strong className="text-[#0369A1]">₹24,000</strong>
                 </li>
-                <li className="flex justify-between border-b border-slate-800 pb-1">
-                  <span>MBA (Rural Management)</span>
-                  <strong className="text-white">₹32,000/sem</strong>
+                <li className="flex justify-between border-b border-[#F2F6F4] pb-2">
+                  <span className="text-[#1A1F1D] font-medium">MBA</span>
+                  <strong className="text-[#0369A1]">₹32,000</strong>
                 </li>
-                <li className="flex justify-between border-b border-slate-800 pb-1">
-                  <span>M.Sc. Agriculture (Agronomy)</span>
-                  <strong className="text-white">₹18,000/sem</strong>
-                </li>
-                <li className="flex justify-between">
-                  <span>M.A. Gandhian Thought & Peace</span>
-                  <strong className="text-white">₹7,500/sem</strong>
+                <li className="flex justify-between border-b border-[#F2F6F4] pb-2">
+                  <span className="text-[#1A1F1D] font-medium">M.Sc. Agriculture</span>
+                  <strong className="text-[#0369A1]">₹18,000</strong>
                 </li>
               </ul>
             </div>
-
-            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
-              <h3 className="font-bold text-white text-sm uppercase text-purple-400">Doctoral & Diplomas</h3>
-              <ul className="space-y-2 text-xs text-slate-300">
-                <li className="flex justify-between border-b border-slate-800 pb-1">
-                  <span>Ph.D. in Sciences & Tech</span>
-                  <strong className="text-white">₹14,000/sem</strong>
+            <div className="bg-white p-6 sm:p-8 rounded-3xl sm:rounded-[2rem] border border-[#E5EAE7] shadow-sm">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-[#7E22CE] mb-6">Doctoral & Diploma</h3>
+              <ul className="space-y-4 text-sm">
+                <li className="flex justify-between border-b border-[#F2F6F4] pb-2">
+                  <span className="text-[#1A1F1D] font-medium">Ph.D. Sciences</span>
+                  <strong className="text-[#7E22CE]">₹14,000</strong>
                 </li>
-                <li className="flex justify-between border-b border-slate-800 pb-1">
-                  <span>Ph.D. in Social Sciences / Arts</span>
-                  <strong className="text-white">₹8,000/sem</strong>
+                <li className="flex justify-between border-b border-[#F2F6F4] pb-2">
+                  <span className="text-[#1A1F1D] font-medium">Ph.D. Social Sciences</span>
+                  <strong className="text-[#7E22CE]">₹8,000</strong>
                 </li>
-                <li className="flex justify-between border-b border-slate-800 pb-1">
-                  <span>Diploma in Nursery Mgmt</span>
-                  <strong className="text-white">₹8,000/sem</strong>
-                </li>
-                <li className="flex justify-between">
-                  <span>Certificate in Shanti Sena</span>
-                  <strong className="text-white">₹2,500/course</strong>
+                <li className="flex justify-between border-b border-[#F2F6F4] pb-2">
+                  <span className="text-[#1A1F1D] font-medium">Shanti Sena Certificate</span>
+                  <strong className="text-[#7E22CE]">₹2,500</strong>
                 </li>
               </ul>
             </div>
@@ -314,61 +259,50 @@ export const ServicesView: React.FC = () => {
         </div>
       )}
 
-      {/* Tab 3: Central Library OPAC */}
+      {/* 3. LIBRARY */}
       {activeTab === 'library' && (
-        <div className="space-y-6 animate-fadeIn">
-          {/* Search bar */}
-          <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex items-center gap-3">
-            <Search className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+        <div className="space-y-8 animate-fadeIn">
+          <div className="bg-white p-4 rounded-full border border-[#E5EAE7] shadow-sm flex items-center gap-4">
+            <Search className="w-6 h-6 text-[#5C6661] ml-4" />
             <input
               type="text"
               value={libraryQuery}
               onChange={(e) => setLibraryQuery(e.target.value)}
-              placeholder="Search library catalog by Book Title, Author, Dewey Decimal Call Number, or Subject..."
-              className="w-full bg-transparent text-sm text-slate-100 placeholder-slate-500 outline-none"
+              placeholder="Search catalog by Title, Author, or Dewey Decimal..."
+              className="flex-1 bg-transparent text-lg text-[#1A1F1D] placeholder-[#5C6661] outline-none"
             />
-            {libraryQuery && (
-              <button onClick={() => setLibraryQuery('')} className="text-xs text-slate-400 hover:text-white">
-                Clear
-              </button>
-            )}
           </div>
 
-          {/* Book Catalog Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredBooks.map((book) => (
-              <div key={book.id} className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
-                <div className="flex items-start justify-between">
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-emerald-400 border border-slate-700">
-                    {book.category}
-                  </span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                    book.copiesAvailable > 0 ? 'bg-emerald-950 text-emerald-400' : 'bg-rose-950 text-rose-400'
-                  }`}>
-                    {book.copiesAvailable > 0 ? `${book.copiesAvailable}/${book.totalCopies} Available` : 'All Issued'}
-                  </span>
-                </div>
-
+              <div key={book.id} className="bg-white p-6 sm:p-8 rounded-3xl sm:rounded-[2rem] border border-[#E5EAE7] shadow-sm hover:border-[#0F4C3A] transition-colors flex flex-col justify-between">
                 <div>
-                  <h3 className="font-bold text-white text-sm line-clamp-2">{book.title}</h3>
-                  <p className="text-xs text-slate-400 mt-1">Author: {book.author}</p>
-                </div>
-
-                <div className="text-[11px] text-slate-400 bg-slate-950 p-2.5 rounded-xl border border-slate-800/80 space-y-1">
-                  <div className="flex justify-between">
-                    <span>Call Number:</span>
-                    <strong className="font-mono text-slate-200">{book.callNumber}</strong>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#5C6661] bg-[#F2F6F4] px-3 py-1 rounded-full">
+                      {book.category}
+                    </span>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full ${
+                      book.copiesAvailable > 0 ? 'bg-[#E5F0EB] text-[#0F4C3A]' : 'bg-[#FEF2F2] text-[#BE123C]'
+                    }`}>
+                      {book.copiesAvailable > 0 ? 'Available' : 'Issued'}
+                    </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Location:</span>
-                    <span className="text-slate-300 truncate max-w-[150px]">{book.location}</span>
+                  <h3 className="text-xl font-bold text-[#1A1F1D] mb-2 leading-tight">{book.title}</h3>
+                  <p className="text-[#5C6661] text-sm mb-6">by {book.author}</p>
+                  
+                  <div className="bg-[#F2F6F4] p-4 rounded-2xl text-sm mb-6 space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-[#5C6661]">Call Number</span>
+                      <strong className="text-[#1A1F1D] font-mono">{book.callNumber}</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#5C6661]">Location</span>
+                      <strong className="text-[#1A1F1D]">{book.location}</strong>
+                    </div>
                   </div>
                 </div>
-
-                <button
-                  onClick={() => alert(`Hold request placed for "${book.title}". Reserved for 48 hours.`)}
-                  className="w-full py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition"
-                >
+                
+                <button className="w-full py-3 rounded-full border border-[#0F4C3A] text-[#0F4C3A] font-bold hover:bg-[#0F4C3A] hover:text-white transition-colors">
                   Reserve Book
                 </button>
               </div>
@@ -377,130 +311,139 @@ export const ServicesView: React.FC = () => {
         </div>
       )}
 
-      {/* Tab 4: Grievance Redressal (Samadhan) */}
+      {/* 4. SAMADHAN / GRIEVANCE */}
       {activeTab === 'grievance' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-fadeIn">
-          {/* Submit new ticket form */}
-          <div className="lg:col-span-5 bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
-            <div className="space-y-1">
-              <h3 className="font-bold text-white text-base font-display">
-                Submit Redressal Ticket (Samadhan)
-              </h3>
-              <p className="text-xs text-slate-400">
-                Official grievance tracking with direct escalation to Registrar and Grievance Cell.
-              </p>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 animate-fadeIn">
+          <div className="space-y-6">
+             <div>
+              <h2 className="text-3xl font-display font-medium text-[#1A1F1D]">Samadhan Cell</h2>
+              <p className="text-[#5C6661] mt-2">Official grievance tracking and redressal system.</p>
+             </div>
 
-            {currentUser.role === 'guest' ? (
-              <AccessRestricted
-                compact
-                title="Authentication Required for Grievances"
-                resourceName="Samadhan Redressal Portal"
-                message="To lodge an official grievance and track resolution status with the University Samadhan Cell, please sign in with your verified GRI Student or Employee ID."
-                primaryActionText="Sign In to Lodge Ticket"
-              />
-            ) : (
-              <>
-                {grievanceSubmittedMsg && (
-                  <div className="p-3 rounded-xl bg-emerald-950 border border-emerald-700 text-emerald-300 text-xs flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                    <span>Ticket submitted successfully! Assigned for verification.</span>
-                  </div>
-                )}
+             {currentUser.role === 'guest' ? (
+               <AccessRestricted
+                 compact
+                 title="Authentication Required"
+                 resourceName="Samadhan Redressal Portal"
+                 message="Please sign in with your verified GRI Student or Employee ID to lodge a grievance."
+                 primaryActionText="Sign In"
+               />
+             ) : (
+               <form onSubmit={handleGrievanceSubmit} className="bg-white p-6 sm:p-8 rounded-3xl sm:rounded-[2rem] border border-[#E5EAE7] shadow-sm space-y-6">
+                 {grievanceSubmittedMsg && (
+                   <div className="p-4 rounded-2xl bg-[#E5F0EB] text-[#0F4C3A] font-medium flex items-center gap-3">
+                     <CheckCircle2 className="w-5 h-5" />
+                     Ticket submitted successfully.
+                   </div>
+                 )}
 
-                <form onSubmit={handleGrievanceSubmit} className="space-y-3 text-xs">
-                  <div>
-                    <label className="block text-slate-400 font-semibold mb-1">Category</label>
-                    <select
-                      value={grievanceCategory}
-                      onChange={(e) => setGrievanceCategory(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-200 outline-none focus:border-emerald-500"
-                    >
-                      <option value="Academic">Academic & Marks Evaluation</option>
-                      <option value="Hostel & Mess">Hostel, Wi-Fi & Mess Food</option>
-                      <option value="Scholarship & Fees">Scholarship & Fee Concessions</option>
-                      <option value="Harassment / Anti-Ragging">Anti-Ragging / Internal Complaints (ICC)</option>
-                      <option value="Transport & Infrastructure">Campus Bus & Classroom Facilities</option>
-                    </select>
-                  </div>
+                 <div>
+                   <label className="block text-sm font-bold text-[#1A1F1D] mb-2">Category</label>
+                   <select
+                     value={grievanceCategory}
+                     onChange={(e) => setGrievanceCategory(e.target.value)}
+                     className="w-full bg-[#F2F6F4] rounded-xl p-4 text-[#1A1F1D] outline-none focus:ring-2 focus:ring-[#0F4C3A]/20"
+                   >
+                     <option value="Academic">Academic & Marks</option>
+                     <option value="Hostel & Mess">Hostel & Food</option>
+                     <option value="Scholarship & Fees">Scholarships</option>
+                     <option value="Infrastructure">Infrastructure</option>
+                   </select>
+                 </div>
 
-                  <div>
-                    <label className="block text-slate-400 font-semibold mb-1">Subject Title</label>
-                    <input
-                      type="text"
-                      value={grievanceSubject}
-                      onChange={(e) => setGrievanceSubject(e.target.value)}
-                      placeholder="e.g., Request for CIA re-totalling in MCA-401"
-                      required
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-200 outline-none focus:border-emerald-500"
-                    />
-                  </div>
+                 <div>
+                   <label className="block text-sm font-bold text-[#1A1F1D] mb-2">Subject</label>
+                   <input
+                     type="text"
+                     value={grievanceSubject}
+                     onChange={(e) => setGrievanceSubject(e.target.value)}
+                     required
+                     className="w-full bg-[#F2F6F4] rounded-xl p-4 text-[#1A1F1D] outline-none focus:ring-2 focus:ring-[#0F4C3A]/20"
+                   />
+                 </div>
 
-                  <div>
-                    <label className="block text-slate-400 font-semibold mb-1">Detailed Description</label>
-                    <textarea
-                      value={grievanceDesc}
-                      onChange={(e) => setGrievanceDesc(e.target.value)}
-                      rows={4}
-                      placeholder="Provide precise details, semester, subject code, and faculty reference..."
-                      required
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-200 outline-none focus:border-emerald-500"
-                    ></textarea>
-                  </div>
+                 <div>
+                   <label className="block text-sm font-bold text-[#1A1F1D] mb-2">Description</label>
+                   <textarea
+                     value={grievanceDesc}
+                     onChange={(e) => setGrievanceDesc(e.target.value)}
+                     rows={5}
+                     required
+                     className="w-full bg-[#F2F6F4] rounded-xl p-4 text-[#1A1F1D] outline-none focus:ring-2 focus:ring-[#0F4C3A]/20"
+                   />
+                 </div>
 
-                  <button
-                    type="submit"
-                    className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-900/30"
-                  >
-                    <Send className="w-4 h-4" />
-                    <span>Submit Grievance to Cell</span>
-                  </button>
-                </form>
-              </>
-            )}
+                 <button
+                   type="submit"
+                   className="w-full py-4 rounded-full bg-[#0F4C3A] text-white font-bold text-lg hover:bg-[#0A3327] transition-colors flex items-center justify-center gap-2"
+                 >
+                   <Send className="w-5 h-5" /> Submit Grievance
+                 </button>
+               </form>
+             )}
           </div>
 
-          {/* List of submitted tickets */}
-          <div className="lg:col-span-7 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-white text-base font-display">
-                Your Grievance Tracker ({grievances.length})
-              </h3>
-              <span className="text-xs text-slate-400">Response SLA: 48–72 working hours</span>
-            </div>
+          <div>
+             <h2 className="text-xl font-bold text-[#1A1F1D] mb-6">Your Active Tickets</h2>
+             <div className="space-y-4">
+               {grievances.map((ticket) => (
+                 <div key={ticket.id} className="bg-white p-6 rounded-3xl sm:rounded-[2rem] border border-[#E5EAE7] shadow-sm">
+                   <div className="flex items-center justify-between mb-4">
+                     <span className="text-xs font-bold text-[#5C6661] bg-[#F2F6F4] px-3 py-1 rounded-full">{ticket.category}</span>
+                     <span className="text-xs font-bold text-[#0F4C3A] bg-[#E5F0EB] px-3 py-1 rounded-full">{ticket.status}</span>
+                   </div>
+                   <h4 className="font-bold text-[#1A1F1D] text-lg mb-2">{ticket.subject}</h4>
+                   <p className="text-[#5C6661] text-sm mb-4">{ticket.description}</p>
+                   {ticket.response && (
+                     <div className="p-4 bg-[#F2F6F4] rounded-xl border-l-4 border-[#0F4C3A] text-sm">
+                       <strong className="block text-[#1A1F1D] mb-1">Official Response:</strong>
+                       <p className="text-[#5C6661]">{ticket.response}</p>
+                     </div>
+                   )}
+                 </div>
+               ))}
+               {grievances.length === 0 && (
+                 <div className="p-12 text-center text-[#5C6661]">
+                   You have no active grievances.
+                 </div>
+               )}
+             </div>
+          </div>
+        </div>
+      )}
 
-            <div className="space-y-3">
-              {grievances.map((ticket) => (
-                <div key={ticket.id} className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-[11px] font-bold text-slate-400">{ticket.id}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-medium">
-                        {ticket.category}
-                      </span>
-                    </div>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                      ticket.status === 'RESOLVED' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' :
-                      ticket.status === 'UNDER_REVIEW' ? 'bg-amber-950 text-amber-400 border border-amber-800' :
-                      'bg-slate-800 text-slate-300'
-                    }`}>
-                      {ticket.status}
-                    </span>
+      {/* 5. TENDERS */}
+      {activeTab === 'tenders' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 animate-fadeIn">
+          <div>
+            <h2 className="text-3xl font-display font-medium text-[#1A1F1D] mb-8">Active Tenders</h2>
+            <div className="space-y-4">
+              {TENDERS_MOCK.map((t, idx) => (
+                <div key={idx} className="bg-white p-6 rounded-3xl sm:rounded-[2rem] border border-[#E5EAE7] shadow-sm hover:border-[#0F4C3A] transition-colors">
+                  <span className="text-sm font-bold font-mono text-[#0F4C3A]">{t.tenderNo}</span>
+                  <h4 className="text-lg font-bold text-[#1A1F1D] mt-2 mb-4">{t.title}</h4>
+                  <div className="flex justify-between items-center text-sm text-[#5C6661] pt-4 border-t border-[#F2F6F4]">
+                    <span>Estimate: <strong className="text-[#1A1F1D]">{t.estimate}</strong></span>
+                    <button className="flex items-center gap-1 text-[#0F4C3A] font-bold"><Download className="w-4 h-4"/> PDF</button>
                   </div>
-
-                  <h4 className="text-sm font-semibold text-white">{ticket.subject}</h4>
-                  <p className="text-xs text-slate-400">{ticket.description}</p>
-
-                  {ticket.response && (
-                    <div className="mt-2 p-2.5 rounded-xl bg-slate-950 border border-emerald-900/50 text-xs text-emerald-300 space-y-0.5">
-                      <span className="text-[10px] font-bold text-emerald-400 block uppercase">Official Resolution:</span>
-                      <p>{ticket.response}</p>
-                    </div>
-                  )}
-
-                  <div className="pt-1 text-[10px] text-slate-500 flex justify-between">
-                    <span>Submitted: {ticket.submittedAt}</span>
-                    <span>By: {ticket.submittedBy}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h2 className="text-3xl font-display font-medium text-[#1A1F1D] mb-8">Careers</h2>
+            <div className="space-y-4">
+              {CAREERS_MOCK.map((c, idx) => (
+                <div key={idx} className="bg-white p-6 rounded-3xl sm:rounded-[2rem] border border-[#E5EAE7] shadow-sm hover:border-[#0F4C3A] transition-colors">
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm font-bold font-mono text-[#B45309]">{c.advtNo}</span>
+                    <span className="text-xs font-bold bg-[#FDF6E3] text-[#B45309] px-2 py-1 rounded-full">{c.category}</span>
+                  </div>
+                  <h4 className="text-lg font-bold text-[#1A1F1D] mb-1">{c.postName}</h4>
+                  <p className="text-sm text-[#5C6661] mb-4">{c.department}</p>
+                  <div className="flex justify-between items-center text-sm text-[#5C6661] pt-4 border-t border-[#F2F6F4]">
+                    <span>Deadline: <strong className="text-[#BE123C]">{c.lastDate}</strong></span>
+                    <button className="text-[#0F4C3A] font-bold">Apply Now</button>
                   </div>
                 </div>
               ))}
@@ -509,61 +452,6 @@ export const ServicesView: React.FC = () => {
         </div>
       )}
 
-      {/* Tab 5: Tenders & Careers */}
-      {activeTab === 'tenders' && (
-        <div className="space-y-6 animate-fadeIn">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Active Tenders */}
-            <div className="space-y-4">
-              <h3 className="text-base font-bold text-white font-display flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-emerald-400" />
-                Active E-Procurement Tenders
-              </h3>
-              <div className="space-y-3">
-                {TENDERS_MOCK.map((t, idx) => (
-                  <div key={idx} className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="font-mono text-emerald-400 font-bold">{t.tenderNo}</span>
-                      <span className="text-amber-400 font-semibold">{t.estimate}</span>
-                    </div>
-                    <h4 className="text-xs font-semibold text-white">{t.title}</h4>
-                    <div className="flex justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800">
-                      <span>Closing Date: <strong className="text-rose-400">{t.closingDate}</strong></span>
-                      <button onClick={() => alert(`Downloaded tender document for ${t.tenderNo}`)} className="text-emerald-400 hover:underline">Download NIT Document</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Careers */}
-            <div className="space-y-4">
-              <h3 className="text-base font-bold text-white font-display flex items-center gap-2">
-                <Users className="w-4 h-4 text-amber-400" />
-                Faculty & Staff Recruitment
-              </h3>
-              <div className="space-y-3">
-                {CAREERS_MOCK.map((c, idx) => (
-                  <div key={idx} className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="font-mono text-amber-400 font-bold">{c.advtNo}</span>
-                      <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px]">{c.category}</span>
-                    </div>
-                    <h4 className="text-xs font-semibold text-white">{c.postName}</h4>
-                    <p className="text-[11px] text-slate-400">{c.department} • Pay: {c.salary}</p>
-                    <div className="flex justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800">
-                      <span>Last Date: <strong className="text-rose-400">{c.lastDate}</strong></span>
-                      <button onClick={() => alert(`Application form open for ${c.postName}`)} className="text-amber-400 hover:underline">Apply Online</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Hall ticket modal */}
       <ExamHallTicketModal
         isOpen={isHallTicketOpen}
         onClose={() => setIsHallTicketOpen(false)}

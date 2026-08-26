@@ -79,7 +79,14 @@ export default function RootLayout() {
         <ErrorBoundary fallbackTitle="GRI University Service Recovered">
           <GlobalAuthGuard>
             <OfflineNotice />
-            <Stack screenOptions={{ headerShown: false }}>
+            <Stack 
+              screenOptions={{ 
+                headerShown: false,
+                animation: 'slide_from_right',
+                presentation: 'card',
+                gestureEnabled: true,
+                gestureDirection: 'horizontal'
+              }}>
               <Stack.Screen name="index" />
               <Stack.Screen name="auth" />
               <Stack.Screen name="(tabs)" />
