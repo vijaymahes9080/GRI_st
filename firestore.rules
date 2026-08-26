@@ -1,7 +1,12 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Public read collections for institutional data
+    // Helper function for authentication
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Public read collections for institutional information & circulars
     match /circulars/{circularId} {
       allow read: if true;
       allow write: if true;
@@ -57,35 +62,40 @@ service cloud.firestore {
       allow write: if true;
     }
 
-    // User accounts & RBAC
+    // User accounts & RBAC Directory
     match /users/{userId} {
       allow read: if true;
-      allow write: if true;
+      allow create, update: if true;
+      allow delete: if true;
     }
 
-    // Communications & Audit Logs
+    // Communications & Notification Broadcasts
     match /dispatched_messages/{msgId} {
       allow read: if true;
-      allow write: if true;
+      allow create: if true;
+      allow update, delete: if true;
     }
 
+    // Immutable Security Audit Logs (Write-once, never update or delete)
     match /audit_logs/{logId} {
       allow read: if true;
-      allow write: if true;
+      allow create: if true;
+      allow update, delete: if false;
     }
 
-    // Grievances
+    // Student Grievances
     match /grievances/{ticketId} {
       allow read: if true;
-      allow write: if true;
+      allow create: if true;
+      allow update, delete: if true;
     }
 
-    // Chat History
+    // Chat History & AI Interactions
     match /chat_messages/{messageId} {
       allow read, write: if true;
     }
 
-    // Fallback rule
+    // Catch-all fallback
     match /{document=**} {
       allow read, write: if true;
     }

@@ -1,11 +1,77 @@
 export type UserRole = 'student' | 'faculty' | 'scholar' | 'admin' | 'guest' | 'super_admin' | 'dept_admin';
 
+export type Permission =
+  | 'circulars.view_public'
+  | 'circulars.view_authenticated'
+  | 'circulars.view_department'
+  | 'circulars.view_confidential'
+  | 'circulars.create'
+  | 'circulars.publish'
+  | 'circulars.manage'
+  | 'attendance.view_self'
+  | 'attendance.view_department'
+  | 'attendance.manage'
+  | 'academics.view_self'
+  | 'academics.manage_grades'
+  | 'academics.manage_curriculum'
+  | 'research.view_self'
+  | 'research.manage_rac'
+  | 'research.manage_projects'
+  | 'grievance.submit'
+  | 'grievance.review'
+  | 'grievance.resolve'
+  | 'users.view'
+  | 'users.manage'
+  | 'rbac.manage_permissions'
+  | 'system.config'
+  | 'audit.view'
+  | 'ai.public_knowledge'
+  | 'ai.internal_knowledge'
+  | 'ai.confidential_knowledge'
+  | 'documents.download_public'
+  | 'documents.download_restricted';
+
+export interface EnrolledCourse {
+  code: string;
+  name: string;
+  credits: number;
+  attendance: number;
+  ciaMarks: number;
+  maxCiaMarks: number;
+  facultyName: string;
+}
+
+export interface AssignedClass {
+  code: string;
+  name: string;
+  programme: string;
+  semester: number;
+  studentCount: number;
+  roomNumber: string;
+  scheduleDays: string;
+}
+
+export interface ScholarProgress {
+  topic: string;
+  supervisorName: string;
+  racMeetingStatus: 'PENDING' | 'SCHEDULED' | 'COMPLETED';
+  nextRacDate?: string;
+  fellowshipType: 'JRF' | 'SRF' | 'INSTITUTIONAL' | 'NON_NET' | 'SELF_FINANCED';
+  stipendStatus: 'DISBURSED' | 'PROCESSING';
+  publicationsCount: number;
+  synopsisSubmitted: boolean;
+}
+
 export interface UserProfile {
   id: string;
   name: string;
   email: string;
   role: UserRole;
   department: string;
+  schoolId?: string;
+  schoolName?: string;
+  programmeName?: string;
+  programmeLevel?: 'UG' | 'PG' | 'Doctoral' | 'Diploma' | 'B.Voc';
   regNumber?: string;
   designation?: string;
   approvalStatus: 'approved' | 'pending' | 'rejected' | 'suspended';
@@ -17,9 +83,29 @@ export interface UserProfile {
   smsAlertsEnabled?: boolean;
   whatsappAlertsEnabled?: boolean;
   emailCircularsEnabled?: boolean;
+  
+  // Student Specific
   attendance?: number;
   cgpa?: number;
   semester?: number;
+  academicYear?: string;
+  batch?: string;
+  enrolledCourses?: EnrolledCourse[];
+  hostelBlock?: string;
+  roomNo?: string;
+
+  // Faculty Specific
+  assignedClasses?: AssignedClass[];
+  facultyDesignation?: string;
+  officeRoom?: string;
+
+  // Research Scholar Specific
+  scholarProgress?: ScholarProgress;
+
+  // Granular Access Control Overrides
+  customPermissions?: Permission[];
+  revokedPermissions?: Permission[];
+
   // Security & Password Management
   passwordStatus?: 'default_temp' | 'user_defined';
   mustChangePasswordOnLogin?: boolean;
@@ -60,6 +146,31 @@ export interface MultiChannelMessage {
   metadata?: Record<string, any>;
 }
 
+export interface NotificationTemplate {
+  id: string;
+  name: string;
+  category: 'EXAM' | 'ADMISSIONS' | 'ACADEMIC' | 'OUTREACH' | 'TENDER' | 'CAREER' | 'ADMIN';
+  targetRole: 'ALL' | 'STUDENT' | 'FACULTY' | 'STAFF' | 'SCHOLAR' | 'ALUMNI';
+  titleTemplate: string;
+  bodyTemplate: string;
+  channels: MessageChannel[];
+  isImportant?: boolean;
+  visibility?: CircularVisibility;
+  tags?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+  author?: string;
+  isBuiltIn?: boolean;
+  usageCount?: number;
+}
+
+export type CircularVisibility = 
+  | 'PUBLIC' 
+  | 'AUTHENTICATED' 
+  | 'ROLE_RESTRICTED' 
+  | 'DEPARTMENT_RESTRICTED' 
+  | 'CONFIDENTIAL_ADMIN';
+
 export interface CircularItem {
   id: string;
   title: string;
@@ -69,6 +180,10 @@ export interface CircularItem {
   description: string;
   fileUrl?: string;
   targetRole?: 'ALL' | 'STUDENT' | 'FACULTY' | 'STAFF';
+  visibility?: CircularVisibility;
+  targetRoles?: UserRole[];
+  targetDepartments?: string[];
+  targetSchools?: string[];
   author?: string;
   status?: 'PUBLISHED' | 'DRAFT' | 'ARCHIVED';
   viewsCount?: number;

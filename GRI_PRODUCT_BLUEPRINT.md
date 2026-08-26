@@ -1,14 +1,16 @@
 # GRI Mobile App — Complete Product Blueprint
 
-I treated the current GRI website and its connected portals as the **source of truth**, rather than inventing university functions that are not represented there. The current public navigation is organized around **About GRI, Governance, Administration, Academics, Admissions, Examination, Facilities, Infrastructure, Alumni and E-News**. ([Gandhigram Rural Institute](https://ruraluniv.ac.in/))
+Official Source of Truth: **[The Gandhigram Rural Institute (Deemed to be University)](https://ruraluniv.ac.in/)**  
+Official Connected Portals: **[Rural University Main Portal](https://www.portal.ruraluniv.ac.in/)**, **[Samarth@GRI ERP](https://ruraluniv.samarth.ac.in/)**, **[e-SANAD](https://esanad.nic.in/)**  
+Official Emblem & Seal: Sacred Gandhian Charkha (Spinning Wheel), Rising Sun over Agrarian Landscape, Open Scripture of Knowledge, Golden Wheat Sheaves, and Official Bilingual Motto: *"கிராமம் உயர நாடு உயரும்"* (As the village rises, so the nation rises).
 
-The connected ecosystem also contains a **Student Portal, Department Portal, Scholar Portal and e-SANAD**, so these should be represented as authenticated/application modules rather than flattened into ordinary public pages. ([Rural University Portal](https://www.portal.ruraluniv.ac.in/))
+The connected ecosystem contains a **Student Portal, Faculty Portal, Staff Portal, Scholar Portal, Alumni Portal, Admin Control Center with Manage Templates Modal, and e-SANAD**, all synchronized in real-time with Firebase Firestore and Google GenAI capabilities.
 
 ---
 
 # 1. Complete Application Sitemap
 
-## Level 0 — Application
+## Level 0 — Unified Omni-Platform Architecture
 
 ```text
 GRI MOBILE

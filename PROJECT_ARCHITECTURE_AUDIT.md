@@ -41,6 +41,8 @@ This document presents the complete architectural audit, risk assessment, techni
 | Area | Status | Technical Debt / Risk | Resolved Architecture |
 |---|:---:|---|---|
 | **Bulk User Provisioning** | `Resolved (P0)` | Manual single-user entry bottleneck for large university batches. | Automated JSON Bulk Import Engine (`BulkImportUsersModal.tsx`) with schema validation & Firestore atomic batch writes. |
+| **Notification Template Management** | `Resolved (P0)` | Hardcoded announcement templates and lack of admin template controls. | Dedicated Manage Templates Modal (`ManageTemplatesModal.tsx`) integrated in Admin Panel and Dispatch Gateway to view, create, edit, and delete templates. |
+| **Official Media & Image Assets** | `Resolved (P1)` | Broken or generic image placeholders. | Authentic official university emblem (`GRIEmblem.tsx`), verified campus photo catalogue (`griMediaAssets.ts`), and strict `referrerPolicy="no-referrer"` compliance. |
 | **Multi-Channel Contact Sync** | `Resolved (P1)` | Incomplete contact channels causing failed message deliveries. | Integrated contact channel registration (`EditUserContactModal.tsx`) with real-time test verification pings. |
 | **API Client Scoping** | `Resolved (P1)` | Scattered API calls across components. | Centralized Express backend routes (`/api/v1/*`) and Zustand store action handlers. |
 | **Data Consistency & Sync** | `Resolved (P1)` | Out-of-sync state between clients. | Real-time Firestore snapshot listeners (`onSnapshot`) for instant cross-device updates. |

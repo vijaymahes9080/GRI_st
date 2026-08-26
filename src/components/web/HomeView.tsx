@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import { useAppStore } from '../../core/store/appStore';
 import { INSTITUTION_INFO, SCHOOLS_DATA } from '../../core/data/griMasterData';
 import { 
+  OFFICIAL_CAMPUS_GALLERY, 
+  OFFICIAL_LEADERSHIP_PROFILES,
+  GRI_CAMPUS_HERO_IMAGE 
+} from '../../core/data/griMediaAssets';
+import { GRIEmblem } from '../common/GRIEmblem';
+import { 
   GraduationCap, 
   BookOpen, 
   Calendar, 
@@ -17,36 +23,126 @@ import {
   Award,
   ChevronRight,
   ExternalLink,
-  Flame
+  Flame,
+  Camera,
+  MapPin,
+  Maximize2
 } from 'lucide-react';
 
 export const HomeView: React.FC = () => {
-  const { setTab, circulars, setSelectedDepartment } = useAppStore();
+  const { setTab, circulars, setSelectedDepartment, currentUser, setLoginModalOpen } = useAppStore();
   const [activeTab, setActiveTab] = useState<'all' | 'admissions' | 'exam' | 'academic'>('all');
 
   const importantCirculars = circulars.filter(c => c.isImportant).slice(0, 3);
   const featuredDepartments = SCHOOLS_DATA.flatMap(s => s.departments).slice(0, 4);
 
   return (
-    <div className="space-y-10 pb-16">
-      {/* Hero Banner Section */}
-      <section className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 border border-slate-800 shadow-2xl p-6 sm:p-10">
+    <div className="space-y-8 pb-16">
+      {/* Personalized Identity Welcome Card */}
+      {currentUser.role !== 'guest' ? (
+        <div className="p-5 rounded-3xl bg-slate-900 border border-emerald-900/60 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fadeIn">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center font-bold text-white text-lg shadow-lg border border-emerald-400/30">
+              {currentUser.name.charAt(0)}
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-base sm:text-lg font-bold text-white font-display">
+                  Welcome back, {currentUser.name}
+                </h2>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700 capitalize font-mono">
+                  {currentUser.role}
+                </span>
+                {currentUser.regNumber && (
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    ID: {currentUser.regNumber}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {currentUser.schoolName || 'School of Sciences'} • {currentUser.department}
+                {currentUser.semester && ` • Semester ${currentUser.semester}`}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {currentUser.attendance !== undefined && (
+              <div className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+                <span className="text-slate-500 text-[10px] block">Attendance</span>
+                <span className="text-emerald-400 font-bold">{currentUser.attendance}%</span>
+              </div>
+            )}
+            <button
+              onClick={() => setTab('services')}
+              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-md"
+            >
+              Academic Portal
+            </button>
+            <button
+              onClick={() => setLoginModalOpen(true)}
+              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-semibold transition"
+            >
+              Switch Role
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="p-4 rounded-2xl bg-sky-950/40 border border-sky-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3">
+            <GraduationCap className="w-5 h-5 text-sky-400 flex-shrink-0" />
+            <div>
+              <p className="font-bold text-white">Public Institutional View (Guest Mode)</p>
+              <p className="text-slate-300">You are browsing open academic programs, circulars, and research facilities. Sign in for personalized courses, CIA internal marks, and hall tickets.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setLoginModalOpen(true)}
+            className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold whitespace-nowrap transition shadow-sm flex-shrink-0"
+          >
+            Student / Staff Sign In
+          </button>
+        </div>
+      )}
+
+      {/* Hero Banner Section with Official Campus Heritage Imagery */}
+      <section className="relative rounded-3xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl p-6 sm:p-10">
+        {/* Background Campus Photo with Deep Gradient Mask */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={GRI_CAMPUS_HERO_IMAGE} 
+            alt="Gandhigram Rural Institute Campus" 
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-cover object-center opacity-25 filter brightness-75 contrast-125"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-emerald-950/70" />
+        </div>
+
         <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute -left-20 -top-20 w-80 h-80 bg-amber-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="relative z-10 max-w-4xl space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-600/40 text-emerald-400 text-xs font-semibold">
-            <Award className="w-3.5 h-3.5" />
-            <span>NAAC 'A++' Accredited Deemed University (CGPA 3.61)</span>
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-600/40 text-emerald-400 text-xs font-semibold backdrop-blur-sm">
+              <Award className="w-3.5 h-3.5" />
+              <span>NAAC 'A++' Accredited Deemed University (CGPA 3.61)</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/80 border border-amber-600/40 text-amber-300 text-xs font-semibold backdrop-blur-sm">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Ministry of Education, Govt. of India</span>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <h1 className="text-3xl sm:text-5xl font-extrabold font-display tracking-tight text-white leading-tight">
-              The Gandhigram Rural Institute
-            </h1>
-            <p className="text-emerald-400 font-serif italic text-lg sm:text-xl">
-              "கிராமம் உயர நாடு உயரும்" — As the village rises, so the nation rises
-            </p>
+          <div className="flex items-start gap-4">
+            <GRIEmblem className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 drop-shadow-xl" />
+            <div className="space-y-1.5">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold font-display tracking-tight text-white leading-tight">
+                The Gandhigram Rural Institute
+              </h1>
+              <p className="text-emerald-400 font-serif italic text-base sm:text-xl">
+                "கிராமம் உயர நாடு உயரும்" — As the village rises, so the nation rises
+              </p>
+            </div>
           </div>
 
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl font-light">
@@ -349,6 +445,65 @@ export const HomeView: React.FC = () => {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Official Campus Landmark Gallery & Research Infrastructure */}
+      <section className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="text-xl font-bold font-display text-white flex items-center gap-2">
+              <Camera className="w-5 h-5 text-emerald-400" />
+              <span>Campus Panorama & Research Infrastructure</span>
+            </h2>
+            <p className="text-xs text-slate-400">
+              Visual overview of the 204-acre Gandhigram campus, DST-FIST instrumentation facilities, and ICAR-KVK farm.
+            </p>
+          </div>
+          <span className="text-xs text-emerald-400 font-semibold bg-emerald-950/60 border border-emerald-800/80 px-3 py-1 rounded-full self-start sm:self-auto">
+            Sourced from ruraluniv.ac.in
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {OFFICIAL_CAMPUS_GALLERY.map((photo) => (
+            <div 
+              key={photo.id}
+              className="group relative rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 hover:border-emerald-500/50 transition-all duration-300 shadow-lg flex flex-col"
+            >
+              <div className="relative aspect-video w-full overflow-hidden bg-slate-950">
+                <img 
+                  src={photo.url} 
+                  alt={photo.title}
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
+                <span className="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-slate-950/80 backdrop-blur-sm border border-slate-700 text-[10px] font-bold text-emerald-300 uppercase tracking-wider">
+                  {photo.category}
+                </span>
+              </div>
+              <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
+                <div>
+                  <h3 className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition-colors">
+                    {photo.title}
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed line-clamp-2 font-light">
+                    {photo.caption}
+                  </p>
+                </div>
+                <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-emerald-400" />
+                    <span>Gandhigram Campus</span>
+                  </span>
+                  <span className="text-emerald-400 font-semibold group-hover:underline flex items-center gap-1">
+                    <span>Verified Asset</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 

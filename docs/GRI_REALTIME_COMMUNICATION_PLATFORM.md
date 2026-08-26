@@ -145,13 +145,18 @@ Every transition is recorded in `core.audit_log` with actor ID, timestamp, and m
 
 ---
 
-## 8. 💻 Web Admin Control Panel (`admin/index.html`)
+## 8. 💻 Web Admin Control Panel & Template Manager
 
-Access the Admin Web Panel by opening [`admin/index.html`](file:///d:/current%20project/GRI/admin/index.html) in any browser. It provides:
+Access the Admin Web Panel via `AdminView.tsx` in the web application. It provides:
 - Live KPI Counters (Total Users, Active Users, Pending Approval, Delivery Rate %, Failed Rate %)
 - Audience Filter Builder & Recipient Estimator
 - Multi-Channel Delivery Selectors (In-App, Push, Email, WhatsApp, SMS)
 - Approval Queue & Action Modals
+- **Manage Templates Modal (`ManageTemplatesModal.tsx`)**:
+  - Full CRUD operations: View, Create, Edit, and Delete announcement templates.
+  - Template categorization (Exam, Circular, Emergency, Admission, Fee Deadline, Weather Warning).
+  - Multi-channel preview: SMS character counters, WhatsApp parameters, and rich HTML Email templates.
+  - Seamless template selection directly inside `CircularsManager.tsx` and `CommunicationLogsView.tsx`.
 - CMS Content Management (Announcements, News, Events, Banners)
 - Immutable Audit Log explorer
 

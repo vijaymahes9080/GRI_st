@@ -19,6 +19,7 @@ import { SystemSettingsManager } from '../admin/SystemSettingsManager';
 import { AuditLogsViewer } from '../admin/AuditLogsViewer';
 import { GrievanceManager } from '../admin/GrievanceManager';
 import { AdminResetPasswordModal } from '../admin/AdminResetPasswordModal';
+import { RbacManagerView } from '../admin/RbacManagerView';
 import { UserRole, UserProfile } from '../../types';
 import { 
   ShieldCheck, 
@@ -57,6 +58,8 @@ export const AdminView: React.FC = () => {
   const { 
     currentUser, 
     usersList, 
+    loginAsUser,
+    setTab,
     approveUserWithNotifications,
     bulkUpdateUserApproval,
     deleteUser,
@@ -81,6 +84,7 @@ export const AdminView: React.FC = () => {
   type AdminTab = 
     | 'overview' 
     | 'users' 
+    | 'rbac'
     | 'circulars' 
     | 'academic' 
     | 'events' 
@@ -215,7 +219,8 @@ export const AdminView: React.FC = () => {
   // Nav menu categories for modern side-drawer or tab bar
   const navTabs: { id: AdminTab; label: string; icon: React.FC<{ className?: string }>; badge?: number }[] = [
     { id: 'overview', label: 'Dashboard Overview', icon: Activity },
-    { id: 'users', label: 'User Directory & RBAC', icon: Users, badge: pendingUsers.length },
+    { id: 'users', label: 'User Directory', icon: Users, badge: pendingUsers.length },
+    { id: 'rbac', label: 'Access Control & RBAC Matrix', icon: ShieldCheck },
     { id: 'circulars', label: 'Circulars & Notices', icon: Bell, badge: circulars.length },
     { id: 'academic', label: 'Schools & Departments', icon: Building2, badge: schools.length },
     { id: 'events', label: 'Events & Seminars', icon: Calendar, badge: events.length },
@@ -231,6 +236,72 @@ export const AdminView: React.FC = () => {
     { id: 'messages', label: 'SMS / WhatsApp Logs', icon: MessageSquare, badge: dispatchedMessages.length },
     { id: 'audit', label: 'Security Audit Trail', icon: ShieldCheck, badge: auditLogs.length },
   ];
+
+  const isAdminAuthorized = currentUser.role === 'admin' || currentUser.role === 'super_admin' || (currentUser.role as string) === 'dept_admin';
+
+  if (!isAdminAuthorized) {
+    const adminUser = usersList.find(u => u.role === 'admin' || u.role === 'super_admin') || {
+      id: 'USR-ADMIN-01',
+      name: 'Dr. V. Ramanathan',
+      email: 'admin.ict@ruraluniv.ac.in',
+      role: 'admin' as const,
+      department: 'Central Administration & ICT',
+      approvalStatus: 'approved' as const,
+      passwordStatus: 'user_defined' as const,
+      mustChangePasswordOnLogin: false,
+      phone: '+91 94433 12345',
+      phoneVerified: true,
+      emailVerified: true,
+      smsAlertsEnabled: true,
+      whatsappAlertsEnabled: true,
+      emailCircularsEnabled: true,
+    };
+
+    return (
+      <div className="max-w-2xl mx-auto py-12 px-4 animate-fadeIn text-center">
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
+            <ShieldCheck className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-950/80 border border-rose-800 text-rose-300 text-xs font-semibold">
+              <AlertCircle className="w-3.5 h-3.5" />
+              <span>Restricted Administrative Area</span>
+            </div>
+            <h2 className="text-2xl font-bold font-display text-white">Elevated Authorization Required</h2>
+            <p className="text-slate-400 text-sm max-w-md mx-auto">
+              Your active session profile (<span className="text-slate-200 font-semibold">{currentUser.name}</span>, role: <span className="text-amber-400 uppercase font-mono font-bold text-xs">{currentUser.role}</span>) does not possess institutional administrative rights to modify university databases or dispatch notifications.
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-left text-xs space-y-2">
+            <div className="text-slate-300 font-semibold">Enforced Security Boundaries:</div>
+            <ul className="list-disc list-inside text-slate-400 space-y-1 text-[11px]">
+              <li>Only <strong>Super Admin</strong>, <strong>Administrator</strong>, and <strong>Department Admin</strong> roles can access the Central Control Center.</li>
+              <li>Administrative mutations (CRUD operations, credential resets, bulk imports) are recorded in the security audit ledger.</li>
+            </ul>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <button
+              onClick={() => loginAsUser(adminUser)}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Switch to Administrator Profile</span>
+            </button>
+            <button
+              onClick={() => setTab('home')}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition"
+            >
+              Return to Portal Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fadeIn pb-12">
@@ -663,6 +734,9 @@ export const AdminView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* TAB CONTENT: RBAC Access Control Matrix */}
+      {activeTab === 'rbac' && <RbacManagerView />}
 
       {/* TAB CONTENT: Circulars & Announcements */}
       {activeTab === 'circulars' && <CircularsManager />}

@@ -21,7 +21,8 @@ import {
   AiSettingsConfig,
   AuditLogEntry,
   FacultyMember,
-  ProgrammeItem
+  ProgrammeItem,
+  NotificationTemplate
 } from '../../types';
 import { 
   INITIAL_CIRCULARS, 
@@ -41,7 +42,8 @@ import {
   INITIAL_FAQS,
   INITIAL_QUICK_LINKS,
   INITIAL_DYNAMIC_PAGES,
-  INITIAL_AUDIT_LOGS
+  INITIAL_AUDIT_LOGS,
+  INITIAL_NOTIFICATION_TEMPLATES
 } from '../data/griMasterData';
 import {
   subscribeToCirculars,
@@ -58,7 +60,10 @@ import {
   subscribeToDynamicPages,
   subscribeToAiKnowledgeSources,
   subscribeToAuditLogs,
+  subscribeToNotificationTemplates,
   subscribeToSystemConfig,
+  saveNotificationTemplateToFirestore,
+  deleteNotificationTemplateFromFirestore,
   addCircularToFirestore,
   updateCircularInFirestore,
   deleteCircularFromFirestore,
@@ -77,7 +82,7 @@ import {
   bulkDeleteUsersFromFirestore,
   addGrievanceToFirestore,
   addDispatchedMessageToFirestore,
-  signInWithGoogle,
+  authenticateInstitutionalUser,
   signOutUser,
   auth,
   EVENTS_COLLECTION,
@@ -90,8 +95,20 @@ import {
   AI_KNOWLEDGE_COLLECTION
 } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { Permission } from '../../types';
 
 export type AppTab = 'home' | 'explore' | 'services' | 'alerts' | 'ai_chat' | 'admin' | 'profile';
+
+export const GUEST_USER: UserProfile = {
+  id: 'guest-visitor',
+  name: 'Guest Visitor',
+  email: 'guest@ruraluniv.ac.in',
+  role: 'guest',
+  schoolId: 'public',
+  schoolName: 'Public Information Portal',
+  department: 'University Public Information Center',
+  approvalStatus: 'approved',
+};
 
 interface AppState {
   currentTab: AppTab;
@@ -104,13 +121,19 @@ interface AppState {
   isFirestoreLive: boolean;
   setFirestoreLive: (live: boolean) => void;
 
-  // Auth state & Firebase Auth
+  // Institutional Auth & Session state
   currentUser: UserProfile;
   isAuthenticated: boolean;
   usersList: UserProfile[];
   loginAsUser: (user: UserProfile) => void;
-  loginWithGoogleAuth: () => Promise<void>;
+  loginWithInstitutionalCredentials: (identifier: string, passwordInput: string) => Promise<UserProfile>;
+  continueAsGuest: () => void;
   logout: () => void;
+
+  // Login Modal State
+  isLoginModalOpen: boolean;
+  loginModalInitialRole?: UserRole;
+  setLoginModalOpen: (open: boolean, initialRole?: UserRole) => void;
   
   // User & Approval Management
   updateUserApproval: (userId: string, status: 'approved' | 'rejected' | 'suspended') => Promise<void>;
@@ -123,6 +146,8 @@ interface AppState {
   addNewUserByAdmin: (userData: Partial<UserProfile> & { name: string; email: string; role: UserRole; department: string }) => Promise<void>;
   bulkImportUsers: (payload: { users: any[]; autoApprove?: boolean; defaultPassword?: string }) => Promise<{ success: boolean; totalRecords: number; validCount: number; errorCount: number; errors: any[]; importedUsers: UserProfile[] }>;
   updateUserRole: (userId: string, newRole: UserRole) => Promise<void>;
+  updateUserCustomPermissions: (userId: string, customPermissions: Permission[], revokedPermissions: Permission[]) => Promise<void>;
+  updateUserAcademicHierarchy: (userId: string, hierarchy: Partial<UserProfile>) => Promise<void>;
   updateUserContactChannels: (userId: string, data: { phone: string; email: string; alternateEmail?: string; smsAlertsEnabled?: boolean; whatsappAlertsEnabled?: boolean; emailCircularsEnabled?: boolean }) => Promise<void>;
   sendTestChannelVerification: (userId: string, channel: 'SMS' | 'WHATSAPP' | 'EMAIL', targetValue?: string) => Promise<void>;
   
@@ -145,6 +170,12 @@ interface AppState {
   // Multi-Channel Notifications (SMS, WhatsApp, Email, In-App)
   dispatchedMessages: MultiChannelMessage[];
   addDispatchedMessage: (message: Omit<MultiChannelMessage, 'id'>) => Promise<void>;
+
+  // Notification & Announcement Templates
+  notificationTemplates: NotificationTemplate[];
+  saveNotificationTemplate: (template: NotificationTemplate) => Promise<void>;
+  deleteNotificationTemplate: (templateId: string) => Promise<void>;
+  incrementTemplateUsage: (templateId: string) => Promise<void>;
 
   // Circulars & Notices Management
   circulars: CircularItem[];
@@ -257,6 +288,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   setPasswordChangeModalOpen: (open) => set({ isPasswordChangeModalOpen: open }),
 
   dispatchedMessages: INITIAL_DISPATCHED_MESSAGES,
+  notificationTemplates: INITIAL_NOTIFICATION_TEMPLATES,
   schools: SCHOOLS_DATA,
   events: INITIAL_EVENTS,
   placements: INITIAL_PLACEMENTS,
@@ -272,29 +304,41 @@ export const useAppStore = create<AppState>((set, get) => ({
   featureFlags: DEFAULT_FEATURE_FLAGS,
   aiSettings: DEFAULT_AI_SETTINGS,
 
+  isLoginModalOpen: false,
+  loginModalInitialRole: undefined,
+  setLoginModalOpen: (open, initialRole) => set({ isLoginModalOpen: open, loginModalInitialRole: initialRole }),
+
   loginAsUser: (user) => {
-    set({ currentUser: user, isAuthenticated: true });
+    set({ currentUser: user, isAuthenticated: user.role !== 'guest' });
     if (user.approvalStatus === 'approved' && user.mustChangePasswordOnLogin) {
       set({ isPasswordChangeModalOpen: true });
     }
     saveUserProfile(user).catch((e) => console.warn('User profile sync to firestore:', e));
   },
 
-  loginWithGoogleAuth: async () => {
-    try {
-      const profile = await signInWithGoogle();
-      set({ currentUser: profile, isAuthenticated: true });
-    } catch (error) {
-      console.error('Google Sign-In Failed:', error);
-      throw error;
+  loginWithInstitutionalCredentials: async (identifier: string, passwordInput: string) => {
+    const verifiedUser = await authenticateInstitutionalUser(identifier, passwordInput);
+    set({ currentUser: verifiedUser, isAuthenticated: true, isLoginModalOpen: false });
+    if (verifiedUser.approvalStatus === 'approved' && verifiedUser.mustChangePasswordOnLogin) {
+      set({ isPasswordChangeModalOpen: true });
     }
+    saveUserProfile(verifiedUser).catch((e) => console.warn('User profile sync to firestore:', e));
+    return verifiedUser;
+  },
+
+  continueAsGuest: () => {
+    set({
+      currentUser: GUEST_USER,
+      isAuthenticated: false,
+      isLoginModalOpen: false,
+    });
   },
 
   logout: () => {
     signOutUser().catch(() => {});
     set({ 
       isAuthenticated: false, 
-      currentUser: { ...SAMPLE_USERS[0], role: 'guest' as any, name: 'Guest Visitor', email: 'guest@ruraluniv.ac.in' },
+      currentUser: GUEST_USER,
       isPasswordChangeModalOpen: false,
     });
   },
@@ -367,13 +411,18 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
 
     try {
+      const currentUser = get().currentUser;
       const response = await fetch('/api/v1/notifications/dispatch-approval', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-role': currentUser.role,
+          'x-user-id': currentUser.id,
+        },
         body: JSON.stringify({
           user: updatedUser,
           defaultPassword: tempPassword,
-          approvedBy: get().currentUser.name,
+          approvedBy: currentUser.name,
         }),
       });
 
@@ -505,9 +554,14 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     let messagesCount = 0;
     try {
+      const currentUser = get().currentUser;
       const response = await fetch('/api/v1/users/reset-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-role': currentUser.role,
+          'x-user-id': currentUser.id,
+        },
         body: JSON.stringify({
           user: updatedUser,
           defaultPassword: tempPassword,
@@ -576,6 +630,51 @@ export const useAppStore = create<AppState>((set, get) => ({
       await get().logAdminAction('UPDATE', 'USER_ROLE', targetUser.id, targetUser.name, `Changed role to ${newRole}`);
     } catch (e) {
       console.warn('[Firestore] Update user role error:', e);
+    }
+  },
+
+  updateUserCustomPermissions: async (userId, customPermissions, revokedPermissions) => {
+    const targetUser = get().usersList.find((u) => u.id === userId);
+    if (!targetUser) return;
+
+    const updatedUser: UserProfile = {
+      ...targetUser,
+      customPermissions,
+      revokedPermissions,
+    };
+
+    set((state) => ({
+      usersList: state.usersList.map((u) => (u.id === userId ? updatedUser : u)),
+      currentUser: state.currentUser.id === userId ? updatedUser : state.currentUser,
+    }));
+
+    try {
+      await saveUserProfile(updatedUser);
+      await get().logAdminAction('UPDATE', 'USER_RBAC', targetUser.id, targetUser.name, `Updated custom permissions: ${customPermissions.length} granted, ${revokedPermissions.length} revoked`);
+    } catch (e) {
+      console.warn('[Firestore] Update user permissions error:', e);
+    }
+  },
+
+  updateUserAcademicHierarchy: async (userId, hierarchy) => {
+    const targetUser = get().usersList.find((u) => u.id === userId);
+    if (!targetUser) return;
+
+    const updatedUser: UserProfile = {
+      ...targetUser,
+      ...hierarchy,
+    };
+
+    set((state) => ({
+      usersList: state.usersList.map((u) => (u.id === userId ? updatedUser : u)),
+      currentUser: state.currentUser.id === userId ? updatedUser : state.currentUser,
+    }));
+
+    try {
+      await saveUserProfile(updatedUser);
+      await get().logAdminAction('UPDATE', 'USER_HIERARCHY', targetUser.id, targetUser.name, `Updated academic hierarchy: ${hierarchy.department || targetUser.department} / ${hierarchy.programmeName || ''}`);
+    } catch (e) {
+      console.warn('[Firestore] Update user hierarchy error:', e);
     }
   },
 
@@ -715,9 +814,14 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     let validationResult: any;
     try {
+      const currentUser = get().currentUser;
       const response = await fetch('/api/v1/users/bulk-import', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-role': currentUser.role,
+          'x-user-id': currentUser.id,
+        },
         body: JSON.stringify({
           users: payload.users,
           autoApprove,
@@ -900,6 +1004,56 @@ export const useAppStore = create<AppState>((set, get) => ({
       await addDispatchedMessageToFirestore(message);
     } catch (e) {
       console.warn('[Firestore] Add message log error:', e);
+    }
+  },
+
+  // Notification & Announcement Templates Management
+  saveNotificationTemplate: async (template) => {
+    set((state) => {
+      const exists = state.notificationTemplates.some((t) => t.id === template.id);
+      return {
+        notificationTemplates: exists
+          ? state.notificationTemplates.map((t) => (t.id === template.id ? template : t))
+          : [template, ...state.notificationTemplates],
+      };
+    });
+
+    try {
+      await saveNotificationTemplateToFirestore(template);
+      await get().logAdminAction('CREATE', 'TEMPLATE', template.id, template.name, `Saved announcement template for ${template.category}`);
+    } catch (e) {
+      console.warn('[Firestore] Save notification template error:', e);
+    }
+  },
+
+  deleteNotificationTemplate: async (templateId) => {
+    const tpl = get().notificationTemplates.find((t) => t.id === templateId);
+    set((state) => ({
+      notificationTemplates: state.notificationTemplates.filter((t) => t.id !== templateId),
+    }));
+
+    try {
+      await deleteNotificationTemplateFromFirestore(templateId);
+      await get().logAdminAction('DELETE', 'TEMPLATE', templateId, tpl?.name || templateId, 'Deleted notification announcement template');
+    } catch (e) {
+      console.warn('[Firestore] Delete notification template error:', e);
+    }
+  },
+
+  incrementTemplateUsage: async (templateId) => {
+    const tpl = get().notificationTemplates.find((t) => t.id === templateId);
+    if (!tpl) return;
+    const updated: NotificationTemplate = {
+      ...tpl,
+      usageCount: (tpl.usageCount || 0) + 1,
+    };
+    set((state) => ({
+      notificationTemplates: state.notificationTemplates.map((t) => (t.id === templateId ? updated : t)),
+    }));
+    try {
+      await saveNotificationTemplateToFirestore(updated);
+    } catch (e) {
+      console.warn('[Firestore] Increment template usage error:', e);
     }
   },
 
@@ -1551,6 +1705,12 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
     });
 
+    const unsubTemplates = subscribeToNotificationTemplates((updatedTemplates) => {
+      if (updatedTemplates && updatedTemplates.length > 0) {
+        set({ notificationTemplates: updatedTemplates });
+      }
+    });
+
     const unsubConfig = subscribeToSystemConfig({
       onHeroChange: (hero) => set({ heroConfig: hero }),
       onFlagsChange: (flags) => set({ featureFlags: flags }),
@@ -1603,6 +1763,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       unsubDynamicPages();
       unsubAiKnowledge();
       unsubAuditLogs();
+      unsubTemplates();
       unsubConfig();
       unsubAuth();
     };

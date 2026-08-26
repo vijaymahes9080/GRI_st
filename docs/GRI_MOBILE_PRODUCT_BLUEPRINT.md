@@ -117,8 +117,11 @@ GRI DATABASE
 
 ---
 
-## 4. REST API Gateway Structure (`/api/v1`)
+## 4. REST API Gateway & Communication Structure (`/api/v1`)
 
 * **Public**: `/api/v1/home`, `/api/v1/news`, `/api/v1/events`, `/api/v1/circulars`, `/api/v1/tenders`, `/api/v1/careers`
 * **Institutional**: `/api/v1/about`, `/api/v1/governance`, `/api/v1/administration`, `/api/v1/academics`, `/api/v1/admissions`, `/api/v1/examinations`, `/api/v1/facilities`, `/api/v1/infrastructure`, `/api/v1/research`, `/api/v1/alumni`
 * **Auth & Portals**: `/api/v1/auth/login`, `/api/v1/student/*`, `/api/v1/scholar/*`, `/api/v1/department/*`
+* **Admin & Communications**: `/api/v1/admin/users/bulk-import`, `/api/v1/admin/notifications/dispatch`, `/api/v1/admin/templates/*` (Manage Templates Engine)
+* **Media Standards**: Strict official insignia SVG rendering (`GRIEmblem.tsx`), verified campus media catalogue (`griMediaAssets.ts`), and global `referrerPolicy="no-referrer"` compliance.
+

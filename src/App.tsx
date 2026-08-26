@@ -13,6 +13,7 @@ import { AdminView } from './components/web/AdminView';
 import { ProfileView } from './components/web/ProfileView';
 import { MobileSimulator } from './components/web/MobileSimulator';
 import { ChangePasswordModal } from './components/common/ChangePasswordModal';
+import { InstitutionalLoginModal } from './components/auth/InstitutionalLoginModal';
 import { INSTITUTION_INFO } from './core/data/griMasterData';
 import { 
   GraduationCap, 
@@ -27,7 +28,16 @@ import {
 } from 'lucide-react';
 
 export const App: React.FC = () => {
-  const { currentTab, viewMode, selectedDepartment, setSelectedDepartment, setTab, initializeRealtimeSync } = useAppStore();
+  const { 
+    currentTab, 
+    viewMode, 
+    selectedDepartment, 
+    setSelectedDepartment, 
+    setTab, 
+    initializeRealtimeSync,
+    isLoginModalOpen,
+    setLoginModalOpen
+  } = useAppStore();
 
   useEffect(() => {
     // Seed initial collections in Firestore if needed
@@ -68,6 +78,10 @@ export const App: React.FC = () => {
         onClose={() => setSelectedDepartment(null)}
       />
       <ChangePasswordModal />
+      <InstitutionalLoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setLoginModalOpen(false)}
+      />
 
       {/* Institutional Enterprise Footer */}
       <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 text-xs mt-auto">

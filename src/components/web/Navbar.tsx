@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAppStore, AppTab } from '../../core/store/appStore';
+import { GRIEmblem } from '../common/GRIEmblem';
 import { 
   Home, 
   Compass, 
@@ -92,9 +93,7 @@ export const Navbar: React.FC = () => {
             onClick={() => setTab('home')} 
             className="flex items-center space-x-3 cursor-pointer group select-none"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-amber-700 flex items-center justify-center shadow-lg shadow-emerald-900/40 border border-emerald-500/30 group-hover:scale-105 transition-transform">
-              <GraduationCap className="w-6 h-6 text-white" />
-            </div>
+            <GRIEmblem className="w-10 h-10 group-hover:scale-105 transition-transform" />
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-display font-bold text-base sm:text-lg tracking-tight text-white group-hover:text-emerald-400 transition-colors">
@@ -141,26 +140,39 @@ export const Navbar: React.FC = () => {
 
           {/* User Status / Profile Switcher Button */}
           <div className="hidden sm:flex items-center space-x-2">
-            <button
-              onClick={() => setTab('profile')}
-              className="flex items-center space-x-2.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 transition"
-            >
-              {currentUser.avatarUrl ? (
-                <img 
-                  src={currentUser.avatarUrl} 
-                  alt={currentUser.name} 
-                  className="w-7 h-7 rounded-full object-cover border border-emerald-500" 
-                />
-              ) : (
-                <div className="w-7 h-7 rounded-full bg-emerald-700 flex items-center justify-center text-xs font-bold text-white border border-emerald-500">
-                  {currentUser.name.charAt(0)}
+            {currentUser.role === 'guest' ? (
+              <button
+                id="btn-navbar-guest-login"
+                onClick={() => setLoginModalOpen(true)}
+                className="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-md shadow-emerald-950/50"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Student / Staff Login</span>
+              </button>
+            ) : (
+              <button
+                id="btn-navbar-profile"
+                onClick={() => setLoginModalOpen(true)}
+                className="flex items-center space-x-2.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 transition"
+              >
+                {currentUser.avatarUrl ? (
+                  <img 
+                    src={currentUser.avatarUrl} 
+                    alt={currentUser.name} 
+                    referrerPolicy="no-referrer"
+                    className="w-7 h-7 rounded-full object-cover border border-emerald-500" 
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-emerald-700 flex items-center justify-center text-xs font-bold text-white border border-emerald-500">
+                    {currentUser.name.charAt(0)}
+                  </div>
+                )}
+                <div className="text-left leading-tight">
+                  <div className="text-xs font-semibold text-slate-200 truncate max-w-[120px]">{currentUser.name}</div>
+                  <div className="text-[10px] text-emerald-400 capitalize font-mono">{currentUser.role}</div>
                 </div>
-              )}
-              <div className="text-left leading-tight">
-                <div className="text-xs font-semibold text-slate-200 truncate max-w-[120px]">{currentUser.name}</div>
-                <div className="text-[10px] text-emerald-400 capitalize">{currentUser.role}</div>
-              </div>
-            </button>
+              </button>
+            )}
           </div>
 
           {/* Mobile menu toggle */}

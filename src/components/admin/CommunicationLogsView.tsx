@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../../core/store/appStore';
 import { MessageChannel, MessageType } from '../../types';
+import { ManageTemplatesModal } from './ManageTemplatesModal';
 import { 
   MessageSquare, 
   Smartphone, 
@@ -14,7 +15,9 @@ import {
   Filter,
   ShieldAlert,
   KeyRound,
-  UserCheck
+  UserCheck,
+  Sliders,
+  BookmarkCheck
 } from 'lucide-react';
 
 export const CommunicationLogsView: React.FC = () => {
@@ -25,6 +28,7 @@ export const CommunicationLogsView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isManageTemplatesOpen, setIsManageTemplatesOpen] = useState(false);
 
   const filteredLogs = dispatchedMessages.filter((msg) => {
     const matchesChannel = channelFilter === 'ALL' || msg.channel === channelFilter;
@@ -99,6 +103,31 @@ export const CommunicationLogsView: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Top Header Card with Manage Templates Action */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div>
+          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <span>SMS, WhatsApp & Notification Dispatch Gateway</span>
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Audit outbound multi-channel broadcasts, automated credential notices, and notification templates.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            id="manage-notification-templates-btn"
+            onClick={() => setIsManageTemplatesOpen(true)}
+            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-2 transition shadow-md shadow-indigo-900/20"
+          >
+            <Sliders className="w-4 h-4" />
+            <span>Manage Templates</span>
+          </button>
+        </div>
+      </div>
+
       {/* Toast */}
       {toastMessage && (
         <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-semibold flex items-center gap-2 animate-fadeIn">
@@ -270,6 +299,12 @@ export const CommunicationLogsView: React.FC = () => {
           ))
         )}
       </div>
+
+      {/* Manage Templates Modal */}
+      <ManageTemplatesModal
+        isOpen={isManageTemplatesOpen}
+        onClose={() => setIsManageTemplatesOpen(false)}
+      />
     </div>
   );
 };

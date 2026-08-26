@@ -207,7 +207,12 @@ export const BulkConfirmModal: React.FC<BulkConfirmModalProps> = ({
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-white flex-shrink-0">
                         {user.avatarUrl ? (
-                          <img src={user.avatarUrl} alt={user.name} className="w-full h-full rounded-lg object-cover" />
+                          <img 
+                            src={user.avatarUrl} 
+                            alt={user.name} 
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full rounded-lg object-cover" 
+                          />
                         ) : (
                           user.name.charAt(0)
                         )}

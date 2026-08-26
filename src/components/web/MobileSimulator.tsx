@@ -26,6 +26,7 @@ import { INSTITUTION_INFO, INITIAL_CIRCULARS, SCHOOLS_DATA, EXAM_SCHEDULE_MOCK }
 import { ExamHallTicketModal } from './ExamHallTicketModal';
 import { LiveVoiceConversationModal } from '../common/LiveVoiceConversationModal';
 import { CampusMapsExplorerModal } from '../common/CampusMapsExplorerModal';
+import { GRIEmblem } from '../common/GRIEmblem';
 
 export const MobileSimulator: React.FC = () => {
   const { currentUser, circulars } = useAppStore();
@@ -111,9 +112,7 @@ export const MobileSimulator: React.FC = () => {
         {/* Mobile App Header */}
         <div className="bg-slate-900 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-700 flex items-center justify-center font-bold text-white shadow">
-              <GraduationCap className="w-4 h-4" />
-            </div>
+            <GRIEmblem className="w-8 h-8 flex-shrink-0" />
             <div>
               <h2 className="text-xs font-bold text-white leading-tight">Gandhigram Rural Inst.</h2>
               <p className="text-[10px] text-emerald-400">NAAC A++ Deemed University</p>

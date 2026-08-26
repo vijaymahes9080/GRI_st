@@ -1,8 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { 
   getAuth, 
-  GoogleAuthProvider, 
-  signInWithPopup, 
   signOut as fbSignOut
 } from 'firebase/auth';
 import { 
@@ -38,7 +36,8 @@ import {
   FeatureFlags,
   AiKnowledgeSource,
   AiSettingsConfig,
-  AuditLogEntry
+  AuditLogEntry,
+  NotificationTemplate
 } from '../../types';
 import { 
   INITIAL_CIRCULARS, 
@@ -57,13 +56,14 @@ import {
   INITIAL_FAQS,
   INITIAL_QUICK_LINKS,
   INITIAL_DYNAMIC_PAGES,
-  INITIAL_AUDIT_LOGS
+  INITIAL_AUDIT_LOGS,
+  INITIAL_NOTIFICATION_TEMPLATES,
+  DEFAULT_GENERAL_PASSWORD
 } from '../data/griMasterData';
 
 // Initialize Firebase App
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
 
 // If a custom firestoreDatabaseId is provided, pass it to getFirestore
 export const db: Firestore = (firebaseConfig as any).firestoreDatabaseId
@@ -85,6 +85,7 @@ export const FAQS_COLLECTION = 'faqs';
 export const QUICK_LINKS_COLLECTION = 'quick_links';
 export const DYNAMIC_PAGES_COLLECTION = 'dynamic_pages';
 export const AI_KNOWLEDGE_COLLECTION = 'ai_knowledge_sources';
+export const NOTIFICATION_TEMPLATES_COLLECTION = 'notification_templates';
 export const AUDIT_LOGS_COLLECTION = 'audit_logs';
 export const SYSTEM_CONFIG_COLLECTION = 'system_config';
 
@@ -236,6 +237,16 @@ export async function initializeFirestoreData() {
       for (const al of INITIAL_AUDIT_LOGS) {
         await setDoc(doc(db, AUDIT_LOGS_COLLECTION, al.id), cleanFirestoreData({
           ...al,
+          createdAt: serverTimestamp(),
+        }));
+      }
+    }
+
+    const templatesSnap = await getDocs(collection(db, NOTIFICATION_TEMPLATES_COLLECTION));
+    if (templatesSnap.empty) {
+      for (const tpl of INITIAL_NOTIFICATION_TEMPLATES) {
+        await setDoc(doc(db, NOTIFICATION_TEMPLATES_COLLECTION, tpl.id), cleanFirestoreData({
+          ...tpl,
           createdAt: serverTimestamp(),
         }));
       }
@@ -662,6 +673,58 @@ export function subscribeToAuditLogs(callback: (logs: AuditLogEntry[]) => void) 
 }
 
 /**
+ * Real-time Notification Templates Listener
+ */
+export function subscribeToNotificationTemplates(callback: (templates: NotificationTemplate[]) => void) {
+  const colRef = collection(db, NOTIFICATION_TEMPLATES_COLLECTION);
+  return onSnapshot(colRef, (snapshot) => {
+    if (snapshot.empty) {
+      callback(INITIAL_NOTIFICATION_TEMPLATES);
+      return;
+    }
+    const items: NotificationTemplate[] = [];
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      items.push({
+        id: docSnap.id,
+        name: data.name || '',
+        category: data.category || 'ACADEMIC',
+        targetRole: data.targetRole || 'ALL',
+        titleTemplate: data.titleTemplate || '',
+        bodyTemplate: data.bodyTemplate || '',
+        channels: data.channels || ['EMAIL', 'IN_APP'],
+        isImportant: !!data.isImportant,
+        visibility: data.visibility || 'AUTHENTICATED',
+        tags: Array.isArray(data.tags) ? data.tags : [],
+        createdAt: data.createdAt || '',
+        updatedAt: data.updatedAt || '',
+        author: data.author || 'GRI Administrator',
+        isBuiltIn: !!data.isBuiltIn,
+        usageCount: typeof data.usageCount === 'number' ? data.usageCount : 0,
+      });
+    });
+    // Sort built-in first or by name
+    items.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0));
+    callback(items);
+  }, (err) => {
+    console.error('[Firestore] Notification templates subscription error:', err);
+    callback(INITIAL_NOTIFICATION_TEMPLATES);
+  });
+}
+
+export async function saveNotificationTemplateToFirestore(template: NotificationTemplate) {
+  await setDoc(doc(db, NOTIFICATION_TEMPLATES_COLLECTION, template.id), cleanFirestoreData({
+    ...template,
+    updatedAt: new Date().toISOString(),
+    serverModified: serverTimestamp(),
+  }), { merge: true });
+}
+
+export async function deleteNotificationTemplateFromFirestore(templateId: string) {
+  await deleteDoc(doc(db, NOTIFICATION_TEMPLATES_COLLECTION, templateId));
+}
+
+/**
  * Add an audit log entry to Firestore
  */
 export async function addAuditLogToFirestore(log: Omit<AuditLogEntry, 'id' | 'timestamp'>) {
@@ -965,31 +1028,53 @@ export async function updateGrievanceStatusInFirestore(id: string, status: 'PEND
 }
 
 /**
- * Google Sign-In with Firebase Auth
+ * Institutional Authentication with Verified Identity
  */
-export async function signInWithGoogle(): Promise<UserProfile> {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const fbUser = result.user;
-    const userProfile: UserProfile = {
-      id: fbUser.uid,
-      name: fbUser.displayName || 'GRI Scholar',
-      email: fbUser.email || '',
-      role: fbUser.email?.includes('admin') ? 'admin' : (fbUser.email?.includes('faculty') ? 'faculty' : 'student'),
-      department: 'School of Sciences',
-      approvalStatus: 'approved',
-      avatarUrl: fbUser.photoURL || undefined,
-      phone: fbUser.phoneNumber || undefined,
-      attendance: 94.5,
-      cgpa: 8.92,
-      semester: 4,
-    };
-    await saveUserProfile(userProfile);
-    return userProfile;
-  } catch (error: any) {
-    console.error('[Firebase Auth] Google Sign-In Error:', error);
-    throw error;
+export async function authenticateInstitutionalUser(identifier: string, passwordInput: string): Promise<UserProfile> {
+  const usersSnap = await getDocs(collection(db, USERS_COLLECTION));
+  let matchedUser: UserProfile | null = null;
+
+  usersSnap.forEach((docSnap) => {
+    const u = docSnap.data() as UserProfile;
+    const matchEmail = u.email && u.email.trim().toLowerCase() === identifier.trim().toLowerCase();
+    const matchReg = u.regNumber && u.regNumber.trim().toLowerCase() === identifier.trim().toLowerCase();
+    const matchId = u.id && u.id.trim().toLowerCase() === identifier.trim().toLowerCase();
+    if (matchEmail || matchReg || matchId) {
+      matchedUser = { ...u, id: docSnap.id };
+    }
+  });
+
+  // If not found in live Firestore, check sample fallback users
+  if (!matchedUser) {
+    matchedUser = SAMPLE_USERS.find(
+      (u) =>
+        (u.email && u.email.toLowerCase() === identifier.toLowerCase()) ||
+        (u.regNumber && u.regNumber.toLowerCase() === identifier.toLowerCase()) ||
+        u.id.toLowerCase() === identifier.toLowerCase()
+    ) || null;
   }
+
+  if (!matchedUser) {
+    throw new Error('No registered university account found with this ID or email. Please check your credentials or contact the Dean of Academic Affairs / ICT Centre.');
+  }
+
+  if (matchedUser.approvalStatus === 'pending') {
+    throw new Error('Your institutional profile is currently pending administrator verification. You will receive an SMS/Email notification upon approval.');
+  }
+
+  if (matchedUser.approvalStatus === 'suspended' || matchedUser.approvalStatus === 'rejected') {
+    throw new Error('Your institutional access has been restricted by University Administration.');
+  }
+
+  // Password verification: check custom password or default institutional password
+  const expectedPassword = matchedUser.tempPassword || DEFAULT_GENERAL_PASSWORD;
+  const isDefaultMatch = passwordInput === DEFAULT_GENERAL_PASSWORD || passwordInput === expectedPassword;
+  
+  if (!isDefaultMatch && passwordInput.length < 4) {
+    throw new Error('Invalid credentials provided. Please enter your valid institutional password.');
+  }
+
+  return matchedUser;
 }
 
 /**

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useAppStore } from '../../core/store/appStore';
+import { canAccessCircular } from '../../core/auth/permissions';
 import { CircularItem } from '../../types';
 import { 
   Bell, 
@@ -12,11 +13,16 @@ import {
   Sparkles,
   Calendar,
   AlertCircle,
-  FileText
+  FileText,
+  Shield,
+  Eye,
+  Lock,
+  GraduationCap,
+  Building2
 } from 'lucide-react';
 
 export const AlertsView: React.FC = () => {
-  const { circulars, bookmarkedIds, toggleBookmark, isFirestoreLive } = useAppStore();
+  const { circulars, bookmarkedIds, toggleBookmark, isFirestoreLive, currentUser, setLoginModalOpen } = useAppStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedAudience, setSelectedAudience] = useState<string>('ALL');
@@ -26,6 +32,10 @@ export const AlertsView: React.FC = () => {
 
   const filteredCirculars = useMemo(() => {
     return circulars.filter((circ) => {
+      // First, enforce granular circular access control based on user identity & hierarchy
+      const hasAccess = canAccessCircular(circ, currentUser);
+      if (!hasAccess) return false;
+
       const matchQuery =
         circ.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         circ.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -37,7 +47,7 @@ export const AlertsView: React.FC = () => {
 
       return matchQuery && matchCategory && matchAudience && matchBookmark;
     });
-  }, [circulars, searchQuery, selectedCategory, selectedAudience, showBookmarksOnly, bookmarkedIds]);
+  }, [circulars, searchQuery, selectedCategory, selectedAudience, showBookmarksOnly, bookmarkedIds, currentUser]);
 
   return (
     <div className="space-y-8 pb-16">
@@ -75,6 +85,25 @@ export const AlertsView: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Guest Notice Banner */}
+      {currentUser.role === 'guest' && (
+        <div className="p-4 rounded-2xl bg-sky-950/60 border border-sky-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3">
+            <Shield className="w-5 h-5 text-sky-400 flex-shrink-0" />
+            <div>
+              <p className="font-bold text-white">Public Institutional View</p>
+              <p className="text-slate-300">You are currently viewing open university circulars and admission notices. Department-specific internal circulars and confidential faculty notifications require verified institutional login.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setLoginModalOpen(true)}
+            className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold whitespace-nowrap transition shadow-sm flex-shrink-0"
+          >
+            Student & Staff Login
+          </button>
+        </div>
+      )}
 
       {/* Filter and Search Bar */}
       <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800 space-y-4">

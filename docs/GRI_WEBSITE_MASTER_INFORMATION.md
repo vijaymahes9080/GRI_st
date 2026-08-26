@@ -87,10 +87,34 @@
 
 ---
 
-## 3. 🛡️ Statutory Disclosures & Committees
-- Deemed to be University Regulations 2023 & UGC Regulations 2010
-- Code of Conduct for Teaching Staff, Non-Teaching Staff, and Students
-- Ban on the use of motorized vehicles by students inside campus
-- RTI Officers: First Appellate Authority (Registrar) & Public Information Officer (PIO)
-- Internal Complaints Committee (ICC), Caste-Based Discrimination Committee, Anti-Ragging Cell
-- Equal Opportunity Cell, Minority Cell, OBC Cell, Reservation Cell, YRC, NSS
+## 4. 🖼️ Official Emblem & Visual Media Standards
+
+### Official University Emblem Specifications
+- **Core Elements**: 
+  - **Traditional Indian Spinning Wheel (Charkha)**: Symbolizing self-reliance, rural industry, and Nai Talim constructive work.
+  - **Rising Golden Sun over Sirumalai Hills**: Radiance of higher education enlightening rural India.
+  - **Open Book of Knowledge**: Classical wisdom and modern scientific research.
+  - **Golden Wheat / Paddy Sheaves**: Sustainable agrarian prosperity and food security.
+  - **Official Inscriptions**: "THE GANDHIGRAM RURAL INSTITUTE" (Top Arc), "DEEMED TO BE UNIVERSITY" (Bottom Arc), "ESTD 1956" (Lower Ribbon).
+  - **Official Motto**: *"கிராமம் உயர நாடு உயரும்"* — "As the village rises, so the nation rises".
+
+### Verified Campus Photography Catalogue (`src/core/data/griMediaAssets.ts`)
+1. **Administrative Block**: Mahatma Gandhi Heritage Building with Sirumalai hill backdrop.
+2. **Dr. Radhakrishnan Central Library**: Modern digital library holding 1,75,000+ volumes, DELNET, and RemoteXs repository.
+3. **50-Acre ICAR-KVK Instructional Farm**: Ambathurai experimental farm for precision agriculture and organic seed multiplication.
+4. **School of Sciences DST-FIST Labs**: 400 MHz FT-NMR, Powder XRD, and biosensor workstations.
+5. **Department of Computer Science AI Lab**: NVIDIA GPU computing cluster for rural intelligence.
+6. **Gandhian Heritage Peace Centre**: Shanti Sena peace corps drill grounds and historical archives.
+
+### Web & Mobile Image Referencing Rules
+- All `<img>` tags must include `referrerPolicy="no-referrer"`.
+- Aspect ratios are strictly preserved (16:9 for hero/facility cards, 1:1 for emblems and avatars, 4:3 for departmental highlights).
+- Responsive picture elements and WebP fallbacks for low-bandwidth rural mobile connectivity.
+
+---
+
+## 5. 📢 Real-Time Omnichannel Communication & Template Management
+- **Administrative Control**: Direct access to `ManageTemplatesModal` via the Admin Panel and Notification tab.
+- **Template Operations**: Viewing, creating, editing, and deleting standardized message templates for Circulars, Exams, Admissions, Emergency Alerts, and Weather warnings.
+- **Channel Delivery**: Push (FCM), WhatsApp (Meta Cloud API), Email (SMTP TLS), SMS (DLT registered), and In-App Firestore alerts.
+

@@ -5,6 +5,16 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  root: '.',
+  publicDir: 'public',
+  base: '/',
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    rollupOptions: {
+      input: path.resolve(__dirname, 'index.html'),
+    },
+  },
   plugins: [
     react(),
     VitePWA({

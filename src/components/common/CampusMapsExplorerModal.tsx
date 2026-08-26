@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   MapPin, 
   Search, 
@@ -50,29 +50,7 @@ export const CampusMapsExplorerModal: React.FC<CampusMapsExplorerModalProps> = (
   const [userCoords, setUserCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [copiedUri, setCopiedUri] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      // Fetch initial grounding for GRI campus
-      fetchGrounding(initialQuery || 'Campus buildings, libraries, transit, and facilities at The Gandhigram Rural Institute');
-      
-      // Request client geolocation if available
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            setUserCoords({
-              latitude: pos.coords.latitude,
-              longitude: pos.coords.longitude,
-            });
-          },
-          (err) => {
-            console.log('[Geolocation notice: using Gandhigram reference coordinates]', err.message);
-          }
-        );
-      }
-    }
-  }, [isOpen, initialQuery]);
-
-  const fetchGrounding = async (searchQuery: string) => {
+  const fetchGrounding = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) return;
     setIsLoading(true);
 
@@ -100,7 +78,42 @@ export const CampusMapsExplorerModal: React.FC<CampusMapsExplorerModalProps> = (
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userCoords]);
+
+  useEffect(() => {
+    let isSubscribed = true;
+    if (isOpen) {
+      const q = initialQuery || 'Campus buildings, libraries, transit, and facilities at The Gandhigram Rural Institute';
+      // Trigger initial grounding fetch asynchronously
+      const timer = setTimeout(() => {
+        if (isSubscribed) {
+          fetchGrounding(q);
+        }
+      }, 0);
+      
+      // Request client geolocation if available
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            if (isSubscribed) {
+              setUserCoords({
+                latitude: pos.coords.latitude,
+                longitude: pos.coords.longitude,
+              });
+            }
+          },
+          (err) => {
+            console.log('[Geolocation notice: using Gandhigram reference coordinates]', err.message);
+          }
+        );
+      }
+
+      return () => {
+        isSubscribed = false;
+        clearTimeout(timer);
+      };
+    }
+  }, [isOpen, initialQuery, fetchGrounding]);
 
   const handleCopyLink = (uri: string) => {
     navigator.clipboard.writeText(uri);
