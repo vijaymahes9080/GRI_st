@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Send, Bot, User, Sparkles } from 'lucide-react-native';
 import { Header } from '../../components/Header';
+import { useResponsive } from '../../core/responsive/useResponsive';
 
 interface Message {
   id: string;
@@ -11,6 +12,8 @@ interface Message {
 }
 
 export default function AiChatScreen() {
+  const { isTablet } = useResponsive();
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -56,91 +59,90 @@ export default function AiChatScreen() {
   };
 
   return (
-    <View className="flex-1 bg-gray-50">
-      <Header title="AI Knowledge Assistant" subtitle="RAG Vector Engine · Tamil & English" />
-
-      <ScrollView className="flex-1 px-4 pt-4" contentContainerStyle={{ paddingBottom: 16 }}>
-        {messages.map((msg) => (
-          <View
-            key={msg.id}
-            className={`flex-row mb-4 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            {msg.sender === 'ai' && (
-              <View className="bg-khadi-blue p-2 rounded-full mr-2 self-start mt-1">
-                <Bot size={18} color="#FFFFFF" />
-              </View>
-            )}
-
+    <View className="flex-1 bg-slate-50">
+      <Header title="AI Knowledge Assistant" subtitle="RAG Vector Engine · Tamil & English" variant="white" />
+      
+      <View className="flex-1" style={{ maxWidth: 800, width: '100%', alignSelf: 'center' }}>
+        <ScrollView className="flex-1 px-4 pt-4" contentContainerStyle={{ paddingBottom: 16 }}>
+          {messages.map((msg) => (
             <View
-              className={`max-w-[80%] p-3.5 rounded-2xl ${
-                msg.sender === 'user'
-                  ? 'bg-khadi-blue rounded-tr-none'
-                  : 'bg-white border border-gray-100 rounded-tl-none shadow-sm'
-              }`}
+              key={msg.id}
+              className={`flex-row mb-6 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <Text className={`text-sm ${msg.sender === 'user' ? 'text-white' : 'text-gray-800'}`}>
-                {msg.text}
-              </Text>
-              <Text
-                className={`text-[10px] mt-1 text-right ${
-                  msg.sender === 'user' ? 'text-blue-200' : 'text-gray-400'
+              {msg.sender === 'ai' && (
+                <View className="bg-emerald-700 p-2.5 rounded-lg mr-3 self-end shadow-sm">
+                  <Bot size={20} color="#FFFFFF" />
+                </View>
+              )}
+              <View
+                className={`max-w-[80%] p-4 rounded-xl shadow-sm ${
+                  msg.sender === 'user'
+                    ? 'bg-[#0D47A1] rounded-br-none'
+                    : 'bg-white border border-slate-200 rounded-bl-none'
                 }`}
               >
-                {msg.timestamp}
-              </Text>
-            </View>
-
-            {msg.sender === 'user' && (
-              <View className="bg-saffron p-2 rounded-full ml-2 self-start mt-1">
-                <User size={18} color="#FFFFFF" />
+                <Text className={`text-base leading-relaxed ${msg.sender === 'user' ? 'text-white' : 'text-slate-800'}`}>
+                  {msg.text}
+                </Text>
+                <Text
+                  className={`text-[10px] mt-2 font-medium tracking-wider uppercase text-right ${
+                    msg.sender === 'user' ? 'text-blue-200' : 'text-slate-400'
+                  }`}
+                >
+                  {msg.timestamp}
+                </Text>
               </View>
-            )}
-          </View>
-        ))}
+              {msg.sender === 'user' && (
+                <View className="bg-slate-800 p-2.5 rounded-lg ml-3 self-end shadow-sm">
+                  <User size={20} color="#FFFFFF" />
+                </View>
+              )}
+            </View>
+          ))}
+          {loading && (
+            <View className="flex-row items-center bg-white p-4 rounded-xl border border-slate-200 self-start mb-6 shadow-sm rounded-bl-none ml-12">
+              <ActivityIndicator size="small" color="#059669" />
+              <Text className="text-sm text-slate-500 font-medium ml-3">Searching Official Knowledge Base...</Text>
+            </View>
+          )}
+        </ScrollView>
 
-        {loading && (
-          <View className="flex-row items-center bg-white p-3 rounded-xl border border-gray-100 self-start mb-4">
-            <ActivityIndicator size="small" color="#0D47A1" />
-            <Text className="text-xs text-gray-500 ml-2">Searching PGVector Statutes...</Text>
-          </View>
-        )}
-      </ScrollView>
+        {/* Suggested Quick Questions */}
+        <View className="px-4 pb-3 flex-row gap-3">
+          <TouchableOpacity
+            onPress={() => setInput('What is the minimum attendance required?')}
+            className="bg-white border border-slate-200 px-4 py-2.5 rounded-full flex-row items-center hover:bg-slate-50 shadow-sm"
+          >
+            <Sparkles size={14} color="#059669" />
+            <Text className="text-sm font-medium text-slate-700 ml-2">Attendance Rule</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setInput('How many outpasses allowed per month?')}
+            className="bg-white border border-slate-200 px-4 py-2.5 rounded-full flex-row items-center hover:bg-slate-50 shadow-sm"
+          >
+            <Sparkles size={14} color="#059669" />
+            <Text className="text-sm font-medium text-slate-700 ml-2">Hostel Outpass Rule</Text>
+          </TouchableOpacity>
+        </View>
 
-      {/* Suggested Quick Questions */}
-      <View className="px-4 pb-2 flex-row gap-2">
-        <TouchableOpacity
-          onPress={() => setInput('What is the minimum attendance required?')}
-          className="bg-white border border-gray-200 px-3 py-1.5 rounded-full flex-row items-center"
-        >
-          <Sparkles size={12} color="#0D47A1" />
-          <Text className="text-xs text-gray-700 ml-1">Attendance Rule</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setInput('How many outpasses allowed per month?')}
-          className="bg-white border border-gray-200 px-3 py-1.5 rounded-full flex-row items-center"
-        >
-          <Sparkles size={12} color="#0D47A1" />
-          <Text className="text-xs text-gray-700 ml-1">Hostel Outpass Rule</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Input Bar */}
-      <View className="p-3 bg-white border-t border-gray-200 flex-row items-center">
-        <TextInput
-          className="flex-1 bg-gray-100 px-4 py-3 rounded-xl text-base text-gray-900 mr-2"
-          placeholder="Ask AI in English or Tamil..."
-          placeholderTextColor="#9CA3AF"
-          value={input}
-          onChangeText={setInput}
-          onSubmitEditing={handleSend}
-        />
-        <TouchableOpacity
-          onPress={handleSend}
-          disabled={!input.trim() || loading}
-          className={`p-3.5 rounded-xl ${input.trim() ? 'bg-khadi-blue' : 'bg-gray-200'}`}
-        >
-          <Send size={20} color="#FFFFFF" />
-        </TouchableOpacity>
+        {/* Input Bar */}
+        <View className="p-4 bg-white border-t border-slate-200 flex-row items-center shadow-sm">
+          <TextInput
+            className="flex-1 bg-slate-50 border border-slate-200 px-5 py-3.5 rounded-xl text-base text-slate-900 mr-3 outline-none"
+            placeholder="Ask AI in English or Tamil..."
+            placeholderTextColor="#94A3B8"
+            value={input}
+            onChangeText={setInput}
+            onSubmitEditing={handleSend}
+          />
+          <TouchableOpacity
+            onPress={handleSend}
+            disabled={!input.trim() || loading}
+            className={`p-4 rounded-xl shadow-sm ${input.trim() ? 'bg-khadi-blue' : 'bg-slate-200'}`}
+          >
+            <Send size={20} color={input.trim() ? '#FFFFFF' : '#94A3B8'} />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );

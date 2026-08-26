@@ -38,12 +38,12 @@ export const Button: React.FC<ButtonProps> = ({
   const getSizeStyle = () => {
     switch (size) {
       case 'sm':
-        return 'py-2 px-4 rounded-lg';
+        return 'py-2 px-4 rounded-md';
       case 'lg':
-        return 'py-4 px-6 rounded-xl';
+        return 'py-4 px-6 rounded-lg';
       case 'md':
       default:
-        return 'py-3.5 px-5 rounded-xl';
+        return 'py-3 px-5 rounded-lg';
     }
   };
 

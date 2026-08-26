@@ -85,9 +85,9 @@ export const TemplateSelectorModal: React.FC<TemplateSelectorModalProps> = ({
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (confirm('Are you sure you want to delete this announcement template?')) {
-      setDeletingId(id);
+      console.log(id);
       await deleteNotificationTemplate(id);
-      setDeletingId(null);
+      console.log(null);
       if (activePreviewId === id) {
         setActivePreviewId(null);
       }

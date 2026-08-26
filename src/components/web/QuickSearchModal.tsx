@@ -3,6 +3,18 @@ import { useAppStore } from '../../core/store/appStore';
 import { Search, X, Compass, FileText, ArrowRight, BookOpen, Layers } from 'lucide-react';
 import { SCHOOLS_DATA, INITIAL_CIRCULARS } from '../../core/data/griMasterData';
 
+const SERVICES_LIST = [
+  { id: 'srv-1', title: 'ESE Timetable', description: 'End Semester Exam Timetables & Schedules', tab: 'services' },
+  { id: 'srv-2', title: 'Admissions', description: 'Online Admissions Portal & Counselling', tab: 'services' },
+  { id: 'srv-3', title: 'Library Catalog', description: 'Central Library Book Search & OPAC', tab: 'services' },
+  { id: 'srv-4', title: 'Grievance Redressal', description: 'Submit student or staff grievances', tab: 'services' },
+  { id: 'srv-5', title: 'Tenders & Contracts', description: 'Active university tenders & procurements', tab: 'services' },
+  { id: 'srv-7', title: 'Ask RuralGPT', description: 'AI Assistant for University Regulations', tab: 'ai_chat' },
+  { id: 'srv-9', title: 'Programmes & Courses', description: 'Explore Academic Programmes', tab: 'explore' },
+  { id: 'srv-10', title: 'Student Profile', description: 'View Digital ID and Personal Info', tab: 'profile' },
+  { id: 'srv-11', title: 'Admin Dashboard', description: 'Staff and Administration Console', tab: 'admin' },
+];
+
 export const QuickSearchModal: React.FC = () => {
   const { isSearchOpen, setSearchOpen, setTab, setSelectedDepartment } = useAppStore();
   const [query, setQuery] = useState('');
@@ -31,9 +43,11 @@ export const QuickSearchModal: React.FC = () => {
     if (!query.trim()) {
       return {
         departments: allDepartments.slice(0, 3),
-        circulars: INITIAL_CIRCULARS.slice(0, 2),
+        notices: INITIAL_CIRCULARS.slice(0, 2),
+        services: SERVICES_LIST.slice(0, 3),
       };
     }
+
     const q = query.toLowerCase();
     return {
       departments: allDepartments.filter(
@@ -43,11 +57,16 @@ export const QuickSearchModal: React.FC = () => {
           d.programmes.some((p) => p.name.toLowerCase().includes(q)) ||
           d.faculty.some((f) => f.name.toLowerCase().includes(q))
       ),
-      circulars: INITIAL_CIRCULARS.filter(
+      notices: INITIAL_CIRCULARS.filter(
         (c) =>
           c.title.toLowerCase().includes(q) ||
           c.description.toLowerCase().includes(q) ||
           c.category.toLowerCase().includes(q)
+      ),
+      services: SERVICES_LIST.filter(
+        (s) =>
+          s.title.toLowerCase().includes(q) ||
+          s.description.toLowerCase().includes(q)
       ),
     };
   }, [query, allDepartments]);
@@ -174,14 +193,14 @@ export const QuickSearchModal: React.FC = () => {
             </div>
           )}
 
-          {/* Circulars Section */}
-          {results.circulars.length > 0 && (
+          {/* Notices Section */}
+          {results.notices.length > 0 && (
             <div>
               <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-2">
-                Official Circulars & Notices ({results.circulars.length})
+                Official Circulars & Notices ({results.notices.length})
               </p>
               <div className="space-y-2">
-                {results.circulars.map((circ) => (
+                {results.notices.map((circ) => (
                   <div
                     key={circ.id}
                     onClick={() => {
@@ -206,7 +225,38 @@ export const QuickSearchModal: React.FC = () => {
             </div>
           )}
 
-          {results.departments.length === 0 && results.circulars.length === 0 && (
+          {/* Services Section */}
+          {results.services.length > 0 && (
+            <div>
+              <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-2">
+                University Services ({results.services.length})
+              </p>
+              <div className="space-y-2">
+                {results.services.map((srv) => (
+                  <div
+                    key={srv.id}
+                    onClick={() => {
+                      setTab(srv.tab as any);
+                      setSearchOpen(false);
+                    }}
+                    className="p-3 rounded-xl bg-slate-800/60 hover:bg-blue-950/40 border border-slate-700/80 hover:border-blue-500/50 cursor-pointer flex items-center justify-between group transition"
+                  >
+                    <div className="pr-3">
+                      <h4 className="text-sm font-medium text-slate-200 group-hover:text-blue-300 transition line-clamp-1">
+                        {srv.title}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {srv.description}
+                      </p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400 transition flex-shrink-0" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {results.departments.length === 0 && results.notices.length === 0 && results.services.length === 0 && (
             <div className="py-8 text-center text-slate-400 text-sm">
               No matching records found for "{query}". Try searching for <span className="text-emerald-400">Agriculture</span>, <span className="text-emerald-400">Computer Science</span>, <span className="text-emerald-400">Examinations</span>, or <span className="text-emerald-400">Hostel</span>.
             </div>

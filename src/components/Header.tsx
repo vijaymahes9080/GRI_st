@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Platform } from 'react-native';
 import { ArrowLeft, Menu } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
@@ -10,7 +10,7 @@ export interface HeaderProps {
   showMenu?: boolean;
   onMenuPress?: () => void;
   rightAction?: React.ReactNode;
-  variant?: 'blue' | 'green' | 'maroon';
+  variant?: 'blue' | 'green' | 'maroon' | 'white';
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -20,16 +20,25 @@ export const Header: React.FC<HeaderProps> = ({
   showMenu = true,
   onMenuPress,
   rightAction,
-  variant = 'green',
+  variant = 'white',
 }) => {
   const router = useRouter();
 
+  const isLight = variant === 'white';
+  
   const bgClass =
     variant === 'green'
       ? 'bg-[#518214]'
       : variant === 'maroon'
       ? 'bg-[#911C03]'
-      : 'bg-[#0D47A1]';
+      : variant === 'blue'
+      ? 'bg-[#0D47A1]'
+      : 'bg-white border-b border-slate-200 shadow-sm';
+      
+  const textColor = isLight ? 'text-slate-900' : 'text-white';
+  const subtitleColor = isLight ? 'text-slate-500' : 'text-white/80';
+  const iconColor = isLight ? '#475569' : '#FFFFFF';
+  const buttonBg = isLight ? 'bg-slate-100 border border-slate-200' : 'bg-white/15 rounded-full';
 
   const handleMenuPress = () => {
     if (onMenuPress) {
@@ -40,29 +49,29 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <View className={`flex-row items-center justify-between px-4 py-3.5 ${bgClass} border-b border-white/10 shadow-sm`}>
+    <View className={`flex-row items-center justify-between px-6 py-4 ${bgClass}`}>
       <View className="flex-row items-center flex-1">
         {showBack ? (
-          <TouchableOpacity onPress={() => router.back()} className="mr-3 p-1.5 bg-white/15 rounded-full" activeOpacity={0.7}>
-            <ArrowLeft size={20} color="#FFFFFF" />
+          <TouchableOpacity onPress={() => router.back()} className={`mr-4 p-2 rounded-lg ${buttonBg}`} activeOpacity={0.7}>
+            <ArrowLeft size={20} color={iconColor} />
           </TouchableOpacity>
         ) : showMenu ? (
-          <TouchableOpacity onPress={handleMenuPress} className="mr-3 p-1.5 bg-white/15 rounded-full" activeOpacity={0.7}>
-            <Menu size={20} color="#FFFFFF" />
+          <TouchableOpacity onPress={handleMenuPress} className={`mr-4 p-2 rounded-lg ${buttonBg}`} activeOpacity={0.7}>
+            <Menu size={20} color={iconColor} />
           </TouchableOpacity>
         ) : null}
         <View className="flex-1">
-          <Text className="text-xl font-bold text-white tracking-wide" numberOfLines={1}>
+          <Text className={`text-xl font-bold tracking-tight ${textColor}`} numberOfLines={1}>
             {title}
           </Text>
           {subtitle && (
-            <Text className="text-xs text-emerald-100 font-medium" numberOfLines={1}>
+            <Text className={`text-xs mt-0.5 font-medium ${subtitleColor}`} numberOfLines={1}>
               {subtitle}
             </Text>
           )}
         </View>
       </View>
-      {rightAction && <View className="ml-3">{rightAction}</View>}
+      {rightAction && <View className="ml-4">{rightAction}</View>}
     </View>
   );
 };

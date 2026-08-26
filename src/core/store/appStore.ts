@@ -82,7 +82,7 @@ import {
   bulkDeleteUsersFromFirestore,
   addGrievanceToFirestore,
   addDispatchedMessageToFirestore,
-  authenticateInstitutionalUser,
+  
   signOutUser,
   auth,
   EVENTS_COLLECTION,
@@ -96,6 +96,8 @@ import {
 } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { Permission } from '../../types';
+import { clearAllSensitiveStorage } from '../storage';
+import { useAuthStore } from '../auth/authStore';
 
 export type AppTab = 'home' | 'explore' | 'services' | 'alerts' | 'ai_chat' | 'admin' | 'profile';
 
@@ -128,7 +130,8 @@ interface AppState {
   loginAsUser: (user: UserProfile) => void;
   loginWithInstitutionalCredentials: (identifier: string, passwordInput: string) => Promise<UserProfile>;
   continueAsGuest: () => void;
-  logout: () => void;
+  doLogout: () => Promise<void>;
+  logout: () => Promise<void> | void;
 
   // Login Modal State
   isLoginModalOpen: boolean;
@@ -317,12 +320,47 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   loginWithInstitutionalCredentials: async (identifier: string, passwordInput: string) => {
-    const verifiedUser = await authenticateInstitutionalUser(identifier, passwordInput);
+    // 1. Authenticate via secure backend
+    const { apiClient } = await import('../api');
+    const email = identifier.includes('@') ? identifier.toLowerCase() : `${identifier.toLowerCase()}@ruraluniv.ac.in`;
+    
+    let verifiedUser;
+    try {
+      const response = await apiClient.post('/auth/login', { email, password: passwordInput });
+      const { access_token, refresh_token, user: backendUser } = response.data;
+      
+      verifiedUser = {
+        id: backendUser.id,
+        name: backendUser.name,
+        email: backendUser.email,
+        role: backendUser.role as any,
+        department: backendUser.department,
+        approvalStatus: 'approved',
+        mustChangePasswordOnLogin: false,
+      };
+
+      // Also set the global auth store tokens
+      const { useAuthStore } = await import('../auth/authStore');
+      await useAuthStore.getState().setAuth(
+        {
+          id: backendUser.id,
+          username: backendUser.email,
+          email: backendUser.email,
+          fullName: backendUser.name,
+          role: (backendUser.role || 'STUDENT').toUpperCase() as any,
+          department: backendUser.department,
+        },
+        access_token,
+        refresh_token
+      );
+    } catch (err: any) {
+      throw new Error(err.response?.data?.error || err.message || 'Invalid institutional credentials');
+    }
+
     set({ currentUser: verifiedUser, isAuthenticated: true, isLoginModalOpen: false });
     if (verifiedUser.approvalStatus === 'approved' && verifiedUser.mustChangePasswordOnLogin) {
       set({ isPasswordChangeModalOpen: true });
     }
-    saveUserProfile(verifiedUser).catch((e) => console.warn('User profile sync to firestore:', e));
     return verifiedUser;
   },
 
@@ -334,13 +372,41 @@ export const useAppStore = create<AppState>((set, get) => ({
     });
   },
 
-  logout: () => {
-    signOutUser().catch(() => {});
-    set({ 
-      isAuthenticated: false, 
-      currentUser: GUEST_USER,
-      isPasswordChangeModalOpen: false,
-    });
+  doLogout: async () => {
+    try {
+      // 1. Sign out of Firebase Auth provider if initialized
+      await signOutUser().catch(() => {});
+      
+      // 2. Synchronize with useAuthStore and clear all secure tokens, API client headers & tokens
+      await useAuthStore.getState().doLogout().catch(() => {});
+      
+      // 3. Purge all sensitive storage keys from hardware keystore, MMKV, and Web browser storage
+      await clearAllSensitiveStorage().catch(() => {});
+      
+      // 4. Reset in-memory session state completely
+      set((state) => {
+        const restrictedTabs = ['admin', 'profile'];
+        return {
+          isAuthenticated: false,
+          currentUser: GUEST_USER,
+          isPasswordChangeModalOpen: false,
+          isLoginModalOpen: false,
+          currentTab: restrictedTabs.includes(state.currentTab) ? 'home' : state.currentTab,
+        };
+      });
+    } catch (err) {
+      console.warn('[AppStore] doLogout caught exception:', err);
+      set({ 
+        isAuthenticated: false, 
+        currentUser: GUEST_USER,
+        isPasswordChangeModalOpen: false,
+        isLoginModalOpen: false,
+      });
+    }
+  },
+
+  logout: async () => {
+    await get().doLogout();
   },
 
   // Audit Logger Helper
@@ -412,22 +478,15 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     try {
       const currentUser = get().currentUser;
-      const response = await fetch('/api/v1/notifications/dispatch-approval', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-role': currentUser.role,
-          'x-user-id': currentUser.id,
-        },
-        body: JSON.stringify({
-          user: updatedUser,
-          defaultPassword: tempPassword,
-          approvedBy: currentUser.name,
-        }),
+      const { apiClient } = await import('../api');
+      const response = await apiClient.post('/notifications/dispatch-approval', {
+        user: updatedUser,
+        defaultPassword: tempPassword,
+        approvedBy: currentUser.name,
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response.status === 200 || response.status === 201) {
+        const data = response.data;
         if (data.messages && Array.isArray(data.messages)) {
           for (const msg of data.messages) {
             await addDispatchedMessageToFirestore(msg).catch(() => {});
@@ -495,18 +554,15 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
 
     try {
-      const response = await fetch('/api/v1/auth/change-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          newPassword,
-          user: updatedUser,
-        }),
+      const { apiClient } = await import('../api');
+      const response = await apiClient.post('/auth/change-password', {
+        userId: user.id,
+        newPassword,
+        user: updatedUser,
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response.status === 200 || response.status === 201) {
+        const data = response.data;
         if (data.confirmationMessages && Array.isArray(data.confirmationMessages)) {
           for (const msg of data.confirmationMessages) {
             await addDispatchedMessageToFirestore(msg).catch(() => {});
@@ -555,26 +611,19 @@ export const useAppStore = create<AppState>((set, get) => ({
     let messagesCount = 0;
     try {
       const currentUser = get().currentUser;
-      const response = await fetch('/api/v1/users/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-role': currentUser.role,
-          'x-user-id': currentUser.id,
-        },
-        body: JSON.stringify({
-          user: updatedUser,
-          defaultPassword: tempPassword,
-          adminName,
-          expiryHours,
-          notifyChannels: options?.notifyChannels || ['SMS', 'WHATSAPP', 'EMAIL'],
-          reason: options?.reason,
-          forcePasswordChange,
-        }),
+      const { apiClient } = await import('../api');
+      const response = await apiClient.post('/users/reset-password', {
+        user: updatedUser,
+        defaultPassword: tempPassword,
+        adminName,
+        expiryHours,
+        notifyChannels: options?.notifyChannels || ['SMS', 'WHATSAPP', 'EMAIL'],
+        reason: options?.reason,
+        forcePasswordChange,
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response.status === 200 || response.status === 201) {
+        const data = response.data;
         if (data.resetMessages && Array.isArray(data.resetMessages)) {
           messagesCount = data.resetMessages.length;
           for (const msg of data.resetMessages) {
@@ -700,23 +749,20 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
 
     try {
-      const response = await fetch('/api/v1/users/register-contacts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          userName: updatedUser.name,
-          phone: data.phone,
-          email: data.email,
-          alternateEmail: data.alternateEmail,
-          smsAlertsEnabled: data.smsAlertsEnabled,
-          whatsappAlertsEnabled: data.whatsappAlertsEnabled,
-          emailCircularsEnabled: data.emailCircularsEnabled,
-        }),
+      const { apiClient } = await import('../api');
+      const response = await apiClient.post('/users/register-contacts', {
+        userId,
+        userName: updatedUser.name,
+        phone: data.phone,
+        email: data.email,
+        alternateEmail: data.alternateEmail,
+        smsAlertsEnabled: data.smsAlertsEnabled,
+        whatsappAlertsEnabled: data.whatsappAlertsEnabled,
+        emailCircularsEnabled: data.emailCircularsEnabled,
       });
 
-      if (response.ok) {
-        const resData = await response.json();
+      if (response.status === 200 || response.status === 201) {
+        const resData = response.data;
         if (resData.confirmationMessages && Array.isArray(resData.confirmationMessages)) {
           for (const msg of resData.confirmationMessages) {
             await addDispatchedMessageToFirestore(msg).catch(() => {});
@@ -743,20 +789,17 @@ export const useAppStore = create<AppState>((set, get) => ({
     const email = channel === 'EMAIL' ? (targetValue || user.email || 'user@ruraluniv.ac.in') : undefined;
 
     try {
-      const response = await fetch('/api/notifications/test-channel', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          userName: user.name,
-          channel,
-          phone,
-          email,
-        }),
+      const { apiClient } = await import('../api');
+      const response = await apiClient.post('/notifications/test-channel', {
+        userId: user.id,
+        userName: user.name,
+        channel,
+        phone,
+        email,
       });
 
-      if (response.ok) {
-        const resData = await response.json();
+      if (response.status === 200 || response.status === 201) {
+        const resData = response.data;
         if (resData.testMessage) {
           await addDispatchedMessageToFirestore(resData.testMessage).catch(() => {});
           set((state) => ({
@@ -815,33 +858,25 @@ export const useAppStore = create<AppState>((set, get) => ({
     let validationResult: any;
     try {
       const currentUser = get().currentUser;
-      const response = await fetch('/api/v1/users/bulk-import', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-role': currentUser.role,
-          'x-user-id': currentUser.id,
-        },
-        body: JSON.stringify({
-          users: payload.users,
-          autoApprove,
-          defaultPassword,
-          importedBy: currentAdminName,
-        }),
+      const { apiClient } = await import('../api');
+      const response = await apiClient.post('/users/bulk-import', {
+        users: payload.users,
+        autoApprove,
+        defaultPassword,
+        importedBy: currentAdminName,
       });
 
-      if (response.ok) {
-        validationResult = await response.json();
+      if (response.status === 200 || response.status === 201) {
+        validationResult = response.data;
       } else {
-        const errorData = await response.json().catch(() => ({ error: 'Bulk import validation failed.' }));
-        throw new Error(errorData.error || 'Server validation error.');
+        throw new Error('Bulk import validation failed.');
       }
     } catch (apiErr: any) {
       console.warn('[API Warning] Using local client-side validation fallback:', apiErr);
       const validated: UserProfile[] = [];
       const errs: any[] = [];
       const seen = new Set<string>();
-      const validRoles: UserRole[] = ['student', 'faculty', 'admin', 'staff', 'scholar', 'alumni', 'super_admin'];
+      const validRoles: UserRole[] = ['student', 'faculty', 'admin', 'staff', 'scholar', 'alumnus', 'super_admin'];
 
       payload.users.forEach((raw: any, idx: number) => {
         const name = (raw.name || '').trim();
@@ -1151,9 +1186,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     const targetSchool = currentSchools.find((s) => s.id === schoolId);
     if (!targetSchool) return;
 
-    const deptExists = targetSchool.departments.some((d) => d.id === dept.id);
+    const deptExists = targetSchool.departments.some((d) => d.id === dept.code);
     const updatedDepartments = deptExists
-      ? targetSchool.departments.map((d) => (d.id === dept.id ? dept : d))
+      ? targetSchool.departments.map((d) => (d.id === dept.code ? dept : d))
       : [...targetSchool.departments, dept];
 
     const updatedSchool: SchoolInfo = {
@@ -1162,7 +1197,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     };
 
     await get().saveSchool(updatedSchool);
-    await get().logAdminAction(deptExists ? 'UPDATE' : 'CREATE', 'DEPARTMENT', dept.id, dept.name, `Saved department under ${targetSchool.name}`);
+    await get().logAdminAction(deptExists ? 'UPDATE' : 'CREATE', 'DEPARTMENT', dept.code, dept.name, `Saved department under ${targetSchool.name}`);
   },
 
   deleteDepartment: async (schoolId, deptId) => {
@@ -1224,9 +1259,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     const targetDept = targetSchool.departments.find((d) => d.id === deptId);
     if (!targetDept) return;
 
-    const progExists = targetDept.programmes.some((p) => p.code === programme.code);
+    const progExists = targetDept.programmes.some((p) => p.id === programme.code);
     const updatedProgrammes = progExists
-      ? targetDept.programmes.map((p) => (p.code === programme.code ? programme : p))
+      ? targetDept.programmes.map((p) => (p.id === programme.code ? programme : p))
       : [...targetDept.programmes, programme];
 
     const updatedDept: DepartmentInfo = {
@@ -1245,10 +1280,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     const targetDept = targetSchool.departments.find((d) => d.id === deptId);
     if (!targetDept) return;
 
-    const prog = targetDept.programmes.find((p) => p.code === progCode);
+    const prog = targetDept.programmes.find((p) => p.id === progCode);
     const updatedDept: DepartmentInfo = {
       ...targetDept,
-      programmes: targetDept.programmes.filter((p) => p.code !== progCode),
+      programmes: targetDept.programmes.filter((p) => p.id !== progCode),
     };
 
     await get().saveDepartment(schoolId, updatedDept);

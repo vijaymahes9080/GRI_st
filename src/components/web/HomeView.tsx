@@ -448,6 +448,132 @@ export const HomeView: React.FC = () => {
         </div>
       </section>
 
+      {/* Official University Insignia & Symbolism (Sourced from ruraluniv.ac.in) */}
+      <section className="p-6 sm:p-8 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
+          <div className="flex items-center gap-3">
+            <GRIEmblem className="w-12 h-12 flex-shrink-0 drop-shadow-lg" />
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold font-display text-white">
+                Official University Emblem & Insignia Symbolism
+              </h2>
+              <p className="text-xs text-slate-400">
+                Official iconography defined by The Gandhigram Rural Institute (ruraluniv.ac.in)
+              </p>
+            </div>
+          </div>
+          <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-700/60 self-start sm:self-auto">
+            Official Source: ruraluniv.ac.in/logo
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="w-7 h-7 rounded-lg bg-pink-950/80 border border-pink-700/50 flex items-center justify-center text-xs font-bold text-pink-300">
+                🌸
+              </span>
+              <span className="text-[10px] font-bold uppercase text-pink-400 bg-pink-950/40 px-2 py-0.5 rounded">Core Center</span>
+            </div>
+            <h4 className="text-sm font-bold text-slate-200">Book in a Lotus</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Signifies the centrality of enlightenment achieved through knowledge, higher education, and continuous learning.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="w-7 h-7 rounded-lg bg-amber-950/80 border border-amber-700/50 flex items-center justify-center text-xs font-bold text-amber-300">
+                🪔
+              </span>
+              <span className="text-[10px] font-bold uppercase text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded">Top Center</span>
+            </div>
+            <h4 className="text-sm font-bold text-slate-200">Sacred Lamp (Deepam)</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Represents GRI's sacred commitment to disseminating wisdom and knowledge to the wider rural community.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="w-7 h-7 rounded-lg bg-emerald-950/80 border border-emerald-700/50 flex items-center justify-center text-xs font-bold text-emerald-300">
+                ☸️
+              </span>
+              <span className="text-[10px] font-bold uppercase text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded">Left Quadrant</span>
+            </div>
+            <h4 className="text-sm font-bold text-slate-200">Gandhian Charkha</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Symbolizes the Gandhian spirit, vision of self-reliance (Swadeshi), and village empowerment that governs the institute.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="w-7 h-7 rounded-lg bg-amber-950/80 border border-amber-700/50 flex items-center justify-center text-xs font-bold text-amber-300">
+                🌾
+              </span>
+              <span className="text-[10px] font-bold uppercase text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded">Right Quadrant</span>
+            </div>
+            <h4 className="text-sm font-bold text-slate-200">Traditional Plough</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Represents GRI's rural agrarian orientation and its focus on agricultural science, farm extension, and rural livelihoods.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="w-7 h-7 rounded-lg bg-purple-950/80 border border-purple-700/50 flex items-center justify-center text-xs font-bold text-purple-300">
+                ✨
+              </span>
+              <span className="text-[10px] font-bold uppercase text-purple-400 bg-purple-950/40 px-2 py-0.5 rounded">Lotus Petals</span>
+            </div>
+            <h4 className="text-sm font-bold text-slate-200">Kolam Art Motif</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Featured on top and bottom of the lotus, signifies femininity, art, and GRI's beginnings in training women as rural health workers.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="w-7 h-7 rounded-lg bg-sky-950/80 border border-sky-700/50 flex items-center justify-center text-xs font-bold text-sky-300">
+                🔲
+              </span>
+              <span className="text-[10px] font-bold uppercase text-sky-400 bg-sky-950/40 px-2 py-0.5 rounded">Flanks</span>
+            </div>
+            <h4 className="text-sm font-bold text-slate-200">Concentric Squares</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Emphasizes the continuity and extension of learning to action (Nai Talim: bridging theory and practical field execution).
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="w-7 h-7 rounded-lg bg-teal-950/80 border border-teal-700/50 flex items-center justify-center text-xs font-bold text-teal-300">
+                ⚕️
+              </span>
+              <span className="text-[10px] font-bold uppercase text-teal-400 bg-teal-950/40 px-2 py-0.5 rounded">Lower Base</span>
+            </div>
+            <h4 className="text-sm font-bold text-slate-200">Staff of Asclepius</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Signifies the enhancement of rural sanitation, public health, hygiene, and Kasturba Hospital medical extension.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-950/90 to-slate-950 border border-emerald-800/80 space-y-2 flex flex-col justify-between">
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold uppercase text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded inline-block">Motto</span>
+              <h4 className="text-sm font-bold text-white font-serif italic">"கிராமம் உயர நாடு உயரும்"</h4>
+              <p className="text-xs text-emerald-300 font-medium">
+                "As the village rises, so the nation rises"
+              </p>
+            </div>
+            <p className="text-[11px] text-slate-400 pt-2 border-t border-emerald-900/60">
+              Inscribed on the foundation seal of The Gandhigram Rural Institute (Estd 1956).
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Official Campus Landmark Gallery & Research Infrastructure */}
       <section className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">

@@ -155,7 +155,8 @@ export const LiveVoiceConversationModal: React.FC<LiveVoiceConversationModalProp
 
       // 3. Connect to server WebSocket bridge on /live
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/live`;
+      const token = useAuthStore.getState().token || '';
+      const wsUrl = `${protocol}//${window.location.host}/live?token=${token}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 

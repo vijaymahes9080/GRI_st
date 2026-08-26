@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../../core/store/appStore';
+import { usePermissions } from '../../core/auth/usePermissions';
 import { CircularItem, NotificationTemplate, MessageChannel } from '../../types';
 import { SaveTemplateModal } from './SaveTemplateModal';
 import { TemplateSelectorModal } from './TemplateSelectorModal';
@@ -31,6 +32,7 @@ import {
 
 export const CircularsManager: React.FC = () => {
   const { circulars, addCircular, updateCircular, deleteCircular, currentUser, addDispatchedMessage } = useAppStore();
+  const { canAny } = usePermissions();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
@@ -231,16 +233,18 @@ export const CircularsManager: React.FC = () => {
             <span>Templates Library</span>
           </button>
 
-          <button
-            onClick={() => {
-              if (isEditing) resetForm();
-              else setIsEditing(true);
-            }}
-            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 transition shadow-md shadow-emerald-900/40"
-          >
-            {isEditing ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            <span>{isEditing ? 'Cancel Editor' : 'Compose New Circular'}</span>
-          </button>
+          {canAny(['circulars.create', 'circulars.manage']) && (
+            <button
+              onClick={() => {
+                if (isEditing) resetForm();
+                else setIsEditing(true);
+              }}
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 transition shadow-md shadow-emerald-900/40"
+            >
+              {isEditing ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              <span>{isEditing ? 'Cancel Editor' : 'Compose New Circular'}</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -581,20 +585,24 @@ export const CircularsManager: React.FC = () => {
                 </td>
                 <td className="p-3.5 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => handleStartEdit(circ)}
-                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition"
-                      title="Edit circular"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(circ.id, circ.title)}
-                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-400 transition"
-                      title="Delete circular"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    {can('circulars.manage') && (
+                      <>
+                        <button
+                          onClick={() => handleStartEdit(circ)}
+                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition"
+                          title="Edit circular"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(circ.id, circ.title)}
+                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-400 transition"
+                          title="Delete circular"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>

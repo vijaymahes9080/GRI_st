@@ -33,7 +33,16 @@ export type Permission =
 
 export interface EnrolledCourse {
   code: string;
+  id?: string;
+  code?: string;
+  feePerSemester?: string;
+  description?: string;
   name: string;
+  tamilName?: string;
+  tagline?: string;
+  naacGrade?: string;
+  nirfRank?: string;
+  address?: string;
   credits: number;
   attendance: number;
   ciaMarks: number;
@@ -43,7 +52,16 @@ export interface EnrolledCourse {
 
 export interface AssignedClass {
   code: string;
+  id?: string;
+  code?: string;
+  feePerSemester?: string;
+  description?: string;
   name: string;
+  tamilName?: string;
+  tagline?: string;
+  naacGrade?: string;
+  nirfRank?: string;
+  address?: string;
   programme: string;
   semester: number;
   studentCount: number;
@@ -65,6 +83,11 @@ export interface ScholarProgress {
 export interface UserProfile {
   id: string;
   name: string;
+  tamilName?: string;
+  tagline?: string;
+  naacGrade?: string;
+  nirfRank?: string;
+  address?: string;
   email: string;
   role: UserRole;
   department: string;
@@ -149,6 +172,11 @@ export interface MultiChannelMessage {
 export interface NotificationTemplate {
   id: string;
   name: string;
+  tamilName?: string;
+  tagline?: string;
+  naacGrade?: string;
+  nirfRank?: string;
+  address?: string;
   category: 'EXAM' | 'ADMISSIONS' | 'ACADEMIC' | 'OUTREACH' | 'TENDER' | 'CAREER' | 'ADMIN';
   targetRole: 'ALL' | 'STUDENT' | 'FACULTY' | 'STAFF' | 'SCHOLAR' | 'ALUMNI';
   titleTemplate: string;
@@ -191,7 +219,14 @@ export interface CircularItem {
 
 export interface ProgrammeItem {
   id?: string;
+  code?: string;
+  feePerSemester?: string;
   name: string;
+  tamilName?: string;
+  tagline?: string;
+  naacGrade?: string;
+  nirfRank?: string;
+  address?: string;
   level: 'UG' | 'PG' | 'Ph.D.' | 'Diploma' | 'B.Voc' | 'Certificate';
   duration: string;
   intake: number;
@@ -202,7 +237,14 @@ export interface ProgrammeItem {
 
 export interface FacultyMember {
   id?: string;
+  code?: string;
+  feePerSemester?: string;
   name: string;
+  tamilName?: string;
+  tagline?: string;
+  naacGrade?: string;
+  nirfRank?: string;
+  address?: string;
   designation: string;
   qualification: string;
   specialization: string;
@@ -216,7 +258,16 @@ export interface FacultyMember {
 
 export interface DepartmentInfo {
   code: string;
+  id?: string;
+  code?: string;
+  feePerSemester?: string;
+  description?: string;
   name: string;
+  tamilName?: string;
+  tagline?: string;
+  naacGrade?: string;
+  nirfRank?: string;
+  address?: string;
   schoolId: string;
   schoolName: string;
   head: string;
@@ -234,6 +285,11 @@ export interface DepartmentInfo {
 export interface SchoolInfo {
   id: string;
   name: string;
+  tamilName?: string;
+  tagline?: string;
+  naacGrade?: string;
+  nirfRank?: string;
+  address?: string;
   deanName: string;
   description: string;
   departments: DepartmentInfo[];
@@ -343,6 +399,11 @@ export interface HeroBannerConfig {
 
 export interface InstitutionProfile {
   name: string;
+  tamilName?: string;
+  tagline?: string;
+  naacGrade?: string;
+  nirfRank?: string;
+  address?: string;
   subName: string;
   accreditation: string;
   ministry: string;
@@ -395,6 +456,7 @@ export interface AiKnowledgeSource {
 
 export interface AiSettingsConfig {
   assistantName: string;
+  modelName?: string;
   welcomeMessage: string;
   systemPersona: string;
   allowedTopics: string[];

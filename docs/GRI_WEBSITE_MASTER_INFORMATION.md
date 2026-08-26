@@ -87,16 +87,18 @@
 
 ---
 
-## 4. 🖼️ Official Emblem & Visual Media Standards
+## 4. 🖼️ Official Emblem & Visual Media Standards (Sourced from ruraluniv.ac.in/logo)
 
-### Official University Emblem Specifications
-- **Core Elements**: 
-  - **Traditional Indian Spinning Wheel (Charkha)**: Symbolizing self-reliance, rural industry, and Nai Talim constructive work.
-  - **Rising Golden Sun over Sirumalai Hills**: Radiance of higher education enlightening rural India.
-  - **Open Book of Knowledge**: Classical wisdom and modern scientific research.
-  - **Golden Wheat / Paddy Sheaves**: Sustainable agrarian prosperity and food security.
-  - **Official Inscriptions**: "THE GANDHIGRAM RURAL INSTITUTE" (Top Arc), "DEEMED TO BE UNIVERSITY" (Bottom Arc), "ESTD 1956" (Lower Ribbon).
-  - **Official Motto**: *"கிராமம் உயர நாடு உயரும்"* — "As the village rises, so the nation rises".
+### Official University Emblem Specifications & Iconography
+1. **Book nestled inside a Lotus (Core Center)**: The centrality of enlightenment achieved through knowledge, higher education, and continuous learning.
+2. **Sacred Lamp / Deepam (Top Center)**: Represents GRI's sacred commitment to disseminating wisdom and knowledge to the wider rural community.
+3. **Kolam Motif (Top & Bottom of Lotus)**: Signifies femininity, art, and GRI's beginnings in training women as rural health workers.
+4. **Two Connected Concentric Squares (Flanking Left & Right)**: Emphasizes the continuity and extension of learning to action and vice versa, bridging theory and practice (Nai Talim).
+5. **Traditional Plough (Right Quadrant)**: Represents GRI's rural agrarian orientation and its focus on agriculture and farm extension.
+6. **Gandhian Charkha / Spinning Wheel (Left Quadrant)**: Symbolizes the Gandhian spirit, vision of self-reliance (Swadeshi), and village empowerment that governs the institute.
+7. **Staff of Asclepius (Lower Base)**: Signifies the enhancement of rural sanitation, public health, hygiene, and Kasturba Hospital medical extension.
+8. **Official Inscriptions**: "THE GANDHIGRAM RURAL INSTITUTE" (Top Arc), "DEEMED TO BE UNIVERSITY" (Bottom Arc), "ESTD 1956 • GANDHIGRAM" (Base Ribbon).
+9. **Official Bilingual Motto**: *"கிராமம் உயர நாடு உயரும்"* — "As the village rises, so the nation rises".
 
 ### Verified Campus Photography Catalogue (`src/core/data/griMediaAssets.ts`)
 1. **Administrative Block**: Mahatma Gandhi Heritage Building with Sirumalai hill backdrop.

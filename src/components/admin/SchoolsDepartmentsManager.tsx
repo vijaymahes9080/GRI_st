@@ -236,13 +236,13 @@ export const SchoolsDepartmentsManager: React.FC = () => {
   };
 
   const handleOpenEditProgramme = (p: ProgrammeItem) => {
-    setProgCode(p.code);
+    setProgCode(p.id);
     setProgName(p.name);
     setProgLevel(p.level);
     setProgDuration(p.duration);
     setProgIntake(p.intake);
     setProgEligibility(p.eligibility);
-    setProgFee(p.feePerSemester || 12000);
+    setProgFee(p.feesPerSem || 12000);
     setModalType('EDIT_PROG');
   };
 
@@ -508,12 +508,12 @@ export const SchoolsDepartmentsManager: React.FC = () => {
 
                 <div className="space-y-2.5 text-xs">
                   {activeDept.programmes.map((p) => (
-                    <div key={p.code} className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+                    <div key={p.id} className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
                       <div className="flex items-start justify-between">
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">
-                              {p.code}
+                              {p.id}
                             </span>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">
                               {p.level}
@@ -521,7 +521,7 @@ export const SchoolsDepartmentsManager: React.FC = () => {
                             <h4 className="font-bold text-white text-xs">{p.name}</h4>
                           </div>
                           <div className="text-[11px] text-slate-400 mt-1">
-                            Duration: <strong>{p.duration}</strong> • Approved Intake: <strong>{p.intake} seats</strong> • Fee: <strong>₹{p.feePerSemester?.toLocaleString() || '12,000'}/Sem</strong>
+                            Duration: <strong>{p.duration}</strong> • Approved Intake: <strong>{p.intake} seats</strong> • Fee: <strong>₹{p.feesPerSem?.toLocaleString() || '12,000'}/Sem</strong>
                           </div>
                         </div>
 
@@ -533,7 +533,7 @@ export const SchoolsDepartmentsManager: React.FC = () => {
                             <Edit3 className="w-3 h-3" />
                           </button>
                           <button
-                            onClick={() => deleteProgramme(selectedSchoolId, activeDept.id, p.code)}
+                            onClick={() => deleteProgramme(selectedSchoolId, activeDept.id, p.id)}
                             className="p-1.5 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-400 border border-rose-800"
                           >
                             <Trash2 className="w-3 h-3" />

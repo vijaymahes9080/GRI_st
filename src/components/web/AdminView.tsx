@@ -20,6 +20,8 @@ import { AuditLogsViewer } from '../admin/AuditLogsViewer';
 import { GrievanceManager } from '../admin/GrievanceManager';
 import { AdminResetPasswordModal } from '../admin/AdminResetPasswordModal';
 import { RbacManagerView } from '../admin/RbacManagerView';
+import { AccessRestricted } from '../common/AccessRestricted';
+import { usePermissions } from '../../core/auth/usePermissions';
 import { UserRole, UserProfile } from '../../types';
 import { 
   ShieldCheck, 
@@ -80,6 +82,8 @@ export const AdminView: React.FC = () => {
     grievances,
     auditLogs
   } = useAppStore();
+
+  const { can } = usePermissions();
 
   type AdminTab = 
     | 'overview' 
@@ -237,7 +241,7 @@ export const AdminView: React.FC = () => {
     { id: 'audit', label: 'Security Audit Trail', icon: ShieldCheck, badge: auditLogs.length },
   ];
 
-  const isAdminAuthorized = currentUser.role === 'admin' || currentUser.role === 'super_admin' || (currentUser.role as string) === 'dept_admin';
+  const isAdminAuthorized = can('tab.admin.view');
 
   if (!isAdminAuthorized) {
     const adminUser = usersList.find(u => u.role === 'admin' || u.role === 'super_admin') || {
@@ -258,48 +262,18 @@ export const AdminView: React.FC = () => {
     };
 
     return (
-      <div className="max-w-2xl mx-auto py-12 px-4 animate-fadeIn text-center">
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
-            <ShieldCheck className="w-8 h-8" />
-          </div>
-
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-950/80 border border-rose-800 text-rose-300 text-xs font-semibold">
-              <AlertCircle className="w-3.5 h-3.5" />
-              <span>Restricted Administrative Area</span>
-            </div>
-            <h2 className="text-2xl font-bold font-display text-white">Elevated Authorization Required</h2>
-            <p className="text-slate-400 text-sm max-w-md mx-auto">
-              Your active session profile (<span className="text-slate-200 font-semibold">{currentUser.name}</span>, role: <span className="text-amber-400 uppercase font-mono font-bold text-xs">{currentUser.role}</span>) does not possess institutional administrative rights to modify university databases or dispatch notifications.
-            </p>
-          </div>
-
-          <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-left text-xs space-y-2">
-            <div className="text-slate-300 font-semibold">Enforced Security Boundaries:</div>
-            <ul className="list-disc list-inside text-slate-400 space-y-1 text-[11px]">
-              <li>Only <strong>Super Admin</strong>, <strong>Administrator</strong>, and <strong>Department Admin</strong> roles can access the Central Control Center.</li>
-              <li>Administrative mutations (CRUD operations, credential resets, bulk imports) are recorded in the security audit ledger.</li>
-            </ul>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-            <button
-              onClick={() => loginAsUser(adminUser)}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              <span>Switch to Administrator Profile</span>
-            </button>
-            <button
-              onClick={() => setTab('home')}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition"
-            >
-              Return to Portal Home
-            </button>
-          </div>
-        </div>
-      </div>
+      <AccessRestricted
+        title="Admin Control Center Restricted"
+        resourceName="Institutional Central Administration & RBAC Control"
+        requiredRole={['admin', 'super_admin', 'dept_admin']}
+        requiredPermission="rbac.manage_permissions, system.config"
+        requiredScope="Central University Administration / Department Leadership"
+        message={`Your active session profile (${currentUser.name}, role: ${currentUser.role.toUpperCase()}) does not possess elevated institutional privileges to manage university master databases, users, or dispatch official circulars.`}
+        primaryActionText={currentUser.role === 'guest' ? 'Sign In as Administrator' : 'Switch to Administrator Profile'}
+        onPrimaryAction={() => loginAsUser(adminUser)}
+        secondaryActionText="Return to Portal Home"
+        onSecondaryAction={() => setTab('home')}
+      />
     );
   }
 
@@ -526,20 +500,24 @@ export const AdminView: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsAddUserModalOpen(true)}
-                  className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 transition shadow-md shadow-emerald-900/40"
-                >
-                  <UserPlus className="w-3.5 h-3.5" />
-                  <span>Add New User</span>
-                </button>
-                <button
-                  onClick={() => setIsBulkImportModalOpen(true)}
-                  className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs flex items-center gap-1.5 transition"
-                >
-                  <Upload className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Bulk Import</span>
-                </button>
+                {can('users.manage') && (
+                  <>
+                    <button
+                      onClick={() => setIsAddUserModalOpen(true)}
+                      className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 transition shadow-md shadow-emerald-900/40"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" />
+                      <span>Add New User</span>
+                    </button>
+                    <button
+                      onClick={() => setIsBulkImportModalOpen(true)}
+                      className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs flex items-center gap-1.5 transition"
+                    >
+                      <Upload className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Bulk Import</span>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -792,7 +770,7 @@ export const AdminView: React.FC = () => {
           actionType={bulkActionModalType}
           selectedUsers={selectedUsers}
           onConfirm={handleExecuteBulkAction}
-          onCancel={() => setBulkActionModalType(null)}
+          onClose={() => setBulkActionModalType(null)}
           isProcessing={isBulkProcessing}
         />
       )}

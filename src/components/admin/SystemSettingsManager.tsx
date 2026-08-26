@@ -25,11 +25,11 @@ export const SystemSettingsManager: React.FC = () => {
     institutionProfile, 
     heroConfig, 
     featureFlags, 
-    geminiConfig, 
-    updateInstitutionProfile, 
-    updateHeroConfig, 
-    updateFeatureFlags, 
-    updateGeminiConfig 
+    aiSettings, 
+    saveInstitutionProfile, 
+    saveHeroConfig, 
+    saveFeatureFlags, 
+    saveAiSettings 
   } = useAppStore();
 
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -47,27 +47,27 @@ export const SystemSettingsManager: React.FC = () => {
   const [instRegistrar, setInstRegistrar] = useState(institutionProfile.registrar);
 
   // Hero Banner State
-  const [heroBadge, setHeroBadge] = useState(heroConfig.badgeText);
-  const [heroTitle, setHeroTitle] = useState(heroConfig.title);
-  const [heroSubtitle, setHeroSubtitle] = useState(heroConfig.subtitle);
-  const [heroCtaText, setHeroCtaText] = useState(heroConfig.ctaText);
-  const [heroCtaLink, setHeroCtaLink] = useState(heroConfig.ctaLink);
+  const [heroBadge, setHeroBadge] = useState(heroConfig.accreditationBadge);
+  const [heroTitle, setHeroTitle] = useState(heroConfig.headline);
+  const [heroSubtitle, setHeroSubtitle] = useState(heroConfig.description);
+  const [heroCtaText, setHeroCtaText] = useState(heroConfig.primaryCtaText);
+  const [heroCtaLink, setHeroCtaLink] = useState(heroConfig.primaryCtaTab);
   const [heroSecondaryCtaText, setHeroSecondaryCtaText] = useState(heroConfig.secondaryCtaText);
-  const [heroSecondaryCtaLink, setHeroSecondaryCtaLink] = useState(heroConfig.secondaryCtaLink);
-  const [heroLiveNotice, setHeroLiveNotice] = useState(heroConfig.liveNoticeTicker);
+  const [heroSecondaryCtaLink, setHeroSecondaryCtaLink] = useState(heroConfig.secondaryCtaTab);
+  const [heroLiveNotice, setHeroLiveNotice] = useState(heroConfig.urgentTickerText);
 
   // Feature Flags State
   const [flags, setFlags] = useState(featureFlags);
 
   // Gemini AI Config State
-  const [aiModel, setAiModel] = useState(geminiConfig.model);
-  const [aiTemperature, setAiTemperature] = useState(geminiConfig.temperature);
-  const [aiSystemInstruction, setAiSystemInstruction] = useState(geminiConfig.systemInstruction);
-  const [aiGroundingThreshold, setAiGroundingThreshold] = useState(geminiConfig.groundingThreshold);
+  const [aiModel, setAiModel] = useState(aiSettings.model);
+  const [aiTemperature, setAiTemperature] = useState(aiSettings.temperature);
+  const [aiSystemInstruction, setAiSystemInstruction] = useState(aiSettings.systemInstruction);
+  const [aiGroundingThreshold, setAiGroundingThreshold] = useState(aiSettings.groundingThreshold);
 
   const handleSaveInstitution = async (e: React.FormEvent) => {
     e.preventDefault();
-    await updateInstitutionProfile({
+    await saveInstitutionProfile({
       name: instName,
       tamilName: instTamilName,
       tagline: instTagline,
@@ -85,7 +85,7 @@ export const SystemSettingsManager: React.FC = () => {
 
   const handleSaveHero = async (e: React.FormEvent) => {
     e.preventDefault();
-    await updateHeroConfig({
+    await saveHeroConfig({
       badgeText: heroBadge,
       title: heroTitle,
       subtitle: heroSubtitle,
@@ -102,15 +102,15 @@ export const SystemSettingsManager: React.FC = () => {
   const handleToggleFlag = async (key: keyof typeof flags) => {
     const updated = { ...flags, [key]: !flags[key] };
     setFlags(updated);
-    await updateFeatureFlags(updated);
+    await saveFeatureFlags(updated);
     setFeedback(`Feature flag ${String(key)} set to ${updated[key] ? 'ENABLED' : 'DISABLED'}.`);
     setTimeout(() => setFeedback(null), 2500);
   };
 
   const handleSaveGemini = async (e: React.FormEvent) => {
     e.preventDefault();
-    await updateGeminiConfig({
-      model: aiModel,
+    await saveAiSettings({
+      modelName: aiModel,
       temperature: Number(aiTemperature),
       systemInstruction: aiSystemInstruction,
       groundingThreshold: Number(aiGroundingThreshold),

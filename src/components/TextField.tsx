@@ -21,26 +21,26 @@ export const TextField: React.FC<TextFieldProps> = ({
 
   return (
     <View className="mb-4 w-full">
-      {label && <Text className="text-sm font-medium text-gray-700 mb-1.5">{label}</Text>}
+      {label && <Text className="text-sm font-medium text-slate-700 mb-1.5">{label}</Text>}
       <View
-        className={`flex-row items-center bg-gray-50 border px-3.5 py-3 rounded-xl ${
-          error ? 'border-red-500 bg-red-50/20' : 'border-gray-200 focus:border-khadi-blue'
+        className={`flex-row items-center bg-white border px-3 py-2.5 rounded-lg ${
+          error ? 'border-red-500 bg-red-50/20' : 'border-slate-300 focus:border-khadi-blue shadow-sm'
         } ${className}`}
       >
         {leftIcon && <View className="mr-2.5">{leftIcon}</View>}
         <TextInput
-          className="flex-1 text-base text-gray-900 font-normal p-0"
-          placeholderTextColor="#9CA3AF"
+          className="flex-1 text-base text-slate-900 font-normal p-0 outline-none h-6"
+          placeholderTextColor="#94A3B8"
           secureTextEntry={isPassword && !showPassword}
           {...props}
         />
         {isPassword && (
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)} activeOpacity={0.7} className="ml-2">
-            {showPassword ? <EyeOff size={20} color="#6B7280" /> : <Eye size={20} color="#6B7280" />}
+            {showPassword ? <EyeOff size={18} color="#64748B" /> : <Eye size={18} color="#64748B" />}
           </TouchableOpacity>
         )}
       </View>
-      {error && <Text className="text-xs text-red-500 mt-1 ml-1 font-medium">{error}</Text>}
+      {error && <Text className="text-xs text-red-500 mt-1 font-medium">{error}</Text>}
     </View>
   );
 };

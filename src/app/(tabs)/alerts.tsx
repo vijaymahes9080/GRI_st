@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Bell, Calendar, FileSpreadsheet, Briefcase, ExternalLink, ShieldAlert, Tag, CheckCheck } from 'lucide-react-native';
 import { Header } from '../../components/Header';
 import { apiClient } from '../../core/api';
+import { useResponsive } from '../../core/responsive/useResponsive';
 
 interface NotificationItem {
   id: string;
@@ -19,6 +20,7 @@ interface NotificationItem {
 
 export default function AlertsScreen() {
   const router = useRouter();
+  const { isTablet } = useResponsive();
   const [filter, setFilter] = useState<'ALL' | 'UNREAD' | 'CIRCULARS' | 'EVENTS'>('ALL');
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -58,19 +60,25 @@ export default function AlertsScreen() {
 
   useEffect(() => {
     fetchNotifications();
-
-    // WebSocket real-time connection
-    const ws = new WebSocket('ws://localhost:8000/ws/announcements');
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'NOTIFICATION' || data.type === 'EMERGENCY_ALERT') {
-          fetchNotifications();
-        }
-      } catch {}
+    // WebSocket real-time connection (Graceful degradation if WS server unavailable)
+    let ws: WebSocket | null = null;
+    try {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${protocol}//${window.location.host}/ws/announcements`);
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'NOTIFICATION' || data.type === 'EMERGENCY_ALERT') {
+            fetchNotifications();
+          }
+        } catch {}
+      };
+    } catch (e) {
+      console.warn('WebSocket connection failed, falling back to polling.');
+    }
+    return () => {
+      if (ws) ws.close();
     };
-
-    return () => ws.close();
   }, []);
 
   const handleRefresh = async () => {
@@ -95,36 +103,35 @@ export default function AlertsScreen() {
   });
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-slate-50">
       <Header
         title="University Alerts & Notifications"
         subtitle={`Real-Time Announcements · ${unreadCount} Unread`}
-        variant="green"
+        variant="white"
       />
 
       {/* Top Action Bar */}
-      <View className="flex-row items-center justify-between px-4 py-2.5 bg-white border-b border-gray-200">
+      <View className="flex-row items-center justify-between px-6 py-3 bg-white border-b border-slate-200">
         <View className="flex-row items-center">
-          <Bell size={18} color="#518214" />
-          <Text className="text-xs font-bold text-gray-800 ml-1.5">
+          <Bell size={18} color="#0F172A" />
+          <Text className="text-sm font-bold text-slate-800 ml-2 tracking-wide uppercase">
             Inbox ({notifications.length})
           </Text>
           {unreadCount > 0 && (
-            <View className="ml-2 bg-red-600 px-2 py-0.5 rounded-full">
-              <Text className="text-[10px] font-bold text-white">{unreadCount} NEW</Text>
+            <View className="ml-3 bg-red-600 px-2.5 py-0.5 rounded-full">
+              <Text className="text-[10px] font-bold text-white tracking-widest">{unreadCount} NEW</Text>
             </View>
           )}
         </View>
-
-        <TouchableOpacity onPress={markAllRead} className="flex-row items-center">
-          <CheckCheck size={16} color="#518214" />
-          <Text className="text-xs font-bold text-[#518214] ml-1">Mark All Read</Text>
+        <TouchableOpacity onPress={markAllRead} className="flex-row items-center bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-md border border-slate-200">
+          <CheckCheck size={16} color="#059669" />
+          <Text className="text-xs font-bold text-emerald-700 ml-1.5 uppercase tracking-wider">Mark All Read</Text>
         </TouchableOpacity>
       </View>
 
       {/* Filter Tabs */}
-      <View className="px-4 py-3 bg-white border-b border-gray-200">
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <View className="px-4 py-3 bg-white border-b border-slate-200 shadow-sm z-10">
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 4 }}>
           {[
             { id: 'ALL', label: 'All Alerts' },
             { id: 'UNREAD', label: `Unread (${unreadCount})` },
@@ -136,11 +143,12 @@ export default function AlertsScreen() {
               <TouchableOpacity
                 key={item.id}
                 onPress={() => setFilter(item.id as any)}
-                className={`px-3.5 py-1.5 rounded-xl mr-2 border ${
-                  isActive ? 'bg-[#518214] border-[#518214]' : 'bg-gray-100 border-gray-200'
+                className={`px-4 py-2 rounded-lg mr-2 border ${
+                  isActive ? 'bg-khadi-blue border-khadi-blue' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
                 }`}
+                activeOpacity={0.7}
               >
-                <Text className={`text-xs font-bold ${isActive ? 'text-white' : 'text-gray-700'}`}>
+                <Text className={`text-xs font-bold uppercase tracking-wider ${isActive ? 'text-white' : 'text-slate-600'}`}>
                   {item.label}
                 </Text>
               </TouchableOpacity>
@@ -150,68 +158,77 @@ export default function AlertsScreen() {
       </View>
 
       <ScrollView
-        className="flex-1 px-4 pt-4"
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={['#518214']} />}
+        className="flex-1"
+        contentContainerStyle={{ padding: isTablet ? 24 : 16 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={['#0D47A1']} />}
       >
-        {filteredItems.length === 0 ? (
-          <View className="items-center justify-center py-16">
-            <Bell size={48} color="#94a3b8" />
-            <Text className="text-gray-500 font-bold text-base mt-3">No Notifications Found</Text>
-            <Text className="text-gray-400 text-xs text-center mt-1">You are all caught up with university announcements.</Text>
-          </View>
-        ) : (
-          filteredItems.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              onPress={() =>
-                router.push({
-                  pathname: '/notifications/[id]',
-                  params: {
-                    id: item.id,
-                    title: item.title,
-                    message: item.message,
-                    category: item.category,
-                    priority: item.priority,
-                    attachment_url: item.attachment_url,
-                    deep_link: item.deep_link,
-                    published_at: item.published_at,
-                  },
-                })
-              }
-              className={`p-4 rounded-xl mb-3 border ${
-                item.read_status === 'unread'
-                  ? 'bg-emerald-50/60 border-emerald-300'
-                  : 'bg-white border-gray-200'
-              } shadow-sm`}
-            >
-              <View className="flex-row items-center justify-between mb-1.5">
-                <View className="flex-row items-center space-x-2">
-                  <Text className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md uppercase">
-                    {item.category || 'General'}
+        <View style={{ maxWidth: 800, width: '100%', alignSelf: 'center' }}>
+          {filteredItems.length === 0 ? (
+            <View className="items-center justify-center py-24">
+              <Bell size={48} color="#CBD5E1" />
+              <Text className="text-slate-500 font-bold text-lg mt-4">No Notifications Found</Text>
+              <Text className="text-slate-400 text-sm text-center mt-2">You are all caught up with university announcements.</Text>
+            </View>
+          ) : (
+            filteredItems.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                onPress={() =>
+                  router.push({
+                    pathname: '/notifications/[id]',
+                    params: {
+                      id: item.id,
+                      title: item.title,
+                      message: item.message,
+                      category: item.category,
+                      priority: item.priority,
+                      attachment_url: item.attachment_url,
+                      deep_link: item.deep_link,
+                      published_at: item.published_at,
+                    },
+                  })
+                }
+                className={`p-5 rounded-xl mb-4 border shadow-sm ${
+                  item.read_status === 'unread'
+                    ? 'bg-blue-50/50 border-blue-200'
+                    : 'bg-white border-slate-200 hover:bg-slate-50'
+                }`}
+              >
+                <View className="flex-row items-center justify-between mb-3">
+                  <View className="flex-row items-center gap-2">
+                    <View className="bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-md">
+                      <Text className="text-[10px] font-bold text-emerald-800 uppercase tracking-widest">
+                        {item.category || 'General'}
+                      </Text>
+                    </View>
+                    {item.priority === 'URGENT' && (
+                      <View className="bg-red-50 border border-red-100 px-2.5 py-1 rounded-md">
+                        <Text className="text-[10px] font-bold text-red-800 uppercase tracking-widest">
+                          🚨 Urgent
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text className="text-xs font-medium text-slate-500 tracking-wider uppercase">
+                    {item.published_at ? new Date(item.published_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now'}
                   </Text>
-                  {item.priority === 'URGENT' && (
-                    <Text className="text-[10px] font-bold text-red-800 bg-red-100 px-2 py-0.5 rounded-md uppercase">
-                      🚨 Urgent
-                    </Text>
+                </View>
+                
+                <Text className="text-base font-bold text-slate-900 mb-2">{item.title}</Text>
+                <Text className="text-sm text-slate-600 mb-4 leading-relaxed" numberOfLines={2}>{item.message}</Text>
+                
+                <View className="flex-row items-center justify-between pt-3 border-t border-slate-100">
+                  <Text className="text-xs font-bold text-khadi-blue uppercase tracking-wider">Tap to view details →</Text>
+                  {item.read_status === 'unread' && (
+                    <View className="w-2.5 h-2.5 rounded-full bg-blue-600" />
                   )}
                 </View>
-                <Text className="text-[11px] text-gray-400">
-                  {item.published_at ? new Date(item.published_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now'}
-                </Text>
-              </View>
-
-              <Text className="text-sm font-bold text-gray-900 mb-1">{item.title}</Text>
-              <Text className="text-xs text-gray-600 mb-2" numberOfLines={2}>{item.message}</Text>
-
-              <View className="flex-row items-center justify-between pt-1 border-t border-gray-100">
-                <Text className="text-[11px] font-bold text-[#518214]">Tap to view details →</Text>
-                {item.read_status === 'unread' && (
-                  <View className="w-2 h-2 rounded-full bg-emerald-600" />
-                )}
-              </View>
-            </TouchableOpacity>
-          ))
-        )}
+              </TouchableOpacity>
+            ))
+          )}
+          <View className="h-12" />
+        </View>
       </ScrollView>
     </View>
   );

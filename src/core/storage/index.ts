@@ -19,10 +19,13 @@ export const storageKeys = {
   ACCESS_TOKEN: 'jwt_access_token',
   REFRESH_TOKEN: 'jwt_refresh_token',
   USER_DATA: 'user_data',
+  USER_SESSION: 'user_session',
   THEME_MODE: 'theme_mode',
   BIOMETRIC_ENABLED: 'biometric_enabled',
   APP_CONFIG: 'server_app_config',
   FEATURE_FLAGS: 'server_feature_flags',
+  PRIVATE_CACHE: 'private_cache',
+  AUTH_SESSION: 'auth_session',
 } as const;
 
 // Hardware-Backed Secure KeyStore / KeyChain Storage Helpers
@@ -71,10 +74,60 @@ export const removeItem = (key: string): void => {
   storage.delete(key);
 };
 
+/**
+ * Completely purges all sensitive credentials, cached state, and session tokens
+ * from hardware Keystore/KeyChain, MMKV memory, and web browser storage.
+ */
+export const clearAllSensitiveStorage = async (): Promise<void> => {
+  try {
+    // 1. Remove all secure items
+    await removeSecureItem(storageKeys.ACCESS_TOKEN);
+    await removeSecureItem(storageKeys.REFRESH_TOKEN);
+    await removeSecureItem(storageKeys.USER_DATA);
+    await removeSecureItem(storageKeys.USER_SESSION);
+    await removeSecureItem(storageKeys.PRIVATE_CACHE);
+    await removeSecureItem(storageKeys.AUTH_SESSION);
+
+    // 2. Clear MMKV storage
+    storage.delete(storageKeys.ACCESS_TOKEN);
+    storage.delete(storageKeys.REFRESH_TOKEN);
+    storage.delete(storageKeys.USER_DATA);
+    storage.delete(storageKeys.USER_SESSION);
+    storage.delete(storageKeys.PRIVATE_CACHE);
+    storage.delete(storageKeys.AUTH_SESSION);
+
+    // 3. Clear web browser localStorage and sessionStorage if in web runtime
+    if (typeof window !== 'undefined') {
+      try {
+        const sensitiveKeys = [
+          'jwt_access_token',
+          'jwt_refresh_token',
+          'user_data',
+          'auth_session',
+          'gri_auth_session',
+          'gri_user_profile',
+          'private_cache',
+          'temp_credentials',
+        ];
+        sensitiveKeys.forEach((k) => {
+          window.localStorage?.removeItem(k);
+        });
+        window.sessionStorage?.clear();
+      } catch (webErr) {
+        console.warn('[Storage] Web storage purge warning:', webErr);
+      }
+    }
+  } catch (err) {
+    console.warn('[Storage] clearAllSensitiveStorage caught error:', err);
+  }
+};
+
 export const clearStorage = async (): Promise<void> => {
-  storage.clearAll();
-  await removeSecureItem(storageKeys.ACCESS_TOKEN);
-  await removeSecureItem(storageKeys.REFRESH_TOKEN);
-  await removeSecureItem(storageKeys.USER_DATA);
+  try {
+    storage.clearAll();
+    await clearAllSensitiveStorage();
+  } catch (err) {
+    console.warn('[Storage] clearStorage error:', err);
+  }
 };
 

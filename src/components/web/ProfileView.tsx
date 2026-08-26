@@ -18,7 +18,9 @@ import {
   MessageSquare,
   Send,
   Save,
-  CheckCircle2
+  CheckCircle2,
+  LogOut,
+  Trash2
 } from 'lucide-react';
 import { EditUserContactModal } from '../admin/EditUserContactModal';
 
@@ -27,6 +29,7 @@ export const ProfileView: React.FC = () => {
     currentUser, 
     loginAsUser, 
     setLoginModalOpen,
+    doLogout,
     registerPendingUser, 
     isFirestoreLive,
     setPasswordChangeModalOpen,
@@ -302,8 +305,8 @@ export const ProfileView: React.FC = () => {
               </div>
             )}
 
-            {/* Institutional Identity Gateway Action */}
-            <div className="space-y-3 pt-2">
+            {/* Institutional Identity Gateway & Sign-Out Actions */}
+            <div className="space-y-2.5 pt-2">
               <button
                 id="btn-open-institutional-gateway-profile"
                 onClick={() => setLoginModalOpen(true)}
@@ -312,6 +315,21 @@ export const ProfileView: React.FC = () => {
                 <Lock className="w-4 h-4" />
                 <span>Institutional Identity & Sign-In Gateway</span>
               </button>
+
+              {currentUser.role !== 'guest' && (
+                <button
+                  id="btn-profile-logout"
+                  onClick={async () => {
+                    await doLogout();
+                    setTestStatus('Session purged & all tokens wiped successfully.');
+                    setTimeout(() => setTestStatus(null), 4000);
+                  }}
+                  className="w-full py-2.5 px-4 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-300 hover:text-white font-semibold text-xs flex items-center justify-center gap-2 transition"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Sign Out & Clear All Session Cache</span>
+                </button>
+              )}
             </div>
           </div>
         </div>

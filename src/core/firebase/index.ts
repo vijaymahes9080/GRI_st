@@ -1030,52 +1030,6 @@ export async function updateGrievanceStatusInFirestore(id: string, status: 'PEND
 /**
  * Institutional Authentication with Verified Identity
  */
-export async function authenticateInstitutionalUser(identifier: string, passwordInput: string): Promise<UserProfile> {
-  const usersSnap = await getDocs(collection(db, USERS_COLLECTION));
-  let matchedUser: UserProfile | null = null;
-
-  usersSnap.forEach((docSnap) => {
-    const u = docSnap.data() as UserProfile;
-    const matchEmail = u.email && u.email.trim().toLowerCase() === identifier.trim().toLowerCase();
-    const matchReg = u.regNumber && u.regNumber.trim().toLowerCase() === identifier.trim().toLowerCase();
-    const matchId = u.id && u.id.trim().toLowerCase() === identifier.trim().toLowerCase();
-    if (matchEmail || matchReg || matchId) {
-      matchedUser = { ...u, id: docSnap.id };
-    }
-  });
-
-  // If not found in live Firestore, check sample fallback users
-  if (!matchedUser) {
-    matchedUser = SAMPLE_USERS.find(
-      (u) =>
-        (u.email && u.email.toLowerCase() === identifier.toLowerCase()) ||
-        (u.regNumber && u.regNumber.toLowerCase() === identifier.toLowerCase()) ||
-        u.id.toLowerCase() === identifier.toLowerCase()
-    ) || null;
-  }
-
-  if (!matchedUser) {
-    throw new Error('No registered university account found with this ID or email. Please check your credentials or contact the Dean of Academic Affairs / ICT Centre.');
-  }
-
-  if (matchedUser.approvalStatus === 'pending') {
-    throw new Error('Your institutional profile is currently pending administrator verification. You will receive an SMS/Email notification upon approval.');
-  }
-
-  if (matchedUser.approvalStatus === 'suspended' || matchedUser.approvalStatus === 'rejected') {
-    throw new Error('Your institutional access has been restricted by University Administration.');
-  }
-
-  // Password verification: check custom password or default institutional password
-  const expectedPassword = matchedUser.tempPassword || DEFAULT_GENERAL_PASSWORD;
-  const isDefaultMatch = passwordInput === DEFAULT_GENERAL_PASSWORD || passwordInput === expectedPassword;
-  
-  if (!isDefaultMatch && passwordInput.length < 4) {
-    throw new Error('Invalid credentials provided. Please enter your valid institutional password.');
-  }
-
-  return matchedUser;
-}
 
 /**
  * Sign out

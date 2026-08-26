@@ -2,7 +2,7 @@
 
 Official Source of Truth: **[The Gandhigram Rural Institute (Deemed to be University)](https://ruraluniv.ac.in/)**  
 Official Connected Portals: **[Rural University Main Portal](https://www.portal.ruraluniv.ac.in/)**, **[Samarth@GRI ERP](https://ruraluniv.samarth.ac.in/)**, **[e-SANAD](https://esanad.nic.in/)**  
-Official Emblem & Seal: Sacred Gandhian Charkha (Spinning Wheel), Rising Sun over Agrarian Landscape, Open Scripture of Knowledge, Golden Wheat Sheaves, and Official Bilingual Motto: *"கிராமம் உயர நாடு உயரும்"* (As the village rises, so the nation rises).
+Official Emblem & Seal: Sourced directly from ruraluniv.ac.in/logo featuring (1) Book nestled inside a Lotus (Enlightenment), (2) Sacred Deepam Lamp (Dissemination of Knowledge), (3) Kolam Motifs (Femininity & Health Training Roots), (4) Two Connected Concentric Squares (Learning to Action / Nai Talim), (5) Traditional Plough (Rural Agriculture), (6) Gandhian Charkha (Swadeshi & Self-Reliance), (7) Staff of Asclepius (Rural Health & Sanitation), and the Official Bilingual Motto: *"கிராமம் உயர நாடு உயரும்"* (As the village rises, so the nation rises).
 
 The connected ecosystem contains a **Student Portal, Faculty Portal, Staff Portal, Scholar Portal, Alumni Portal, Admin Control Center with Manage Templates Modal, and e-SANAD**, all synchronized in real-time with Firebase Firestore and Google GenAI capabilities.
 

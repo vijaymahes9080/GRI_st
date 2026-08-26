@@ -12,15 +12,26 @@ import {
   Search, 
   Smartphone, 
   Monitor,
-  GraduationCap,
   Sparkles,
   Menu,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
 import { INSTITUTION_INFO } from '../../core/data/griMasterData';
 
 export const Navbar: React.FC = () => {
-  const { currentTab, setTab, viewMode, toggleViewMode, currentUser, setSearchOpen, circulars, isFirestoreLive } = useAppStore();
+  const { 
+    currentTab, 
+    setTab, 
+    viewMode, 
+    toggleViewMode, 
+    currentUser, 
+    setSearchOpen, 
+    setLoginModalOpen,
+    doLogout,
+    circulars, 
+    isFirestoreLive 
+  } = useAppStore();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const unreadAlerts = circulars.filter(c => c.isImportant).length;
@@ -150,28 +161,40 @@ export const Navbar: React.FC = () => {
                 <span>Student / Staff Login</span>
               </button>
             ) : (
-              <button
-                id="btn-navbar-profile"
-                onClick={() => setLoginModalOpen(true)}
-                className="flex items-center space-x-2.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 transition"
-              >
-                {currentUser.avatarUrl ? (
-                  <img 
-                    src={currentUser.avatarUrl} 
-                    alt={currentUser.name} 
-                    referrerPolicy="no-referrer"
-                    className="w-7 h-7 rounded-full object-cover border border-emerald-500" 
-                  />
-                ) : (
-                  <div className="w-7 h-7 rounded-full bg-emerald-700 flex items-center justify-center text-xs font-bold text-white border border-emerald-500">
-                    {currentUser.name.charAt(0)}
+              <div className="flex items-center space-x-1.5">
+                <button
+                  id="btn-navbar-profile"
+                  onClick={() => setLoginModalOpen(true)}
+                  title="Switch identity or update institutional profile"
+                  className="flex items-center space-x-2.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 transition"
+                >
+                  {currentUser.avatarUrl ? (
+                    <img 
+                      src={currentUser.avatarUrl} 
+                      alt={currentUser.name} 
+                      referrerPolicy="no-referrer"
+                      className="w-7 h-7 rounded-full object-cover border border-emerald-500" 
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-emerald-700 flex items-center justify-center text-xs font-bold text-white border border-emerald-500">
+                      {currentUser.name.charAt(0)}
+                    </div>
+                  )}
+                  <div className="text-left leading-tight">
+                    <div className="text-xs font-semibold text-slate-200 truncate max-w-[110px]">{currentUser.name}</div>
+                    <div className="text-[10px] text-emerald-400 capitalize font-mono">{currentUser.role}</div>
                   </div>
-                )}
-                <div className="text-left leading-tight">
-                  <div className="text-xs font-semibold text-slate-200 truncate max-w-[120px]">{currentUser.name}</div>
-                  <div className="text-[10px] text-emerald-400 capitalize font-mono">{currentUser.role}</div>
-                </div>
-              </button>
+                </button>
+
+                <button
+                  id="btn-navbar-logout"
+                  onClick={() => doLogout()}
+                  title="Sign out & Purge session data"
+                  className="p-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/50 text-rose-300 hover:text-white transition"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
             )}
           </div>
 
@@ -189,34 +212,55 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile dropdown menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-slate-900 border-b border-slate-800 px-4 pt-2 pb-4 space-y-1">
-          {navItems.map((item) => {
-            const isActive = currentTab === item.id;
-            return (
+        <div className="lg:hidden bg-slate-900 border-b border-slate-800 px-4 pt-2 pb-4 space-y-2">
+          {currentUser.role !== 'guest' && (
+            <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-between">
+              <div>
+                <div className="text-xs font-bold text-slate-200">{currentUser.name}</div>
+                <div className="text-[10px] text-emerald-400 font-mono capitalize">{currentUser.role}</div>
+              </div>
               <button
-                key={item.id}
                 onClick={() => {
-                  setTab(item.id);
+                  doLogout();
                   setMobileMenuOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium ${
-                  isActive
-                    ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30'
-                    : 'text-slate-300 hover:bg-slate-800'
-                }`}
+                className="px-2.5 py-1.5 rounded-xl bg-rose-900/50 border border-rose-700/60 text-rose-200 text-xs font-semibold flex items-center gap-1"
               >
-                <div className="flex items-center space-x-2.5">
-                  {item.icon}
-                  <span>{item.label}</span>
-                </div>
-                {item.badge && item.badge > 0 ? (
-                  <span className="px-1.5 py-0.5 text-xs font-bold bg-rose-600 text-white rounded-full">
-                    {item.badge}
-                  </span>
-                ) : null}
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sign Out</span>
               </button>
-            );
-          })}
+            </div>
+          )}
+
+          <div className="space-y-1">
+            {navItems.map((item) => {
+              const isActive = currentTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setTab(item.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium ${
+                    isActive
+                      ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30'
+                      : 'text-slate-300 hover:bg-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2.5">
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </div>
+                  {item.badge && item.badge > 0 ? (
+                    <span className="px-1.5 py-0.5 text-xs font-bold bg-rose-600 text-white rounded-full">
+                      {item.badge}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
     </header>

@@ -7,7 +7,7 @@ export interface CardProps extends ViewProps {
 }
 
 export const Card: React.FC<CardProps> = ({ children, onPress, className = '', activeOpacity = 0.7, ...props }) => {
-  const containerClasses = `bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-3 ${className}`;
+  const containerClasses = `bg-white p-4 rounded-xl shadow-sm border border-slate-200 ${className}`;
 
   if (onPress) {
     return (

@@ -1,7 +1,8 @@
 import React from 'react';
 import { useAppStore } from '../../core/store/appStore';
 import { INSTITUTION_INFO, EXAM_SCHEDULE_MOCK } from '../../core/data/griMasterData';
-import { X, Printer, Download, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { X, Printer, ShieldAlert } from 'lucide-react';
+import { AccessRestricted } from '../common/AccessRestricted';
 
 interface ExamHallTicketModalProps {
   isOpen: boolean;
@@ -9,9 +10,38 @@ interface ExamHallTicketModalProps {
 }
 
 export const ExamHallTicketModal: React.FC<ExamHallTicketModalProps> = ({ isOpen, onClose }) => {
-  const { currentUser } = useAppStore();
+  const { currentUser, setLoginModalOpen } = useAppStore();
 
   if (!isOpen) return null;
+
+  if (currentUser.role === 'guest') {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-fadeIn">
+        <div className="bg-slate-900 border border-slate-800 text-white w-full max-w-xl rounded-3xl p-6 shadow-2xl relative">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <AccessRestricted
+            title="Hall Ticket Access Restricted"
+            resourceName="Controller of Examinations (CoE) — ESE Admit Card"
+            requiredRole={['student', 'scholar', 'admin']}
+            requiredScope="Assigned Enrolled Candidate Register Number"
+            message="Official Examination Hall Tickets require a verified Student Register Number and authentication against the GRI Academic Database."
+            primaryActionText="Sign In with Register Number"
+            onPrimaryAction={() => {
+              onClose();
+              setLoginModalOpen(true);
+            }}
+            secondaryActionText="Close"
+            onSecondaryAction={onClose}
+          />
+        </div>
+      </div>
+    );
+  }
 
   const handlePrint = () => {
     window.print();

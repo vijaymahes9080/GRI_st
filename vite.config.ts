@@ -8,6 +8,10 @@ export default defineConfig({
   root: '.',
   publicDir: 'public',
   base: '/',
+  define: {
+    __DEV__: process.env.NODE_ENV !== 'production',
+    global: 'globalThis'
+  },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
@@ -48,6 +52,10 @@ export default defineConfig({
       '@core': path.resolve(__dirname, './src/core'),
       '@features': path.resolve(__dirname, './src/features'),
       '@components': path.resolve(__dirname, './src/components'),
+      'expo-secure-store': path.resolve(__dirname, './src/core/storage/mock-secure-store.ts'),
+      'react-native-mmkv': path.resolve(__dirname, './src/core/storage/mock-mmkv.ts'),
+      'react-native': 'react-native-web',
+      'lucide-react-native': 'lucide-react',
     },
   },
   server: {

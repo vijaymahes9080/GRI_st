@@ -14,6 +14,8 @@ import { ProfileView } from './components/web/ProfileView';
 import { MobileSimulator } from './components/web/MobileSimulator';
 import { ChangePasswordModal } from './components/common/ChangePasswordModal';
 import { InstitutionalLoginModal } from './components/auth/InstitutionalLoginModal';
+import { AccessRestricted } from './components/common/AccessRestricted';
+import { usePermissions } from './core/auth/usePermissions';
 import { INSTITUTION_INFO } from './core/data/griMasterData';
 import { 
   GraduationCap, 
@@ -36,8 +38,12 @@ export const App: React.FC = () => {
     setTab, 
     initializeRealtimeSync,
     isLoginModalOpen,
-    setLoginModalOpen
+    setLoginModalOpen,
+    isAuthenticated,
+    currentUser
   } = useAppStore();
+
+  const { can } = usePermissions();
 
   useEffect(() => {
     // Seed initial collections in Firestore if needed
@@ -65,8 +71,42 @@ export const App: React.FC = () => {
             {currentTab === 'services' && <ServicesView />}
             {currentTab === 'alerts' && <AlertsView />}
             {currentTab === 'ai_chat' && <AiChatView />}
-            {currentTab === 'admin' && <AdminView />}
-            {currentTab === 'profile' && <ProfileView />}
+            
+            {/* Protected Routes */}
+            {currentTab === 'admin' && (
+              can('tab.admin.view') ? (
+                <AdminView />
+              ) : (
+                <AccessRestricted
+                  title={!isAuthenticated ? "Authentication Required" : "Access Denied"}
+                  message={!isAuthenticated 
+                    ? "You must be signed in with your institutional credentials to access the Administration Control Center." 
+                    : "Your current role does not have permission to view the Administration Control Center."}
+                  resourceName="Admin Dashboard"
+                  primaryActionText={!isAuthenticated ? "Sign In" : "Return to Home"}
+                  onPrimaryAction={() => !isAuthenticated ? setLoginModalOpen(true) : setTab('home')}
+                  secondaryActionText="Return to Home"
+                  onSecondaryAction={() => setTab('home')}
+                />
+              )
+            )}
+            {currentTab === 'profile' && (
+              can('tab.profile.view') ? (
+                <ProfileView />
+              ) : (
+                <AccessRestricted
+                  title={!isAuthenticated ? "Authentication Required" : "Access Denied"}
+                  message={!isAuthenticated 
+                    ? "You must be signed in with your institutional credentials to access your personal profile and account settings." 
+                    : "Your current role does not have permission to view the profile section."}
+                  resourceName="User Profile"
+                  primaryActionText={!isAuthenticated ? "Sign In" : "Return to Home"}
+                  onPrimaryAction={() => !isAuthenticated ? setLoginModalOpen(true) : setTab('home')}
+                  secondaryActionText="Return to Home"
+                  onSecondaryAction={() => setTab('home')}
+                />
+              )
+            )}
           </>
         )}
       </main>

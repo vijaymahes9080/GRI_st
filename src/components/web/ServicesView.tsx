@@ -24,6 +24,7 @@ import {
   Users
 } from 'lucide-react';
 import { ExamHallTicketModal } from './ExamHallTicketModal';
+import { AccessRestricted } from '../common/AccessRestricted';
 
 export const ServicesView: React.FC = () => {
   const { currentUser, grievances, addGrievance } = useAppStore();
@@ -390,61 +391,73 @@ export const ServicesView: React.FC = () => {
               </p>
             </div>
 
-            {grievanceSubmittedMsg && (
-              <div className="p-3 rounded-xl bg-emerald-950 border border-emerald-700 text-emerald-300 text-xs flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                <span>Ticket submitted successfully! Assigned for verification.</span>
-              </div>
+            {currentUser.role === 'guest' ? (
+              <AccessRestricted
+                compact
+                title="Authentication Required for Grievances"
+                resourceName="Samadhan Redressal Portal"
+                message="To lodge an official grievance and track resolution status with the University Samadhan Cell, please sign in with your verified GRI Student or Employee ID."
+                primaryActionText="Sign In to Lodge Ticket"
+              />
+            ) : (
+              <>
+                {grievanceSubmittedMsg && (
+                  <div className="p-3 rounded-xl bg-emerald-950 border border-emerald-700 text-emerald-300 text-xs flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                    <span>Ticket submitted successfully! Assigned for verification.</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleGrievanceSubmit} className="space-y-3 text-xs">
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Category</label>
+                    <select
+                      value={grievanceCategory}
+                      onChange={(e) => setGrievanceCategory(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-200 outline-none focus:border-emerald-500"
+                    >
+                      <option value="Academic">Academic & Marks Evaluation</option>
+                      <option value="Hostel & Mess">Hostel, Wi-Fi & Mess Food</option>
+                      <option value="Scholarship & Fees">Scholarship & Fee Concessions</option>
+                      <option value="Harassment / Anti-Ragging">Anti-Ragging / Internal Complaints (ICC)</option>
+                      <option value="Transport & Infrastructure">Campus Bus & Classroom Facilities</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Subject Title</label>
+                    <input
+                      type="text"
+                      value={grievanceSubject}
+                      onChange={(e) => setGrievanceSubject(e.target.value)}
+                      placeholder="e.g., Request for CIA re-totalling in MCA-401"
+                      required
+                      className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-200 outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Detailed Description</label>
+                    <textarea
+                      value={grievanceDesc}
+                      onChange={(e) => setGrievanceDesc(e.target.value)}
+                      rows={4}
+                      placeholder="Provide precise details, semester, subject code, and faculty reference..."
+                      required
+                      className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-200 outline-none focus:border-emerald-500"
+                    ></textarea>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-900/30"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>Submit Grievance to Cell</span>
+                  </button>
+                </form>
+              </>
             )}
-
-            <form onSubmit={handleGrievanceSubmit} className="space-y-3 text-xs">
-              <div>
-                <label className="block text-slate-400 font-semibold mb-1">Category</label>
-                <select
-                  value={grievanceCategory}
-                  onChange={(e) => setGrievanceCategory(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-200 outline-none focus:border-emerald-500"
-                >
-                  <option value="Academic">Academic & Marks Evaluation</option>
-                  <option value="Hostel & Mess">Hostel, Wi-Fi & Mess Food</option>
-                  <option value="Scholarship & Fees">Scholarship & Fee Concessions</option>
-                  <option value="Harassment / Anti-Ragging">Anti-Ragging / Internal Complaints (ICC)</option>
-                  <option value="Transport & Infrastructure">Campus Bus & Classroom Facilities</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-slate-400 font-semibold mb-1">Subject Title</label>
-                <input
-                  type="text"
-                  value={grievanceSubject}
-                  onChange={(e) => setGrievanceSubject(e.target.value)}
-                  placeholder="e.g., Request for CIA re-totalling in MCA-401"
-                  required
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-200 outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-400 font-semibold mb-1">Detailed Description</label>
-                <textarea
-                  value={grievanceDesc}
-                  onChange={(e) => setGrievanceDesc(e.target.value)}
-                  rows={4}
-                  placeholder="Provide precise details, semester, subject code, and faculty reference..."
-                  required
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-slate-200 outline-none focus:border-emerald-500"
-                ></textarea>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-900/30"
-              >
-                <Send className="w-4 h-4" />
-                <span>Submit Grievance to Cell</span>
-              </button>
-            </form>
           </div>
 
           {/* List of submitted tickets */}
