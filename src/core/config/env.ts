@@ -1,5 +1,3 @@
-import Constants from 'expo-constants';
-
 export interface FreeCloudStackConfig {
   githubRepoUrl: string;
   railwayBackendUrl: string;
@@ -22,17 +20,17 @@ export interface AppEnvConfig {
 }
 
 const getEnvConfig = (): AppEnvConfig => {
-  const isDev = __DEV__;
+  const isDev = import.meta.env ? import.meta.env.DEV : process.env.NODE_ENV !== 'production';
   
-  // Local network fallback for Expo Go / ADB USB debugging
-  const devHost = Constants.expoConfig?.hostUri?.split(':')[0] || '192.168.1.15';
+  // Local network fallback
+  const devHost = typeof window !== 'undefined' ? window.location.hostname : '127.0.0.1';
 
   const cloudStack: FreeCloudStackConfig = {
     githubRepoUrl: 'https://github.com/vijaymahes9080/GRI',
-    railwayBackendUrl: process.env.EXPO_PUBLIC_RAILWAY_URL || 'https://api.ruraluniv-app.railway.app',
+    railwayBackendUrl: (import.meta.env ? import.meta.env.VITE_RAILWAY_URL : process.env.EXPO_PUBLIC_RAILWAY_URL) || 'https://api.ruraluniv-app.railway.app',
     cloudflareCdnUrl: 'https://cdn.ruraluniv.ac.in',
-    supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://gri-university.supabase.co',
-    supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy',
+    supabaseUrl: (import.meta.env ? import.meta.env.VITE_SUPABASE_URL : process.env.EXPO_PUBLIC_SUPABASE_URL) || 'https://gri-university.supabase.co',
+    supabaseAnonKey: (import.meta.env ? import.meta.env.VITE_SUPABASE_ANON_KEY : process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY) || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy',
     firebaseFcmSenderId: '109823489123',
     vercelAdminPortalUrl: 'https://admin.ruraluniv.ac.in',
     uptimeKumaHealthUrl: 'https://api.ruraluniv-app.railway.app/health',

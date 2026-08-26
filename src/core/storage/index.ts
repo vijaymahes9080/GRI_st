@@ -1,20 +1,4 @@
-import { MMKV } from 'react-native-mmkv';
-import Constants from 'expo-constants';
-import * as SecureStore from 'expo-secure-store';
-
-const configuredKey: string | undefined =
-  (Constants.expoConfig?.extra?.mmkvEncryptionKey as string | undefined) ||
-  process.env.EXPO_PUBLIC_MMKV_ENCRYPTION_KEY;
-
-const encryptionKey: string | undefined = __DEV__
-  ? configuredKey || Constants.installationId
-  : configuredKey;
-
-export const storage = new MMKV({
-  id: 'gri-app-storage',
-  ...(encryptionKey ? { encryptionKey } : {}),
-});
-
+// Web-compatible storage implementation using localStorage
 export const storageKeys = {
   ACCESS_TOKEN: 'jwt_access_token',
   REFRESH_TOKEN: 'jwt_refresh_token',
@@ -28,32 +12,30 @@ export const storageKeys = {
   AUTH_SESSION: 'auth_session',
 } as const;
 
-// Hardware-Backed Secure KeyStore / KeyChain Storage Helpers
+const isWeb = typeof window !== 'undefined' && window.localStorage;
+
 export const setSecureItem = async (key: string, value: string): Promise<void> => {
-  try {
-    await SecureStore.setItemAsync(key, value);
-  } catch {
-    storage.set(key, value);
+  if (isWeb) {
+    window.localStorage.setItem(key, value);
   }
 };
 
 export const getSecureItem = (key: string): string | null => {
-  try {
-    return SecureStore.getItem(key) || storage.getString(key) || null;
-  } catch {
-    return storage.getString(key) || null;
+  if (isWeb) {
+    return window.localStorage.getItem(key);
   }
+  return null;
 };
 
 export const removeSecureItem = async (key: string): Promise<void> => {
-  try {
-    await SecureStore.deleteItemAsync(key);
-  } catch {}
-  storage.delete(key);
+  if (isWeb) {
+    window.localStorage.removeItem(key);
+  }
 };
 
 export const getItem = <T>(key: string): T | null => {
-  const value = storage.getString(key);
+  if (!isWeb) return null;
+  const value = window.localStorage.getItem(key);
   if (!value) return null;
   try {
     return JSON.parse(value) as T;
@@ -63,71 +45,41 @@ export const getItem = <T>(key: string): T | null => {
 };
 
 export const setItem = (key: string, value: any): void => {
+  if (!isWeb) return;
   if (typeof value === 'string') {
-    storage.set(key, value);
+    window.localStorage.setItem(key, value);
   } else {
-    storage.set(key, JSON.stringify(value));
+    window.localStorage.setItem(key, JSON.stringify(value));
   }
 };
 
 export const removeItem = (key: string): void => {
-  storage.delete(key);
+  if (isWeb) {
+    window.localStorage.removeItem(key);
+  }
 };
 
-/**
- * Completely purges all sensitive credentials, cached state, and session tokens
- * from hardware Keystore/KeyChain, MMKV memory, and web browser storage.
- */
 export const clearAllSensitiveStorage = async (): Promise<void> => {
-  try {
-    // 1. Remove all secure items
-    await removeSecureItem(storageKeys.ACCESS_TOKEN);
-    await removeSecureItem(storageKeys.REFRESH_TOKEN);
-    await removeSecureItem(storageKeys.USER_DATA);
-    await removeSecureItem(storageKeys.USER_SESSION);
-    await removeSecureItem(storageKeys.PRIVATE_CACHE);
-    await removeSecureItem(storageKeys.AUTH_SESSION);
-
-    // 2. Clear MMKV storage
-    storage.delete(storageKeys.ACCESS_TOKEN);
-    storage.delete(storageKeys.REFRESH_TOKEN);
-    storage.delete(storageKeys.USER_DATA);
-    storage.delete(storageKeys.USER_SESSION);
-    storage.delete(storageKeys.PRIVATE_CACHE);
-    storage.delete(storageKeys.AUTH_SESSION);
-
-    // 3. Clear web browser localStorage and sessionStorage if in web runtime
-    if (typeof window !== 'undefined') {
-      try {
-        const sensitiveKeys = [
-          'jwt_access_token',
-          'jwt_refresh_token',
-          'user_data',
-          'auth_session',
-          'gri_auth_session',
-          'gri_user_profile',
-          'private_cache',
-          'temp_credentials',
-        ];
-        sensitiveKeys.forEach((k) => {
-          window.localStorage?.removeItem(k);
-        });
-        window.sessionStorage?.clear();
-      } catch (webErr) {
-        console.warn('[Storage] Web storage purge warning:', webErr);
-      }
-    }
-  } catch (err) {
-    console.warn('[Storage] clearAllSensitiveStorage caught error:', err);
+  if (isWeb) {
+    Object.values(storageKeys).forEach(key => {
+      window.localStorage.removeItem(key);
+    });
+    const extraSensitiveKeys = [
+      'gri_auth_session',
+      'gri_user_profile',
+      'temp_credentials',
+    ];
+    extraSensitiveKeys.forEach((k) => {
+      window.localStorage.removeItem(k);
+    });
+    window.sessionStorage?.clear();
   }
 };
 
 export const clearStorage = async (): Promise<void> => {
-  try {
-    storage.clearAll();
+  if (isWeb) {
+    window.localStorage.clear();
     await clearAllSensitiveStorage();
-  } catch (err) {
-    console.warn('[Storage] clearStorage error:', err);
   }
 };
 

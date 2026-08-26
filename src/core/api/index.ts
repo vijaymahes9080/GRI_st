@@ -1,5 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { storage, storageKeys, getSecureItem, setSecureItem, removeSecureItem } from '../storage';
+import { removeItem, storageKeys, getSecureItem, setSecureItem, removeSecureItem } from '../storage';
 
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || '/api/v1';
 
@@ -71,7 +71,7 @@ apiClient.interceptors.response.use(
           // Token refresh failed -> Clear session
           await removeSecureItem(storageKeys.ACCESS_TOKEN);
           await removeSecureItem(storageKeys.REFRESH_TOKEN);
-          storage.delete(storageKeys.USER_DATA);
+          removeItem(storageKeys.USER_DATA);
         }
       }
     }

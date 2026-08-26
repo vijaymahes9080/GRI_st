@@ -278,7 +278,7 @@ export const AdminView: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 animate-fadeIn pb-12">
+    <div className="space-y-6  pb-12">
       {/* Top Banner: Master Identity & Real-Time Sync Indicator */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-64 sm:h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
@@ -325,7 +325,7 @@ export const AdminView: React.FC = () => {
 
         {/* Global Feedback Banner */}
         {bulkFeedback && (
-          <div className="mt-4 p-3.5 rounded-2xl bg-emerald-950/90 border border-emerald-600/60 text-emerald-300 text-xs flex items-center justify-between shadow-lg animate-fadeIn">
+          <div className="mt-4 p-3.5 rounded-2xl bg-emerald-950/90 border border-emerald-600/60 text-emerald-300 text-xs flex items-center justify-between shadow-lg ">
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
               <span>{bulkFeedback}</span>
@@ -370,7 +370,7 @@ export const AdminView: React.FC = () => {
 
       {/* TAB CONTENT: Overview */}
       {activeTab === 'overview' && (
-        <div className="space-y-6 animate-fadeIn">
+        <div className="space-y-6 ">
           {/* Quick Metrics Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {[
@@ -485,7 +485,7 @@ export const AdminView: React.FC = () => {
 
       {/* TAB CONTENT: Users Directory & RBAC */}
       {activeTab === 'users' && (
-        <div className="space-y-6 animate-fadeIn">
+        <div className="space-y-6 ">
           {/* Header & Bulk Actions Toolbar */}
           <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
