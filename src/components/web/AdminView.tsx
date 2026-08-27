@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { useAppStore } from '../../core/store/appStore';
+import { useTheme } from '../../core/theme/ThemeContext';
 import { BulkConfirmModal, BulkActionType } from './BulkConfirmModal';
 import { AddUserModal } from '../admin/AddUserModal';
 import { EditUserContactModal } from '../admin/EditUserContactModal';
@@ -19,6 +20,7 @@ import { AiKnowledgeManager } from '../admin/AiKnowledgeManager';
 import { SystemSettingsManager } from '../admin/SystemSettingsManager';
 import { AuditLogsViewer } from '../admin/AuditLogsViewer';
 import { GrievanceManager } from '../admin/GrievanceManager';
+import { StudentPushManager } from '../admin/StudentPushManager';
 import { AdminResetPasswordModal } from '../admin/AdminResetPasswordModal';
 import { RbacManagerView } from '../admin/RbacManagerView';
 import { AccessRestricted } from '../common/AccessRestricted';
@@ -42,7 +44,9 @@ import {
   FileJson, 
   Upload, 
   UserPlus, 
-  KeyRound, 
+  KeyRound,
+  Sun,
+  Moon, 
   MessageSquare, 
   Building2, 
   Calendar, 
@@ -86,12 +90,14 @@ export const AdminView: React.FC = () => {
   } = useAppStore();
 
   const { can } = usePermissions();
+  const { isDark, toggleTheme } = useTheme();
 
   type AdminTab = 
     | 'overview' 
     | 'users' 
     | 'rbac'
     | 'circulars' 
+    | 'push_alerts'
     | 'academic' 
     | 'events' 
     | 'placements' 
@@ -233,6 +239,7 @@ export const AdminView: React.FC = () => {
     { id: 'users', label: 'User Directory', icon: Users, badge: pendingUsers.length },
     { id: 'rbac', label: 'Access Control & RBAC Matrix', icon: ShieldCheck },
     { id: 'circulars', label: 'Circulars & Notices', icon: Bell, badge: circulars.length },
+    { id: 'push_alerts', label: 'Student Push Alerts', icon: Smartphone },
     { id: 'academic', label: 'Schools & Departments', icon: Building2, badge: schools.length },
     { id: 'events', label: 'Events & Seminars', icon: Calendar, badge: events.length },
     { id: 'placements', label: 'Placement Drives', icon: Briefcase, badge: placements.length },
@@ -316,6 +323,24 @@ export const AdminView: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              className="px-3.5 py-2 rounded-2xl bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white flex items-center gap-2.5 text-xs transition-colors cursor-pointer"
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {isDark ? (
+                <>
+                  <Sun className="w-4 h-4 text-amber-400" />
+                  <span className="font-medium text-[11px]">Light Mode</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="w-4 h-4 text-indigo-400" />
+                  <span className="font-medium text-[11px]">Dark Mode</span>
+                </>
+              )}
+            </button>
+
             <div className="px-3.5 py-2 rounded-2xl bg-slate-950 border border-slate-800 flex items-center gap-2.5 text-xs">
               <div className={`w-2.5 h-2.5 rounded-full ${isFirestoreLive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
               <div className="text-left">
@@ -736,6 +761,9 @@ export const AdminView: React.FC = () => {
 
       {/* TAB CONTENT: Circulars & Announcements */}
       {activeTab === 'circulars' && <CircularsManager />}
+
+      {/* TAB CONTENT: Student Push Alerts */}
+      {activeTab === 'push_alerts' && <StudentPushManager />}
 
       {/* TAB CONTENT: Schools & Departments */}
       {activeTab === 'academic' && <SchoolsDepartmentsManager />}

@@ -1,32 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useAppStore } from '../../core/store/appStore';
+import { useTheme } from '../../core/theme/ThemeContext';
 import { Bell, Search, Sparkles, Sun, Moon } from 'lucide-react';
 import { GRIEmblem } from '../common/GRIEmblem';
 
 export const AppHeader: React.FC = () => {
   const { currentUser, setLoginModalOpen, setTab, setSearchOpen, circulars } = useAppStore();
   const unreadAlerts = circulars.filter(c => c.isImportant).length;
-  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+  const { isDark, toggleTheme } = useTheme();
 
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, []);
-
-  const toggleTheme = () => {
-    const next = !isDark;
-    setIsDark(next);
-    if (next) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('gri_theme_mode', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('gri_theme_mode', 'light');
-    }
-  };
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-slate-800">
