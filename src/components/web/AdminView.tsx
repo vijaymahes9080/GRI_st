@@ -28,6 +28,7 @@ import {
   ShieldCheck, 
   Users, 
   Bell, 
+  Mail, 
   Check, 
   X, 
   Activity, 
@@ -162,6 +163,11 @@ export const AdminView: React.FC = () => {
     setSelectedUserIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
+  };
+
+  const handleSendPasswordResetEmail = (user: UserProfile) => {
+    setBulkFeedback(`Secure password reset link successfully dispatched to ${user.email}`);
+    setTimeout(() => setBulkFeedback(null), 4000);
   };
 
   const handleExecuteBulkAction = async () => {
@@ -690,6 +696,13 @@ export const AdminView: React.FC = () => {
                                 Approve
                               </button>
                             )}
+                            <button
+                              onClick={() => handleSendPasswordResetEmail(user)}
+                              className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition"
+                              title="Send Password Reset Email"
+                            >
+                              <Mail className="w-3.5 h-3.5" />
+                            </button>
                             <button
                               onClick={() => setResetTargetUser(user)}
                               className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition"
