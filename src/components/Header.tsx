@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Platform } from 'react-native';
-import { ArrowLeft, Menu } from 'lucide-react-native';
+import { ArrowLeft, Menu, Search } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { Breadcrumbs } from './Breadcrumbs';
 
 export interface HeaderProps {
   title: string;
@@ -49,29 +50,37 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <View className={`flex-row items-center justify-between px-6 py-4 ${bgClass}`}>
-      <View className="flex-row items-center flex-1">
-        {showBack ? (
-          <TouchableOpacity onPress={() => router.back()} className={`mr-4 p-2 rounded-lg ${buttonBg}`} activeOpacity={0.7}>
-            <ArrowLeft size={20} color={iconColor} />
-          </TouchableOpacity>
-        ) : showMenu ? (
-          <TouchableOpacity onPress={handleMenuPress} className={`mr-4 p-2 rounded-lg ${buttonBg}`} activeOpacity={0.7}>
-            <Menu size={20} color={iconColor} />
-          </TouchableOpacity>
-        ) : null}
-        <View className="flex-1">
-          <Text className={`text-xl font-bold tracking-tight ${textColor}`} numberOfLines={1}>
-            {title}
-          </Text>
-          {subtitle && (
-            <Text className={`text-xs mt-0.5 font-medium ${subtitleColor}`} numberOfLines={1}>
-              {subtitle}
+    <View className="flex-col">
+      <View className={`flex-row items-center justify-between px-6 py-4 ${bgClass}`}>
+        <View className="flex-row items-center flex-1">
+          {showBack ? (
+            <TouchableOpacity onPress={() => router.back()} className={`mr-4 p-2 rounded-lg ${buttonBg}`} activeOpacity={0.7}>
+              <ArrowLeft size={20} color={iconColor} />
+            </TouchableOpacity>
+          ) : showMenu ? (
+            <TouchableOpacity onPress={handleMenuPress} className={`mr-4 p-2 rounded-lg ${buttonBg}`} activeOpacity={0.7}>
+              <Menu size={20} color={iconColor} />
+            </TouchableOpacity>
+          ) : null}
+          <View className="flex-1">
+            <Text className={`text-xl font-bold tracking-tight ${textColor}`} numberOfLines={1}>
+              {title}
             </Text>
-          )}
+            {subtitle && (
+              <Text className={`text-xs mt-0.5 font-medium ${subtitleColor}`} numberOfLines={1}>
+                {subtitle}
+              </Text>
+            )}
+          </View>
+        </View>
+        <View className="flex-row items-center space-x-2">
+          <TouchableOpacity onPress={() => router.push('/search')} className={`p-2 rounded-lg ${buttonBg} ml-2`} activeOpacity={0.7}>
+            <Search size={20} color={iconColor} />
+          </TouchableOpacity>
+          {rightAction && <View className="ml-2">{rightAction}</View>}
         </View>
       </View>
-      {rightAction && <View className="ml-4">{rightAction}</View>}
+      <Breadcrumbs />
     </View>
   );
 };

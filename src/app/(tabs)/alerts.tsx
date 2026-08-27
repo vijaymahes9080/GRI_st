@@ -50,20 +50,10 @@ export default function AlertsScreen() {
 
   useEffect(() => {
     fetchNotifications();
-    let ws: WebSocket | null = null;
-    try {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      ws = new WebSocket(`${protocol}//${window.location.host}/ws/announcements`);
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'NOTIFICATION' || data.type === 'EMERGENCY_ALERT') fetchNotifications();
-        } catch {}
-      };
-    } catch (e) {
-      console.warn('WebSocket connection failed, falling back to polling.');
-    }
-    return () => { if (ws) ws.close(); };
+    const interval = setInterval(() => {
+      fetchNotifications();
+    }, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleRefresh = async () => {

@@ -13,19 +13,27 @@ import {
   BookOpen,
   Award,
   CreditCard,
-  QrCode
+  QrCode,
+  Sparkles,
+  Calendar,
+  Activity,
+  FileText,
+  CheckCircle2,
+  Briefcase
 } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { useAuthStore } from '../../core/auth/authStore';
 import { useResponsive } from '../../core/responsive/useResponsive';
 import { themeTokens } from '../../core/theme/tokens';
-import { Card } from '../../components/Card';
+import { RoleSwitcherModal } from '../../components/dashboard/RoleSwitcherModal';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const { isTablet } = useResponsive();
   const { colors } = themeTokens;
+
+  const [roleSwitcherOpen, setRoleSwitcherOpen] = useState(false);
 
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out of GRI Portal?', [
@@ -41,22 +49,130 @@ export default function ProfileScreen() {
     ]);
   };
 
+  const getRoleBadgeInfo = () => {
+    if (!user) {
+      return {
+        roleLabel: 'Guest / Public Visitor',
+        idLabel: 'Visitor ID',
+        idValue: 'GUEST-2026',
+        field1Label: 'Category',
+        field1Value: 'Prospective / Public',
+        field2Label: 'Access',
+        field2Value: 'Public Portal',
+        color: '#D97706',
+      };
+    }
+    switch (user.role) {
+      case 'STUDENT':
+        return {
+          roleLabel: 'Undergraduate Student',
+          idLabel: 'Register Number',
+          idValue: user.rollNumber || '21BCA042',
+          field1Label: 'Programme',
+          field1Value: user.program || 'BCA (Hons)',
+          field2Label: 'Validity',
+          field2Value: '2023 - 2026',
+          color: '#2563EB',
+        };
+      case 'FACULTY':
+        return {
+          roleLabel: 'Academic Faculty',
+          idLabel: 'Employee Code',
+          idValue: user.rollNumber || 'EMP-FAC-1048',
+          field1Label: 'Designation',
+          field1Value: user.designation || 'Associate Professor',
+          field2Label: 'Affiliation',
+          field2Value: 'GRI Permanent Staff',
+          color: '#059669',
+        };
+      case 'RESEARCH_SCHOLAR':
+        return {
+          roleLabel: 'Doctoral Research Scholar',
+          idLabel: 'Ph.D. Reg. Number',
+          idValue: user.rollNumber || '23PHDRD009',
+          field1Label: 'Doctoral Category',
+          field1Value: 'SRF (UGC Funded)',
+          field2Label: 'Supervisor',
+          field2Value: 'Dr. R. Subburaman',
+          color: '#7C3AED',
+        };
+      case 'UNIVERSITY_ADMIN':
+      case 'ADMIN':
+      case 'SYSTEM_ADMIN':
+      case 'DEPARTMENT_ADMIN':
+      case 'WARDEN':
+        return {
+          roleLabel: 'Institutional Administrator',
+          idLabel: 'Officer Code',
+          idValue: user.rollNumber || 'ADM-REG-001',
+          field1Label: 'Portfolio',
+          field1Value: user.designation || 'Registrar & CAO',
+          field2Label: 'Governance',
+          field2Value: 'BoM / Admin Council',
+          color: '#DC2626',
+        };
+      default:
+        return {
+          roleLabel: 'University Member',
+          idLabel: 'ID Number',
+          idValue: user.rollNumber || 'GRI-2026',
+          field1Label: 'Role',
+          field1Value: user.role,
+          field2Label: 'Status',
+          field2Value: 'Active',
+          color: '#2563EB',
+        };
+    }
+  };
+
+  const badgeInfo = getRoleBadgeInfo();
+
+  const getRoleMenuItems = () => {
+    if (!user || user.role === 'STUDENT') {
+      return [
+        { title: 'My Courses & CBCS Grades', icon: BookOpen, color: '#2563EB', action: () => router.push('/(tabs)/academics' as any) },
+        { title: 'ESE Examination Hall Ticket', icon: Award, color: '#059669', action: () => router.push('/(tabs)/home' as any) },
+        { title: 'Fee Payments & Receipts', icon: CreditCard, color: '#D97706', action: () => router.push('/(tabs)/services' as any) },
+        { title: 'Hostel Room & Mess Account', icon: ShieldCheck, color: '#7C3AED', action: () => router.push('/infrastructure/hostels' as any) },
+      ];
+    }
+    if (user.role === 'FACULTY') {
+      return [
+        { title: 'Continuous Assessment (CIA) Marks', icon: FileText, color: '#2563EB', action: () => router.push('/(tabs)/home' as any) },
+        { title: 'e-Leave & On-Duty Permissions', icon: Calendar, color: '#7C3AED', action: () => router.push('/(tabs)/home' as any) },
+        { title: 'CAS Performance Appraisal & IRINS', icon: Award, color: '#059669', action: () => router.push('/research' as any) },
+        { title: 'Mentee Student Performance Registry', icon: User, color: '#D97706', action: () => router.push('/(tabs)/academics' as any) },
+      ];
+    }
+    if (user.role === 'RESEARCH_SCHOLAR') {
+      return [
+        { title: 'Doctoral Progress Reports & RAC', icon: FileText, color: '#7C3AED', action: () => router.push('/(tabs)/home' as any) },
+        { title: 'Ph.D. Coursework & Examination', icon: Award, color: '#2563EB', action: () => router.push('/examination/phd_tracking' as any) },
+        { title: 'Fellowship Claim Verification', icon: CheckCircle2, color: '#059669', action: () => router.push('/(tabs)/home' as any) },
+        { title: 'Central Instrumentation (CIF) Lab Slots', icon: Sparkles, color: '#D97706', action: () => router.push('/(tabs)/home' as any) },
+      ];
+    }
+    // Admin
+    return [
+      { title: 'Governance & Approval Queues', icon: CheckCircle2, color: '#DC2626', action: () => router.push('/admin/approval_queue' as any) },
+      { title: 'Institutional Circular Dispatcher', icon: Bell, color: '#D97706', action: () => router.push('/(tabs)/home' as any) },
+      { title: 'Backend Health & Diagnostics', icon: Activity, color: '#2563EB', action: () => router.push('/admin/diagnostics' as any) },
+      { title: 'Admin Command Hub', icon: ShieldCheck, color: '#059669', action: () => router.push('/admin/dashboard' as any) },
+    ];
+  };
+
   const menuGroups = [
     {
-      title: 'Academic Profile',
-      items: [
-        { title: 'My Courses & Grades', icon: BookOpen, color: colors.primary, action: () => router.push('/(tabs)/academics' as any) },
-        { title: 'Certificates & Awards', icon: Award, color: colors.warning, action: () => {} },
-        { title: 'Fee Payments', icon: CreditCard, color: colors.success, action: () => router.push('/(tabs)/services' as any) },
-      ]
+      title: `${badgeInfo.roleLabel} Services`,
+      items: getRoleMenuItems(),
     },
     {
-      title: 'Preferences & Security',
+      title: 'Preferences & System Security',
       items: [
-        { title: 'Notification Settings', icon: Bell, color: colors.info, action: () => {} },
-        { title: 'Security & Privacy', icon: Lock, color: colors.textSecondary, action: () => {} },
-        { title: 'RBAC Scope & Role', icon: ShieldCheck, color: colors.tertiary, action: () => {} },
-        { title: 'Help & Grievances', icon: HelpCircle, color: colors.secondary, action: () => router.push('/(tabs)/services' as any) },
+        { title: 'Switch User Persona (Multi-User)', icon: Sparkles, color: '#2563EB', action: () => setRoleSwitcherOpen(true) },
+        { title: 'Notification Channels', icon: Bell, color: '#059669', action: () => router.push('/notifications' as any) },
+        { title: 'Security, 2FA & Privacy', icon: Lock, color: '#475569', action: () => {} },
+        { title: 'Institutional Helpdesk & Grievances', icon: HelpCircle, color: '#DC2626', action: () => router.push('/contact' as any) },
       ]
     }
   ];
@@ -64,62 +180,75 @@ export default function ProfileScreen() {
   return (
     <View className="flex-1 bg-slate-50">
       <ScrollView className="flex-1" contentContainerStyle={{ padding: isTablet ? 32 : 20, paddingTop: 60 }} showsVerticalScrollIndicator={false}>
-        <View style={{ maxWidth: 800, width: '100%', alignSelf: 'center' }}>
+        <View style={{ maxWidth: 840, width: '100%', alignSelf: 'center' }}>
           
           <Animated.View entering={FadeIn.duration(400)} className="flex-row items-center justify-between mb-6">
-            <Text className="text-3xl font-bold text-slate-900">My Profile</Text>
-            <TouchableOpacity className="p-3 bg-white rounded-full shadow-sm border border-slate-100">
-              <Settings size={22} color={colors.textSecondary} />
+            <View>
+              <Text className="text-3xl font-bold text-slate-900">Institutional Profile</Text>
+              <Text className="text-xs text-slate-500 font-medium">Gandhigram Rural Institute Digital ID</Text>
+            </View>
+            <TouchableOpacity 
+              onPress={() => setRoleSwitcherOpen(true)}
+              className="px-3.5 py-2 bg-white rounded-full shadow-xs border border-slate-200 flex-row items-center"
+            >
+              <Sparkles size={16} color={colors.primary} className="mr-1.5" />
+              <Text className="text-xs font-bold text-primary-700">Switch Role</Text>
             </TouchableOpacity>
           </Animated.View>
 
           {/* Digital ID Card */}
           <Animated.View entering={FadeInDown.delay(100).duration(400)} className="mb-8">
-            <View className="bg-white border border-primary-200 rounded-3xl overflow-hidden shadow-sm">
-              {/* Pattern Background */}
-              <View className="absolute inset-0 opacity-5">
-                <View className="absolute -right-20 -top-20 w-64 h-64 border-[40px] border-primary-900 rounded-full" />
-                <View className="absolute -left-10 -bottom-10 w-40 h-40 border-[20px] border-primary-900 rounded-full" />
-              </View>
-              
+            <View className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
               <View className="p-6">
                 <View className="flex-row justify-between items-start mb-6">
-                  <View className="bg-primary-50 px-3 py-1.5 rounded-lg border border-primary-100">
-                    <Text className="text-primary-800 text-xs font-bold tracking-widest uppercase">
+                  <View className="bg-slate-900 px-3 py-1.5 rounded-xl">
+                    <Text className="text-white text-[11px] font-bold tracking-widest uppercase">
                       Gandhigram Rural Institute
                     </Text>
                   </View>
-                  <QrCode size={32} color={colors.primary} />
+                  <View className="p-2 bg-slate-50 rounded-xl border border-slate-200">
+                    <QrCode size={28} color={colors.primary} />
+                  </View>
                 </View>
 
                 <View className="flex-row items-center mb-6">
-                  <View className="w-20 h-20 rounded-2xl bg-slate-100 border-2 border-primary-100 shadow-sm overflow-hidden mr-5">
+                  <View className="w-20 h-20 rounded-2xl bg-slate-100 border-2 border-slate-200 shadow-xs overflow-hidden mr-5">
                     <Image 
-                      source={{ uri: 'https://i.pravatar.cc/150?u=a042581f4e29026704d' }} 
+                      source={{ uri: user?.avatarUrl || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80' }} 
                       style={{ width: '100%', height: '100%' }} 
                     />
                   </View>
                   <View className="flex-1">
-                    <Text className="text-2xl font-bold text-slate-900 mb-1">
-                      {user?.fullName || 'Vijay Kumar'}
+                    <View className="flex-row items-center gap-2 mb-1 flex-wrap">
+                      <Text className="text-2xl font-bold text-slate-900">
+                        {user?.fullName || 'Vijay Kumar S.'}
+                      </Text>
+                    </View>
+                    <View 
+                      className="px-2.5 py-0.5 rounded-md self-start mb-1.5"
+                      style={{ backgroundColor: `${badgeInfo.color}15` }}
+                    >
+                      <Text className="text-xs font-bold uppercase tracking-wider" style={{ color: badgeInfo.color }}>
+                        {badgeInfo.roleLabel}
+                      </Text>
+                    </View>
+                    <Text className="text-xs font-semibold text-slate-600">
+                      {badgeInfo.idLabel}: <Text className="text-slate-900 font-bold">{badgeInfo.idValue}</Text>
                     </Text>
-                    <Text className="text-primary-700 font-medium mb-1">
-                      {user?.rollNumber || '21BCA042'} • {user?.role || 'STUDENT'}
-                    </Text>
-                    <Text className="text-sm text-slate-500" numberOfLines={1}>
-                      {user?.department || 'Dept. of Computer Science'}
+                    <Text className="text-xs text-slate-500 mt-0.5" numberOfLines={1}>
+                      {user?.department || 'Dept. of Computer Science & Applications'}
                     </Text>
                   </View>
                 </View>
 
-                <View className="flex-row bg-slate-50 rounded-2xl p-4 mt-2 border border-slate-100">
-                  <View className="flex-1 border-r border-slate-200">
-                    <Text className="text-slate-500 text-xs mb-1 uppercase tracking-wider font-semibold">Programme</Text>
-                    <Text className="text-slate-900 font-bold">BCA (Hons)</Text>
+                <View className="flex-row bg-slate-50 rounded-2xl p-4 mt-2 border border-slate-200">
+                  <View className="flex-1 border-r border-slate-200 pr-3">
+                    <Text className="text-slate-500 text-[10px] mb-1 uppercase tracking-wider font-bold">{badgeInfo.field1Label}</Text>
+                    <Text className="text-slate-900 font-bold text-xs" numberOfLines={1}>{badgeInfo.field1Value}</Text>
                   </View>
                   <View className="flex-1 pl-4">
-                    <Text className="text-slate-500 text-xs mb-1 uppercase tracking-wider font-semibold">Validity</Text>
-                    <Text className="text-slate-900 font-bold">2023 - 2026</Text>
+                    <Text className="text-slate-500 text-[10px] mb-1 uppercase tracking-wider font-bold">{badgeInfo.field2Label}</Text>
+                    <Text className="text-slate-900 font-bold text-xs" numberOfLines={1}>{badgeInfo.field2Value}</Text>
                   </View>
                 </View>
               </View>
@@ -133,10 +262,10 @@ export default function ProfileScreen() {
               entering={FadeInDown.delay(200 + groupIdx * 100).duration(400)} 
               className="mb-8"
             >
-              <Text className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 ml-2">
+              <Text className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 ml-2">
                 {group.title}
               </Text>
-              <View className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+              <View className="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
                 {group.items.map((item, idx) => {
                   const Icon = item.icon;
                   const isLast = idx === group.items.length - 1;
@@ -145,15 +274,18 @@ export default function ProfileScreen() {
                       key={idx}
                       onPress={item.action}
                       activeOpacity={0.7}
-                      className={`flex-row items-center justify-between p-4 bg-white ${!isLast ? 'border-b border-slate-50' : ''}`}
+                      className={`flex-row items-center justify-between p-4 bg-white ${!isLast ? 'border-b border-slate-100' : ''}`}
                     >
-                      <View className="flex-row items-center">
-                        <View className="w-10 h-10 rounded-2xl bg-slate-50 items-center justify-center mr-4 border border-slate-100">
-                          <Icon size={20} color={item.color} />
+                      <View className="flex-row items-center flex-1 pr-2">
+                        <View 
+                          className="w-10 h-10 rounded-xl items-center justify-center mr-3.5"
+                          style={{ backgroundColor: `${item.color}15` }}
+                        >
+                          <Icon size={18} color={item.color} />
                         </View>
-                        <Text className="text-base font-medium text-slate-800">{item.title}</Text>
+                        <Text className="text-sm font-semibold text-slate-800 flex-1">{item.title}</Text>
                       </View>
-                      <ChevronRight size={20} color={colors.textMuted} />
+                      <ChevronRight size={18} color="#94A3B8" />
                     </TouchableOpacity>
                   );
                 })}
@@ -166,15 +298,22 @@ export default function ProfileScreen() {
             <TouchableOpacity
               onPress={handleLogout}
               activeOpacity={0.7}
-              className="bg-red-50 border border-red-100 p-4 rounded-2xl flex-row items-center justify-center shadow-sm"
+              className="bg-red-50 border border-red-200 p-4 rounded-2xl flex-row items-center justify-center shadow-xs"
             >
-              <LogOut size={20} color={colors.error} />
-              <Text className="text-base font-bold text-red-600 ml-2">Sign Out</Text>
+              <LogOut size={18} color={colors.error} />
+              <Text className="text-sm font-bold text-red-600 ml-2">Sign Out of GRI Portal</Text>
             </TouchableOpacity>
           </Animated.View>
           
         </View>
       </ScrollView>
+
+      {/* Role Switcher Modal */}
+      <RoleSwitcherModal
+        visible={roleSwitcherOpen}
+        onClose={() => setRoleSwitcherOpen(false)}
+      />
+
     </View>
   );
 }

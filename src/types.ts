@@ -106,6 +106,13 @@ export interface UserProfile {
   smsAlertsEnabled?: boolean;
   whatsappAlertsEnabled?: boolean;
   emailCircularsEnabled?: boolean;
+  notificationPreferences?: {
+    subscribedCategories?: string[];
+    pushEnabled?: boolean;
+    emailAlerts?: boolean;
+    whatsappAlerts?: boolean;
+    soundEffects?: boolean;
+  };
   
   // Student Specific
   attendance?: number;

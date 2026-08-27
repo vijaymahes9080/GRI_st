@@ -1,172 +1,222 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, TextInput } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
   Search,
   Bell,
-  Calendar,
-  BookOpen,
-  FileText,
-  CreditCard,
+  GraduationCap,
+  Users,
   Briefcase,
-  MapPin,
-  Clock,
-  ArrowRight,
-  TrendingUp,
+  BookOpen,
+  ShieldCheck,
+  Globe,
+  Sparkles,
+  ChevronDown
 } from 'lucide-react-native';
-import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
-import { Card } from '../../components/Card';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useAuthStore } from '../../core/auth/authStore';
 import { useResponsive } from '../../core/responsive/useResponsive';
 import { themeTokens } from '../../core/theme/tokens';
+import { StudentDashboard } from '../../components/dashboard/StudentDashboard';
+import { FacultyDashboard } from '../../components/dashboard/FacultyDashboard';
+import { ResearchScholarDashboard } from '../../components/dashboard/ResearchScholarDashboard';
+import { AdminDashboardView } from '../../components/dashboard/AdminDashboardView';
+import { GuestPublicDashboard } from '../../components/dashboard/GuestPublicDashboard';
+import { RoleSwitcherModal } from '../../components/dashboard/RoleSwitcherModal';
+import { ServiceActionModal, ServiceActionModalData } from '../../components/dashboard/ServiceActionModal';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { user } = useAuthStore();
   const { isTablet } = useResponsive();
   const { colors } = themeTokens;
 
-  const quickActions = [
-    { title: 'Timetable', icon: Calendar, color: '#3B82F6', route: '/(tabs)/academics' },
-    { title: 'Attendance', icon: TrendingUp, color: '#10B981', route: '/(tabs)/academics' },
-    { title: 'Results', icon: FileText, color: '#8B5CF6', route: '/(tabs)/examinations' },
-    { title: 'Fees', icon: CreditCard, color: '#F59E0B', route: '/(tabs)/services' },
-    { title: 'Library', icon: BookOpen, color: '#EC4899', route: '/(tabs)/services' },
-    { title: 'Placements', icon: Briefcase, color: '#14B8A6', route: '/(tabs)/profile' },
-  ];
+  const [roleSwitcherOpen, setRoleSwitcherOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<ServiceActionModalData | null>(null);
+
+  const getRoleHeaderBadge = () => {
+    if (!user) {
+      return {
+        label: 'Public / Guest',
+        icon: Globe,
+        color: '#F59E0B',
+        bg: 'bg-amber-500/20',
+      };
+    }
+    switch (user.role) {
+      case 'STUDENT':
+        return {
+          label: 'Student Portal',
+          icon: GraduationCap,
+          color: '#60A5FA',
+          bg: 'bg-blue-500/20',
+        };
+      case 'FACULTY':
+        return {
+          label: 'Faculty Portal',
+          icon: Briefcase,
+          color: '#34D399',
+          bg: 'bg-emerald-500/20',
+        };
+      case 'RESEARCH_SCHOLAR':
+        return {
+          label: 'Research Scholar',
+          icon: BookOpen,
+          color: '#C084FC',
+          bg: 'bg-purple-500/20',
+        };
+      case 'UNIVERSITY_ADMIN':
+      case 'ADMIN':
+      case 'SYSTEM_ADMIN':
+      case 'DEPARTMENT_ADMIN':
+      case 'WARDEN':
+        return {
+          label: 'Admin Command',
+          icon: ShieldCheck,
+          color: '#F87171',
+          bg: 'bg-red-500/20',
+        };
+      default:
+        return {
+          label: user.role,
+          icon: Users,
+          color: '#93C5FD',
+          bg: 'bg-blue-500/20',
+        };
+    }
+  };
+
+  const roleMeta = getRoleHeaderBadge();
+  const RoleIcon = roleMeta.icon;
+
+  const renderDashboardByRole = () => {
+    if (!user) {
+      return <GuestPublicDashboard onOpenRoleSwitcher={() => setRoleSwitcherOpen(true)} />;
+    }
+
+    switch (user.role) {
+      case 'STUDENT':
+        return (
+          <StudentDashboard
+            user={user}
+            onOpenService={setSelectedService}
+            onOpenRoleSwitcher={() => setRoleSwitcherOpen(true)}
+          />
+        );
+      case 'FACULTY':
+        return (
+          <FacultyDashboard
+            user={user}
+            onOpenService={setSelectedService}
+            onOpenRoleSwitcher={() => setRoleSwitcherOpen(true)}
+          />
+        );
+      case 'RESEARCH_SCHOLAR':
+        return (
+          <ResearchScholarDashboard
+            user={user}
+            onOpenService={setSelectedService}
+            onOpenRoleSwitcher={() => setRoleSwitcherOpen(true)}
+          />
+        );
+      case 'UNIVERSITY_ADMIN':
+      case 'ADMIN':
+      case 'SYSTEM_ADMIN':
+      case 'DEPARTMENT_ADMIN':
+      case 'WARDEN':
+        return (
+          <AdminDashboardView
+            user={user}
+            onOpenService={setSelectedService}
+            onOpenRoleSwitcher={() => setRoleSwitcherOpen(true)}
+          />
+        );
+      default:
+        return <GuestPublicDashboard onOpenRoleSwitcher={() => setRoleSwitcherOpen(true)} />;
+    }
+  };
 
   return (
     <View className="flex-1 bg-slate-50">
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: isTablet ? 32 : 20, paddingTop: 60 }} showsVerticalScrollIndicator={false}>
-        <View style={{ maxWidth: 800, width: '100%', alignSelf: 'center' }}>
-          
-          {/* Header Section */}
-          <Animated.View entering={FadeIn.duration(400)} className="flex-row items-center justify-between mb-8">
-            <View className="flex-row items-center flex-1">
-              <View className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden mr-4 border-2 border-white shadow-sm">
-                <Image 
-                  source={{ uri: 'https://i.pravatar.cc/150?u=a042581f4e29026704d' }} 
-                  style={{ width: '100%', height: '100%' }} 
-                />
-              </View>
-              <View>
-                <Text className="text-sm font-medium text-slate-500 mb-0.5">Good morning,</Text>
-                <Text className="text-xl font-bold text-slate-900">Vijay Kumar</Text>
-              </View>
+      
+      {/* Top Institutional Header */}
+      <View className="bg-slate-900 pt-14 pb-4 px-5 z-10 shadow-sm border-b border-slate-800">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center flex-1 pr-2">
+            <View className="w-10 h-10 bg-primary-600 rounded-2xl items-center justify-center mr-3 p-1 shadow-sm">
+              <GraduationCap size={22} color="#FFFFFF" />
             </View>
-            
-            <TouchableOpacity className="p-3 bg-white rounded-full shadow-sm border border-slate-100">
-              <View className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full z-10 border border-white" />
-              <Bell size={22} color={colors.textSecondary} />
-            </TouchableOpacity>
-          </Animated.View>
+            <View>
+              <Text className="text-xl font-bold text-white tracking-tight">GRI Portal</Text>
+              <Text className="text-[10px] text-slate-300 uppercase font-semibold tracking-wider">
+                Gandhigram Rural Institute
+              </Text>
+            </View>
+          </View>
 
-          {/* Smart Search */}
-          <Animated.View entering={FadeInDown.delay(100).duration(400)} className="mb-8">
-            <View className="flex-row items-center bg-white h-14 rounded-2xl px-4 shadow-sm border border-slate-100">
-              <Search size={20} color={colors.textMuted} />
+          <View className="flex-row items-center gap-2">
+            {/* Persona Switch Button */}
+            <TouchableOpacity 
+              onPress={() => setRoleSwitcherOpen(true)}
+              className={`flex-row items-center px-3 py-1.5 rounded-full border border-white/20 ${roleMeta.bg}`}
+              activeOpacity={0.8}
+            >
+              <RoleIcon size={14} color={roleMeta.color} />
+              <Text className="text-xs font-bold text-white ml-1.5 mr-1" numberOfLines={1}>
+                {roleMeta.label}
+              </Text>
+              <ChevronDown size={12} color="#94A3B8" />
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              onPress={() => router.push('/notifications')}
+              className="bg-slate-800 p-2.5 rounded-full border border-slate-700"
+            >
+              <Bell size={18} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+
+      {/* Main Body */}
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ padding: isTablet ? 32 : 16 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={{ maxWidth: 840, width: '100%', alignSelf: 'center' }}>
+          
+          {/* Smart Institutional Search */}
+          <Animated.View entering={FadeInDown.delay(50).duration(400)} className="mb-5 mt-1">
+            <View className="flex-row items-center bg-white h-13 rounded-2xl px-4 shadow-xs border border-slate-200">
+              <Search size={18} color={colors.textMuted} />
               <TextInput 
-                placeholder="Search courses, faculty, or notices..."
+                placeholder="Search courses, circulars, faculty, or services..."
                 placeholderTextColor={colors.textMuted}
-                className="flex-1 ml-3 h-full text-base font-medium text-slate-900"
+                className="flex-1 ml-3 h-full text-sm font-medium text-slate-900"
               />
             </View>
           </Animated.View>
 
-          {/* Important Notice */}
-          <Animated.View entering={FadeInDown.delay(200).duration(400)} className="mb-8">
-            <View className="bg-primary-500 p-5 rounded-3xl flex-row items-center justify-between shadow-lg shadow-primary-500/20 overflow-hidden">
-              <View className="absolute -right-10 -top-10 w-32 h-32 bg-white/10 rounded-full" />
-              <View className="flex-1 pr-6 z-10">
-                <Text className="text-xs font-bold text-primary-100 tracking-widest uppercase mb-1.5">
-                  End Semester
-                </Text>
-                <Text className="text-white font-bold text-lg mb-2">
-                  Hall Tickets Available
-                </Text>
-                <Text className="text-sm text-primary-100 leading-relaxed">
-                  Download your hall ticket from the examination portal before May 15th.
-                </Text>
-              </View>
-              <TouchableOpacity className="bg-white p-3 rounded-full shadow-sm z-10">
-                <ArrowRight size={20} color={colors.primary} />
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
+          {/* Dynamic Role-Based View */}
+          {renderDashboardByRole()}
 
-          {/* Academic Progress */}
-          <Animated.View entering={FadeInDown.delay(300).duration(400)} className="mb-8">
-            <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-lg font-bold text-slate-900">Today's Overview</Text>
-            </View>
-            <View className="flex-row gap-4">
-              <Card elevation="sm" className="flex-1 bg-white p-5 rounded-3xl" onPress={() => {}}>
-                <View className="w-10 h-10 rounded-full bg-emerald-50 items-center justify-center mb-3">
-                  <TrendingUp size={20} color={colors.success} />
-                </View>
-                <Text className="text-3xl font-bold text-slate-900">92%</Text>
-                <Text className="text-sm font-medium text-slate-500 mt-1">Attendance</Text>
-              </Card>
-              <Card elevation="sm" className="flex-1 bg-white p-5 rounded-3xl" onPress={() => {}}>
-                <View className="w-10 h-10 rounded-full bg-orange-50 items-center justify-center mb-3">
-                  <Clock size={20} color={colors.warning} />
-                </View>
-                <Text className="text-sm font-bold text-slate-900 mb-1" numberOfLines={1}>CS301 - Data Structures</Text>
-                <Text className="text-xs font-medium text-slate-500 mb-2">10:30 AM • Room 402</Text>
-                <View className="bg-orange-100 px-2 py-1 rounded self-start">
-                  <Text className="text-xs font-bold text-orange-700">Next Class</Text>
-                </View>
-              </Card>
-            </View>
-          </Animated.View>
-
-          {/* Quick Actions */}
-          <Animated.View entering={FadeInDown.delay(400).duration(400)} className="mb-8">
-            <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-lg font-bold text-slate-900">Quick Actions</Text>
-            </View>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
-              {quickActions.map((action, index) => {
-                const Icon = action.icon;
-                return (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => router.push(action.route as any)}
-                    style={{ width: isTablet ? 'calc(25% - 12px)' : 'calc(33.333% - 11px)', alignItems: 'center' }}
-                    activeOpacity={0.7}
-                  >
-                    <View className="w-16 h-16 rounded-2xl bg-white items-center justify-center shadow-sm border border-slate-100 mb-2">
-                      <Icon size={26} color={action.color} strokeWidth={2} />
-                    </View>
-                    <Text className="text-xs font-semibold text-slate-600 text-center">{action.title}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </Animated.View>
-
-          {/* Campus Gateway */}
-          <Animated.View entering={FadeInDown.delay(500).duration(400)} className="mb-10">
-            <Card 
-              onPress={() => router.push('/(tabs)/discover')}
-              className="bg-primary-50 p-6 rounded-3xl flex-row items-center justify-between overflow-hidden border border-primary-100"
-              elevation="none"
-            >
-              <View className="absolute right-0 top-0 opacity-5">
-                <MapPin size={120} color={colors.primary} />
-              </View>
-              <View className="flex-1 pr-6 z-10">
-                <Text className="text-lg font-bold text-primary-900 mb-1.5">Campus Map & Services</Text>
-                <Text className="text-sm text-primary-700 leading-relaxed">
-                  Navigate facilities, find departments, and access institutional services.
-                </Text>
-              </View>
-              <View className="bg-white p-4 rounded-full z-10 shadow-sm border border-primary-100">
-                <MapPin size={24} color={colors.primary} />
-              </View>
-            </Card>
-          </Animated.View>
-          
         </View>
       </ScrollView>
+
+      {/* Role Switcher Modal */}
+      <RoleSwitcherModal
+        visible={roleSwitcherOpen}
+        onClose={() => setRoleSwitcherOpen(false)}
+      />
+
+      {/* Interactive Service Action Modal */}
+      <ServiceActionModal
+        visible={!!selectedService}
+        onClose={() => setSelectedService(null)}
+        actionData={selectedService}
+      />
+
     </View>
   );
 }

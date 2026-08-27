@@ -229,8 +229,7 @@ export const LiveVoiceConversationModal: React.FC<LiveVoiceConversationModalProp
         }
       };
 
-      ws.onerror = (e) => {
-        console.error('[Live WS Error]', e);
+      ws.onerror = (_e) => {
         setErrorMessage('Could not connect to Live Audio WebSocket. Using intelligent voice fallback.');
         setIsConnecting(false);
       };
@@ -241,7 +240,6 @@ export const LiveVoiceConversationModal: React.FC<LiveVoiceConversationModalProp
         setStatusMessage('Live session closed');
       };
     } catch (err: any) {
-      console.error('[Live Session Error]', err);
       setErrorMessage(err?.message || 'Failed to initialize voice session');
       setIsConnecting(false);
     }

@@ -99,7 +99,7 @@ import { Permission } from '../../types';
 import { clearAllSensitiveStorage } from '../storage';
 import { useAuthStore } from '../auth/authStore';
 
-export type AppTab = 'home' | 'explore' | 'services' | 'alerts' | 'ai_chat' | 'admin' | 'profile';
+export type AppTab = 'home' | 'explore' | 'services' | 'alerts' | 'ai_chat' | 'admin' | 'profile' | 'settings';
 
 export const GUEST_USER: UserProfile = {
   id: 'guest-visitor',
@@ -152,6 +152,13 @@ interface AppState {
   updateUserCustomPermissions: (userId: string, customPermissions: Permission[], revokedPermissions: Permission[]) => Promise<void>;
   updateUserAcademicHierarchy: (userId: string, hierarchy: Partial<UserProfile>) => Promise<void>;
   updateUserContactChannels: (userId: string, data: { phone: string; email: string; alternateEmail?: string; smsAlertsEnabled?: boolean; whatsappAlertsEnabled?: boolean; emailCircularsEnabled?: boolean }) => Promise<void>;
+  updateNotificationPreferences: (prefs: {
+    subscribedCategories?: string[];
+    pushEnabled?: boolean;
+    emailAlerts?: boolean;
+    whatsappAlerts?: boolean;
+    soundEffects?: boolean;
+  }) => Promise<void>;
   sendTestChannelVerification: (userId: string, channel: 'SMS' | 'WHATSAPP' | 'EMAIL', targetValue?: string) => Promise<void>;
   
   // Password & Security Lifecycle
@@ -269,6 +276,10 @@ interface AppState {
   addGrievance: (ticket: Omit<GrievanceTicket, 'id' | 'submittedAt' | 'status'>) => Promise<void>;
   updateGrievanceStatus: (id: string, status: 'PENDING' | 'UNDER_REVIEW' | 'RESOLVED', response?: string) => Promise<void>;
 
+  // Active Service Modal for deep interactive views
+  activeServiceModal: 'exam' | 'library' | 'certificates' | 'hostel' | 'transport' | 'fees' | 'grievance' | 'careers' | null;
+  setActiveServiceModal: (service: 'exam' | 'library' | 'certificates' | 'hostel' | 'transport' | 'fees' | 'grievance' | 'careers' | null) => void;
+
   // Initialize Real-time Subscriptions
   initializeRealtimeSync: () => () => void;
 }
@@ -276,6 +287,9 @@ interface AppState {
 export const useAppStore = create<AppState>((set, get) => ({
   currentTab: 'home',
   setTab: (tab) => set({ currentTab: tab }),
+
+  activeServiceModal: null,
+  setActiveServiceModal: (service) => set({ activeServiceModal: service }),
 
   viewMode: 'desktop',
   toggleViewMode: () => set((state) => ({ viewMode: state.viewMode === 'desktop' ? 'mobile_sim' : 'desktop' })),
@@ -780,6 +794,49 @@ export const useAppStore = create<AppState>((set, get) => ({
       await saveUserProfile(updatedUser);
     } catch (e) {
       console.warn('[Firestore] Update user contacts error:', e);
+    }
+  },
+
+  updateNotificationPreferences: async (prefs) => {
+    const user = get().currentUser;
+    if (!user || !user.id) return;
+
+    const currentPrefs = user.notificationPreferences || {
+      subscribedCategories: ['exam', 'placement', 'academic', 'fees', 'events', 'hostel', 'transport', 'emergency'],
+      pushEnabled: true,
+      emailAlerts: true,
+      whatsappAlerts: true,
+      soundEffects: true,
+    };
+
+    const newNotificationPrefs = {
+      ...currentPrefs,
+      ...prefs,
+    };
+
+    const updatedUser: UserProfile = {
+      ...user,
+      notificationPreferences: newNotificationPrefs,
+      smsAlertsEnabled: prefs.pushEnabled !== undefined ? prefs.pushEnabled : user.smsAlertsEnabled,
+      whatsappAlertsEnabled: prefs.whatsappAlerts !== undefined ? prefs.whatsappAlerts : user.whatsappAlertsEnabled,
+      emailCircularsEnabled: prefs.emailAlerts !== undefined ? prefs.emailAlerts : user.emailCircularsEnabled,
+    };
+
+    set((state) => ({
+      currentUser: updatedUser,
+      usersList: state.usersList.map((u) => (u.id === user.id ? updatedUser : u)),
+    }));
+
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(`gri_notif_prefs_${user.id}`, JSON.stringify(newNotificationPrefs));
+      }
+    } catch {}
+
+    try {
+      await saveUserProfile(updatedUser);
+    } catch (e) {
+      console.warn('[Firestore] Update user notification preferences error:', e);
     }
   },
 
@@ -1784,23 +1841,23 @@ export const useAppStore = create<AppState>((set, get) => ({
     });
 
     return () => {
-      unsubCirculars();
-      unsubUsers();
-      unsubMessages();
-      unsubGrievances();
-      unsubSchools();
-      unsubEvents();
-      unsubPlacements();
-      unsubResearch();
-      unsubDocuments();
-      unsubFaqs();
-      unsubQuickLinks();
-      unsubDynamicPages();
-      unsubAiKnowledge();
-      unsubAuditLogs();
-      unsubTemplates();
-      unsubConfig();
-      unsubAuth();
+      try { if (typeof unsubCirculars === 'function') unsubCirculars(); } catch {}
+      try { if (typeof unsubUsers === 'function') unsubUsers(); } catch {}
+      try { if (typeof unsubMessages === 'function') unsubMessages(); } catch {}
+      try { if (typeof unsubGrievances === 'function') unsubGrievances(); } catch {}
+      try { if (typeof unsubSchools === 'function') unsubSchools(); } catch {}
+      try { if (typeof unsubEvents === 'function') unsubEvents(); } catch {}
+      try { if (typeof unsubPlacements === 'function') unsubPlacements(); } catch {}
+      try { if (typeof unsubResearch === 'function') unsubResearch(); } catch {}
+      try { if (typeof unsubDocuments === 'function') unsubDocuments(); } catch {}
+      try { if (typeof unsubFaqs === 'function') unsubFaqs(); } catch {}
+      try { if (typeof unsubQuickLinks === 'function') unsubQuickLinks(); } catch {}
+      try { if (typeof unsubDynamicPages === 'function') unsubDynamicPages(); } catch {}
+      try { if (typeof unsubAiKnowledge === 'function') unsubAiKnowledge(); } catch {}
+      try { if (typeof unsubAuditLogs === 'function') unsubAuditLogs(); } catch {}
+      try { if (typeof unsubTemplates === 'function') unsubTemplates(); } catch {}
+      try { if (typeof unsubConfig === 'function') unsubConfig(); } catch {}
+      try { if (typeof unsubAuth === 'function') unsubAuth(); } catch {}
     };
   },
 }));

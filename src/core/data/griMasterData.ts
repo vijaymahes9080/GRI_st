@@ -406,6 +406,13 @@ export const SAMPLE_USERS: UserProfile[] = [
     smsAlertsEnabled: true,
     whatsappAlertsEnabled: true,
     emailCircularsEnabled: true,
+    notificationPreferences: {
+      subscribedCategories: ['exam', 'placement', 'academic', 'fees', 'events', 'hostel', 'transport', 'emergency'],
+      pushEnabled: true,
+      emailAlerts: true,
+      whatsappAlerts: true,
+      soundEffects: true,
+    },
     enrolledCourses: [
       { code: 'MCA-401', name: 'Cloud Computing & Distributed Systems', credits: 4, attendance: 93.5, ciaMarks: 23, maxCiaMarks: 25, facultyName: 'Prof. Dr. R. Ramanathan' },
       { code: 'MCA-402', name: 'Deep Learning & Applied Neural Networks', credits: 4, attendance: 88.0, ciaMarks: 22, maxCiaMarks: 25, facultyName: 'Dr. K. Sangeetha' },

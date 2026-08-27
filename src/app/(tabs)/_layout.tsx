@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Platform, StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
-import { Home, Compass, Layers, User, BookOpen } from 'lucide-react-native';
+import { Home, Compass, Layers, User, BookOpen, FileText } from 'lucide-react-native';
 import { useResponsive } from '../../core/responsive/useResponsive';
 import { themeTokens } from '../../core/theme/tokens';
 
@@ -185,6 +185,13 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
+          name="examinations"
+          options={{
+            title: 'Exams',
+            tabBarIcon: ({ color, size }) => <FileText size={size} color={color} strokeWidth={2.5} />,
+          }}
+        />
+        <Tabs.Screen
           name="discover"
           options={{
             title: 'Campus',
@@ -192,17 +199,10 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
-          name="services"
+          name="menu"
           options={{
-            title: 'Services',
+            title: 'Menu',
             tabBarIcon: ({ color, size }) => <Layers size={size} color={color} strokeWidth={2.5} />,
-          }}
-        />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            title: 'Profile',
-            tabBarIcon: ({ color, size }) => <User size={size} color={color} strokeWidth={2.5} />,
           }}
         />
         
@@ -210,7 +210,8 @@ export default function TabsLayout() {
         <Tabs.Screen name="alerts" options={{ href: null }} />
         <Tabs.Screen name="ai_chat" options={{ href: null }} />
         <Tabs.Screen name="index" options={{ href: null }} />
-        <Tabs.Screen name="examinations" options={{ href: null }} />
+        <Tabs.Screen name="services" options={{ href: null }} />
+        <Tabs.Screen name="profile" options={{ href: null }} />
         <Tabs.Screen name="hostel" options={{ href: null }} />
       </Tabs>
     </View>

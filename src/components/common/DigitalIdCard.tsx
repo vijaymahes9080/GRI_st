@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UserProfile } from '../../types';
-import { ShieldCheck, Barcode, Cloud, CloudCheck, RefreshCw } from 'lucide-react';
+import { ShieldCheck, Barcode } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 
 interface DigitalIdCardProps {
@@ -8,7 +8,7 @@ interface DigitalIdCardProps {
 }
 
 export const DigitalIdCard: React.FC<DigitalIdCardProps> = ({ user }) => {
-  const [isSynced, setIsSynced] = useState(true);
+  const [isSynced, setIsSynced] = useState(() => navigator.onLine);
   const studentIdString = `GRI-INST-ID:${user.regNumber || 'GRI/2026/MCA/1042'} | Name:${user.name} | Dept:${user.department}`;
 
   useEffect(() => {
@@ -16,7 +16,6 @@ export const DigitalIdCard: React.FC<DigitalIdCardProps> = ({ user }) => {
     const handleOffline = () => setIsSynced(false);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    setIsSynced(navigator.onLine);
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);

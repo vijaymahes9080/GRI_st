@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import { useAppStore } from '../../core/store/appStore';
 import { 
   Calendar, BookOpen, Clock, FileText, Bell, 
-  ChevronRight, ArrowRight, ArrowUpRight, GraduationCap, MapPin, Play, MessageSquareWarning
+  ChevronRight, ArrowRight, GraduationCap, MapPin, Play, MessageSquareWarning
 } from 'lucide-react';
 import { FeedbackModal } from '../common/FeedbackModal';
+import { ServiceDetailModal, ServiceType } from './ServiceDetailModal';
 
 export const HomeView: React.FC = () => {
   const { setTab, circulars, currentUser } = useAppStore();
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+  const [selectedHomeService, setSelectedHomeService] = useState<ServiceType | null>(null);
 
   const importantCirculars = circulars.filter(c => c.isImportant).slice(0, 3);
 
@@ -71,22 +71,28 @@ export const HomeView: React.FC = () => {
       {/* 2. Quick Actions Grid */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Services</h3>
-          <button onClick={() => setTab('services')} className="text-sm font-semibold text-emerald-600">See All</button>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Quick Services</h3>
+          <button onClick={() => setTab('services')} className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">See All</button>
         </div>
         <div className="grid grid-cols-4 gap-3">
           {[
-            { id: 'timetable', title: 'Schedule', icon: <Clock className="w-5 h-5" />, bg: 'bg-amber-50 dark:bg-amber-950/40', text: 'text-amber-600' },
-            { id: 'results', title: 'Results', icon: <GraduationCap className="w-5 h-5" />, bg: 'bg-blue-50 dark:bg-blue-950/40', text: 'text-blue-600' },
-            { id: 'library', title: 'Library', icon: <BookOpen className="w-5 h-5" />, bg: 'bg-purple-50 dark:bg-purple-950/40', text: 'text-purple-600' },
-            { id: 'notices', title: 'Notices', icon: <Bell className="w-5 h-5" />, bg: 'bg-rose-50 dark:bg-rose-950/40', text: 'text-rose-600' },
+            { id: 'exam', title: 'Results', icon: <GraduationCap className="w-5 h-5" />, bg: 'bg-blue-50 dark:bg-blue-950/40', text: 'text-blue-600 dark:text-blue-400' },
+            { id: 'library', title: 'Library', icon: <BookOpen className="w-5 h-5" />, bg: 'bg-purple-50 dark:bg-purple-950/40', text: 'text-purple-600 dark:text-purple-400' },
+            { id: 'transport', title: 'Schedule', icon: <Clock className="w-5 h-5" />, bg: 'bg-amber-50 dark:bg-amber-950/40', text: 'text-amber-600 dark:text-amber-400' },
+            { id: 'alerts_tab', title: 'Notices', icon: <Bell className="w-5 h-5" />, bg: 'bg-rose-50 dark:bg-rose-950/40', text: 'text-rose-600 dark:text-rose-400' },
           ].map((service) => (
             <div 
               key={service.id}
-              onClick={() => setTab('services')}
+              onClick={() => {
+                if (service.id === 'alerts_tab') {
+                  setTab('alerts');
+                } else {
+                  setSelectedHomeService(service.id as any);
+                }
+              }}
               className="flex flex-col items-center gap-2 cursor-pointer group"
             >
-              <div className={`w-14 h-14 rounded-2xl ${service.bg} ${service.text} flex items-center justify-center transition-transform group-hover:scale-95`}>
+              <div className={`w-14 h-14 rounded-2xl ${service.bg} ${service.text} flex items-center justify-center transition-transform group-hover:scale-95 shadow-sm`}>
                 {service.icon}
               </div>
               <span className="text-xs font-medium text-gray-600 dark:text-slate-400">{service.title}</span>
@@ -160,6 +166,11 @@ export const HomeView: React.FC = () => {
       </button>
 
       <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
+      <ServiceDetailModal 
+        service={selectedHomeService} 
+        isOpen={Boolean(selectedHomeService)} 
+        onClose={() => setSelectedHomeService(null)} 
+      />
     </div>
   );
 };

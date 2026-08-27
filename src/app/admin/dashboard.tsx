@@ -226,7 +226,7 @@ export default function AdminDashboardScreen() {
 
             <Card
               onPress={() => router.push('/admin/approval_queue')}
-              className="bg-white border-slate-100 p-5 rounded-3xl flex-row items-center justify-between mb-10"
+              className="bg-white border-slate-100 p-5 rounded-3xl flex-row items-center justify-between mb-4"
               elevation="sm"
             >
               <View className="flex-row items-center">
@@ -240,6 +240,25 @@ export default function AdminDashboardScreen() {
               </View>
               <View className="bg-amber-100 px-3 py-1.5 rounded-full">
                 <Text className="text-[10px] font-bold text-amber-800 uppercase tracking-widest">Review</Text>
+              </View>
+            </Card>
+
+            <Card
+              onPress={() => router.push('/admin/diagnostics')}
+              className="bg-white border-slate-100 p-5 rounded-3xl flex-row items-center justify-between mb-10"
+              elevation="sm"
+            >
+              <View className="flex-row items-center">
+                <View className="bg-blue-50 border border-blue-100 p-2.5 rounded-2xl">
+                  <Monitor size={24} color="#3B82F6" />
+                </View>
+                <View className="ml-4">
+                  <Text className="text-base font-bold text-slate-900 mb-1">Backend Connection</Text>
+                  <Text className="text-[11px] font-semibold text-slate-500">Live API diagnostics and server health</Text>
+                </View>
+              </View>
+              <View className="bg-blue-100 px-3 py-1.5 rounded-full">
+                <Text className="text-[10px] font-bold text-blue-800 uppercase tracking-widest">Test</Text>
               </View>
             </Card>
           </Animated.View>

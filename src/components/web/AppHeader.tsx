@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAppStore } from '../../core/store/appStore';
 import { useTheme } from '../../core/theme/ThemeContext';
-import { Bell, Search, Sparkles, Sun, Moon } from 'lucide-react';
+import { Bell, Search, Sparkles, Sun, Moon, Settings } from 'lucide-react';
 import { GRIEmblem } from '../common/GRIEmblem';
 
 export const AppHeader: React.FC = () => {
@@ -43,7 +43,7 @@ export const AppHeader: React.FC = () => {
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button 
             onClick={() => setTab('ai_chat')}
             className="relative p-2 rounded-full text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
@@ -74,6 +74,13 @@ export const AppHeader: React.FC = () => {
             {unreadAlerts > 0 && (
               <span className="absolute top-1 right-1.5 w-2 h-2 rounded-full bg-red-500 border-2 border-white dark:border-slate-900" />
             )}
+          </button>
+          <button 
+            onClick={() => setTab('settings')}
+            className="p-2 rounded-full text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+            title="System Settings"
+          >
+            <Settings className="w-5 h-5" />
           </button>
         </div>
       </div>

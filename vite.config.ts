@@ -24,6 +24,38 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
+      workbox: {
+        runtimeCaching: [
+          {
+            urlPattern: /.*\/academics\/calendar.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'academic-calendar-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /.*\/contact.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'contact-directory-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          }
+        ]
+      },
       manifest: {
         name: 'GRI Digital Univ',
         short_name: 'GRI Univ',
@@ -61,9 +93,6 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 3000,
-    hmr: {
-      clientPort: 443,
-      protocol: 'wss',
-    },
+    hmr: false,
   },
 });

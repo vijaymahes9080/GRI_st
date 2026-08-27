@@ -3,6 +3,8 @@
  * 100% Comprehensive Mapping from GRI_DEEP_COMPONENT_AUDIT.md
  */
 
+import { setCachedData, getCachedData } from '../storage/idbCache';
+
 export interface DepartmentItem {
   code: string;
   name: string;
@@ -65,16 +67,18 @@ export const GRI_MOBILE_NAV_TAGS: NavigationTagNode[] = [
   { id: 'nav_ai_assistant', title: 'GRI AI Knowledge Assistant', category: 'AI_SERVICES', route: '/(tabs)/ai_chat', icon: 'bot', description: 'Grounded RAG QA with Ordinance Citations' },
 ];
 
-import { setCachedData, getCachedData } from '../storage/idbCache';
-
 export async function getInstitutionalDataWithCache() {
   try {
     const cached = await getCachedData('gri_institutional_data');
     if (cached) {
       return cached;
     }
+  } catch (e) {
+    console.info('[InstitutionalData] Cache lookup notice:', e);
+  }
+  try {
+    await setCachedData('gri_institutional_data', GRI_INSTITUTIONAL_DATA);
   } catch {}
-  await setCachedData('gri_institutional_data', GRI_INSTITUTIONAL_DATA);
   return GRI_INSTITUTIONAL_DATA;
 }
 

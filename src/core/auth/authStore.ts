@@ -30,7 +30,63 @@ export interface User {
   department?: string;
   rollNumber?: string;
   avatarUrl?: string;
+  designation?: string;
+  semester?: string;
+  program?: string;
+  supervisor?: string;
 }
+
+export const DEMO_PROFILES: Record<string, User> = {
+  STUDENT: {
+    id: 'usr_student_01',
+    fullName: 'Vijay Kumar S.',
+    username: '21BCA042',
+    email: 'vijay.21bca042@ruraluniv.ac.in',
+    role: 'STUDENT',
+    department: 'Dept. of Computer Science & Applications',
+    rollNumber: '21BCA042',
+    program: 'BCA (Hons) Computer Applications',
+    semester: 'Semester VI',
+    avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80',
+  },
+  FACULTY: {
+    id: 'usr_faculty_01',
+    fullName: 'Dr. K. Arumugam',
+    username: 'fac_cs_1048',
+    email: 'k.arumugam@ruraluniv.ac.in',
+    role: 'FACULTY',
+    department: 'Dept. of Computer Science & Applications',
+    designation: 'Associate Professor & Head i/c',
+    rollNumber: 'EMP-FAC-1048',
+    program: 'School of Mathematics & Computer Sciences',
+    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+  },
+  RESEARCH_SCHOLAR: {
+    id: 'usr_scholar_01',
+    fullName: 'Ms. S. Meenakshi',
+    username: 'phd_rd_2023',
+    email: 'meenakshi.phd@ruraluniv.ac.in',
+    role: 'RESEARCH_SCHOLAR',
+    department: 'Dept. of Rural Development & Agriculture',
+    designation: 'Senior Research Fellow (SRF - UGC)',
+    rollNumber: '23PHDRD009',
+    program: 'Ph.D. in Rural Development',
+    supervisor: 'Dr. R. Subburaman (Professor)',
+    avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+  },
+  ADMIN: {
+    id: 'usr_admin_01',
+    fullName: 'Dr. R. Manickam',
+    username: 'admin_registrar',
+    email: 'registrar@ruraluniv.ac.in',
+    role: 'UNIVERSITY_ADMIN',
+    department: 'Office of the Registrar & Administration',
+    designation: 'Registrar & Chief Administrative Officer',
+    rollNumber: 'ADM-REG-001',
+    program: 'Gandhigram Rural Institute Central Admin',
+    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
+  },
+};
 
 interface AuthState {
   user: User | null;
@@ -43,6 +99,7 @@ interface AuthState {
   doLogout: () => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (partialUser: Partial<User>) => void;
+  switchDemoRole: (roleKey: 'STUDENT' | 'FACULTY' | 'RESEARCH_SCHOLAR' | 'ADMIN' | 'GUEST') => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => {
@@ -125,6 +182,25 @@ export const useAuthStore = create<AuthState>((set, get) => {
         setItem(storageKeys.USER_DATA, updatedUser);
         return { user: updatedUser };
       });
+    },
+
+    switchDemoRole: (roleKey) => {
+      if (roleKey === 'GUEST') {
+        performLogout();
+        return;
+      }
+      const profile = DEMO_PROFILES[roleKey];
+      if (profile) {
+        setItem(storageKeys.USER_DATA, profile);
+        setSecureItem(storageKeys.ACCESS_TOKEN, `token_${roleKey.toLowerCase()}_mock`);
+        setSecureItem(storageKeys.REFRESH_TOKEN, `refresh_${roleKey.toLowerCase()}_mock`);
+        set({
+          user: profile,
+          token: `token_${roleKey.toLowerCase()}_mock`,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+      }
     },
   };
 });

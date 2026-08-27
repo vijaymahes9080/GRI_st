@@ -1,11 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Search, ChevronRight, BookOpen, Shield, Users, GraduationCap, FileText, MapPin } from 'lucide-react-native';
+import { CardSkeleton } from '../../components/common/Skeleton';
 
 export default function GlobalSearchScreen() {
   const router = useRouter();
   const [query, setQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (query.trim() === '') {
+      setIsLoading(false);
+      return;
+    }
+    
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 800);
+    
+    return () => clearTimeout(timer);
+  }, [query]);
 
   const searchResults = [
     { title: 'Department of Computer Science & Applications', category: 'Academics', route: '/academics/department_detail?deptId=cs', icon: BookOpen, color: '#518214' },
@@ -16,7 +32,7 @@ export default function GlobalSearchScreen() {
     { title: 'ESE Examination Timetable Query', category: 'Examinations', route: '/examination/timetable', icon: FileText, color: '#00838F' },
     { title: 'Online Ph.D. Status Tracking', category: 'Examinations', route: '/examination/phd_tracking', icon: FileText, color: '#00838F' },
     { title: 'e-SANAD Document Verification', category: 'Services', route: '/examination/esanad', icon: FileText, color: '#2E7D32' },
-  ].filter((item) => item.title.toLowerCase().includes(query.toLowerCase()) || item.category.toLowerCase().includes(query.toLowerCase()));
+  ].filter((item) => query.length === 0 || item.title.toLowerCase().includes(query.toLowerCase()) || item.category.toLowerCase().includes(query.toLowerCase()));
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -49,27 +65,35 @@ export default function GlobalSearchScreen() {
       <ScrollView className="flex-1 px-4 pt-4" showsVerticalScrollIndicator={false}>
         <Text className="text-xs font-bold text-gray-700 uppercase mb-3">Search Matches ({searchResults.length})</Text>
 
-        {searchResults.map((item, idx) => {
-          const IconComp = item.icon;
-          return (
-            <TouchableOpacity
-              key={idx}
-              onPress={() => router.push(item.route as any)}
-              className="bg-white p-4 rounded-2xl border border-gray-200 mb-3 shadow-sm flex-row items-center justify-between"
-            >
-              <View className="flex-row items-center flex-1 pr-2">
-                <View className="p-2.5 rounded-xl mr-3" style={{ backgroundColor: `${item.color}15` }}>
-                  <IconComp size={20} color={item.color} />
+        {isLoading ? (
+          <>
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+          </>
+        ) : (
+          searchResults.map((item, idx) => {
+            const IconComp = item.icon;
+            return (
+              <TouchableOpacity
+                key={idx}
+                onPress={() => router.push(item.route as any)}
+                className="bg-white p-4 rounded-2xl border border-gray-200 mb-3 shadow-sm flex-row items-center justify-between"
+              >
+                <View className="flex-row items-center flex-1 pr-2">
+                  <View className="p-2.5 rounded-xl mr-3" style={{ backgroundColor: `${item.color}15` }}>
+                    <IconComp size={20} color={item.color} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-xs font-bold uppercase mb-0.5" style={{ color: item.color }}>{item.category}</Text>
+                    <Text className="text-sm font-bold text-gray-900">{item.title}</Text>
+                  </View>
                 </View>
-                <View className="flex-1">
-                  <Text className="text-xs font-bold uppercase mb-0.5" style={{ color: item.color }}>{item.category}</Text>
-                  <Text className="text-sm font-bold text-gray-900">{item.title}</Text>
-                </View>
-              </View>
-              <ChevronRight size={18} color="#9CA3AF" />
-            </TouchableOpacity>
-          );
-        })}
+                <ChevronRight size={18} color="#9CA3AF" />
+              </TouchableOpacity>
+            );
+          })
+        )}
         <View className="h-10" />
       </ScrollView>
     </View>

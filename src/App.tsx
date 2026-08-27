@@ -14,6 +14,7 @@ import { AlertsView } from './components/web/AlertsView';
 import { AiChatView } from './components/web/AiChatView';
 import { AdminView } from './components/web/AdminView';
 import { ProfileView } from './components/web/ProfileView';
+import { SettingsView } from './components/web/SettingsView';
 import { ChangePasswordModal } from './components/common/ChangePasswordModal';
 import { InstitutionalLoginModal } from './components/auth/InstitutionalLoginModal';
 import { AccessRestricted } from './components/common/AccessRestricted';
@@ -35,9 +36,9 @@ export const App: React.FC = () => {
   const { can } = usePermissions();
 
   useEffect(() => {
-    initializeFirestoreData();
-    runServerDiagnostics();
-    getInstitutionalDataWithCache().catch(() => {});
+    initializeFirestoreData().catch((err) => console.info('[App] Firestore init notice:', err));
+    runServerDiagnostics().catch((err) => console.info('[App] Diagnostics notice:', err));
+    getInstitutionalDataWithCache().catch((err) => console.info('[App] Institutional cache notice:', err));
     const savedColor = localStorage.getItem('gri_primary_color');
     if (savedColor) {
       document.documentElement.style.setProperty('--primary', savedColor);
@@ -47,7 +48,11 @@ export const App: React.FC = () => {
       document.documentElement.classList.add('dark');
     }
     const unsubscribe = initializeRealtimeSync();
-    return () => unsubscribe();
+    return () => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
   }, []);
 
   return (
@@ -107,6 +112,7 @@ export const App: React.FC = () => {
                   </div>
                 )
               )}
+              {currentTab === 'settings' && <SettingsView />}
             </motion.div>
           </AnimatePresence>
         </main>

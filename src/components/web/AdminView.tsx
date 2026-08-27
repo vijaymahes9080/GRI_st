@@ -649,7 +649,22 @@ export const AdminView: React.FC = () => {
                   <th className="p-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
+              <motion.tbody 
+                id="users-tbody" 
+                className="divide-y divide-slate-100 text-slate-700"
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: {
+                      staggerChildren: 0.05
+                    }
+                  }
+                }}
+                key={`${userSearchQuery}-${userStatusFilter}-${filteredUsers.length}`}
+              >
                 {filteredUsers.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="p-6 sm:p-8 text-center text-slate-500">
@@ -657,10 +672,19 @@ export const AdminView: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredUsers.map((user) => {
+                  filteredUsers.map((user, index) => {
                     const isSelected = selectedUserIds.includes(user.id);
                     return (
-                      <tr key={user.id} className={`hover:bg-slate-50 transition ${isSelected ? 'bg-emerald-50' : ''}`}>
+                      <motion.tr
+                        key={user.id}
+                        variants={{
+                          hidden: { opacity: 0, y: 12 },
+                          visible: { opacity: 1, y: 0 }
+                        }}
+                        whileHover={{ scale: 1.01 }}
+                        transition={{ duration: 0.25 }}
+                        className={`hover:bg-slate-50 hover:shadow-sm transition-colors duration-200 cursor-pointer ${isSelected ? 'bg-emerald-50' : ''}`}
+                      >
                         <td className="p-3.5">
                           <button onClick={() => toggleSelectUser(user.id)} className="text-slate-400 hover:text-slate-600 transition">
                             {isSelected ? (
@@ -746,11 +770,11 @@ export const AdminView: React.FC = () => {
                             </button>
                           </div>
                         </td>
-                      </tr>
+                      </motion.tr>
                     );
                   })
                 )}
-              </tbody>
+              </motion.tbody>
             </table>
           </div>
         </div>

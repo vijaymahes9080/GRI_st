@@ -86,7 +86,7 @@ export default function WelcomeScreen() {
                     title="Explore Public Content"
                     variant="outline"
                     size="lg"
-                    onPress={() => router.push('/(tabs)/discover')}
+                    onPress={() => router.push('/(tabs)/home')}
                   />
                 )}
               </View>
