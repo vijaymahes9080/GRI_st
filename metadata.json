@@ -2,6 +2,7 @@
   "name": "GRI",
   "description": "Official institutional portal for The Gandhigram Rural Institute (Deemed to be University) featuring institutional authentication, granular role-based access control (RBAC), personalized student/faculty/scholar/admin dashboards, circular visibility controls, and Gemini-powered RuralGPT AI Assistant.",
   "requestFramePermissions": [
+    "camera",
     "microphone",
     "geolocation"
   ],

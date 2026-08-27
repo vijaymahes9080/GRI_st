@@ -9,6 +9,7 @@ import { OfflineNotice } from '../core/offline/OfflineNotice';
 import { AccessRestricted } from '../components/common/AccessRestricted';
 import { queryClient } from '../core/api/queryClient';
 import { hasPermission, AppPermission } from '../core/auth/permissions';
+import { ThemeProvider } from '../core/theme/ThemeContext';
 
 function GlobalAuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user } = useAuthStore();
@@ -74,27 +75,29 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <SafeAreaProvider>
-        <ErrorBoundary fallbackTitle="GRI University Service Recovered">
-          <GlobalAuthGuard>
-            <OfflineNotice />
-            <Stack 
-              screenOptions={{ 
-                headerShown: false,
-                animation: 'slide_from_right',
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'horizontal'
-              }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="auth" />
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-          </GlobalAuthGuard>
-        </ErrorBoundary>
-      </SafeAreaProvider>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <SafeAreaProvider>
+          <ErrorBoundary fallbackTitle="GRI University Service Recovered">
+            <GlobalAuthGuard>
+              <OfflineNotice />
+              <Stack 
+                screenOptions={{ 
+                  headerShown: false,
+                  animation: 'slide_from_right',
+                  presentation: 'card',
+                  gestureEnabled: true,
+                  gestureDirection: 'horizontal'
+                }}>
+                <Stack.Screen name="index" />
+                <Stack.Screen name="auth" />
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="+not-found" />
+              </Stack>
+            </GlobalAuthGuard>
+          </ErrorBoundary>
+        </SafeAreaProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }

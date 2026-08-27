@@ -74,7 +74,7 @@ export const AuditLogsViewer: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
-          {['ALL', 'CREATE', 'UPDATE', 'DELETE', 'PUBLISH', 'CONFIG_CHANGE'].map((act) => (
+          {['ALL', 'CREATE', 'UPDATE', 'DELETE', 'PUBLISH', 'CONFIG_CHANGE', 'CRASH'].map((act) => (
             <button
               key={act}
               onClick={() => setActionFilter(act)}

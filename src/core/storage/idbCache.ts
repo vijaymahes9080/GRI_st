@@ -5,7 +5,8 @@
 
 const DB_NAME = 'GRI_OfflineDB';
 const STORE_NAME = 'institutional_cache';
-const DB_VERSION = 1;
+const PENDING_REG_STORE = 'pending_registrations';
+const DB_VERSION = 2;
 
 export function openIndexedDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -24,8 +25,71 @@ export function openIndexedDB(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME);
       }
+      if (!db.objectStoreNames.contains(PENDING_REG_STORE)) {
+        db.createObjectStore(PENDING_REG_STORE, { keyPath: 'id', autoIncrement: true });
+      }
     };
   });
+}
+
+export async function queuePendingRegistration(registrationData: any): Promise<void> {
+  try {
+    const db = await openIndexedDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(PENDING_REG_STORE, 'readwrite');
+      const store = transaction.objectStore(PENDING_REG_STORE);
+      const request = store.add({ ...registrationData, queuedAt: Date.now() });
+
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch (err) {
+    console.warn('[IndexedDB] Queue pending registration fallback error:', err);
+    try {
+      const existing = JSON.parse(localStorage.getItem('gri_pending_registrations') || '[]');
+      existing.push({ ...registrationData, queuedAt: Date.now() });
+      localStorage.setItem('gri_pending_registrations', JSON.stringify(existing));
+    } catch {}
+  }
+}
+
+export async function getPendingRegistrations(): Promise<any[]> {
+  try {
+    const db = await openIndexedDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(PENDING_REG_STORE, 'readonly');
+      const store = transaction.objectStore(PENDING_REG_STORE);
+      const request = store.getAll();
+
+      request.onsuccess = () => resolve(request.result || []);
+      request.onerror = () => reject(request.error);
+    });
+  } catch (err) {
+    console.warn('[IndexedDB] Get pending registrations fallback error:', err);
+    try {
+      return JSON.parse(localStorage.getItem('gri_pending_registrations') || '[]');
+    } catch {
+      return [];
+    }
+  }
+}
+
+export async function clearPendingRegistrations(): Promise<void> {
+  try {
+    const db = await openIndexedDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(PENDING_REG_STORE, 'readwrite');
+      const store = transaction.objectStore(PENDING_REG_STORE);
+      const request = store.clear();
+
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch (err) {
+    try {
+      localStorage.removeItem('gri_pending_registrations');
+    } catch {}
+  }
 }
 
 export async function setCachedData(key: string, data: any): Promise<void> {

@@ -17,7 +17,7 @@ export const BottomNavigation: React.FC = () => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
       <div className="flex items-center justify-around px-2 h-16 max-w-md mx-auto">
         {navItems.map((item) => {
           const isActive = currentTab === item.id;
@@ -29,20 +29,20 @@ export const BottomNavigation: React.FC = () => {
             >
               <div
                 className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 ${
-                  isActive ? 'text-emerald-700 bg-emerald-50' : 'text-gray-400 hover:text-gray-600'
+                  isActive ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50' : 'text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200'
                 }`}
               >
                 {item.icon}
               </div>
               <span
                 className={`text-[10px] font-medium transition-colors duration-300 ${
-                  isActive ? 'text-emerald-700' : 'text-gray-400 group-hover:text-gray-600'
+                  isActive ? 'text-emerald-700 dark:text-emerald-400' : 'text-gray-400 dark:text-slate-400 group-hover:text-gray-600 dark:group-hover:text-slate-200'
                 }`}
               >
                 {item.label}
               </span>
               {isActive && (
-                <div className="absolute top-0 w-8 h-0.5 bg-emerald-600 rounded-b-full transition-all duration-300" />
+                <div className="absolute top-0 w-8 h-0.5 bg-emerald-600 dark:bg-emerald-400 rounded-b-full transition-all duration-300" />
               )}
             </button>
           );

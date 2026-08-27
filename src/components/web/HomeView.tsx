@@ -1,19 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppStore } from '../../core/store/appStore';
 import { 
   Calendar, BookOpen, Clock, FileText, Bell, 
-  ChevronRight, ArrowRight, ArrowUpRight, GraduationCap, MapPin, Play
+  ChevronRight, ArrowRight, ArrowUpRight, GraduationCap, MapPin, Play, MessageSquareWarning
 } from 'lucide-react';
+import { FeedbackModal } from '../common/FeedbackModal';
 
 export const HomeView: React.FC = () => {
   const { setTab, circulars, currentUser } = useAppStore();
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
 
   const importantCirculars = circulars.filter(c => c.isImportant).slice(0, 3);
 
   return (
-    <div className="flex flex-col space-y-6 pb-24  px-5 pt-4 max-w-md mx-auto">
+    <div className="flex flex-col space-y-6 pb-24 px-5 pt-4 max-w-md mx-auto relative">
       
       {/* 1. Academic Summary / Attendance Card */}
       {currentUser.role !== 'guest' && (
@@ -47,7 +49,7 @@ export const HomeView: React.FC = () => {
 
       {/* Guest Banner */}
       {currentUser.role === 'guest' && (
-        <div className="relative h-48 rounded-3xl overflow-hidden group shadow-md" onClick={() => setTab('explore')}>
+        <div className="relative h-48 rounded-3xl overflow-hidden group shadow-md cursor-pointer" onClick={() => setTab('explore')}>
           <img 
             src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=800" 
             alt="Campus" 
@@ -69,15 +71,15 @@ export const HomeView: React.FC = () => {
       {/* 2. Quick Actions Grid */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-bold text-gray-900">Services</h3>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Services</h3>
           <button onClick={() => setTab('services')} className="text-sm font-semibold text-emerald-600">See All</button>
         </div>
         <div className="grid grid-cols-4 gap-3">
           {[
-            { id: 'timetable', title: 'Schedule', icon: <Clock className="w-5 h-5" />, bg: 'bg-amber-50', text: 'text-amber-600' },
-            { id: 'results', title: 'Results', icon: <GraduationCap className="w-5 h-5" />, bg: 'bg-blue-50', text: 'text-blue-600' },
-            { id: 'library', title: 'Library', icon: <BookOpen className="w-5 h-5" />, bg: 'bg-purple-50', text: 'text-purple-600' },
-            { id: 'notices', title: 'Notices', icon: <Bell className="w-5 h-5" />, bg: 'bg-rose-50', text: 'text-rose-600' },
+            { id: 'timetable', title: 'Schedule', icon: <Clock className="w-5 h-5" />, bg: 'bg-amber-50 dark:bg-amber-950/40', text: 'text-amber-600' },
+            { id: 'results', title: 'Results', icon: <GraduationCap className="w-5 h-5" />, bg: 'bg-blue-50 dark:bg-blue-950/40', text: 'text-blue-600' },
+            { id: 'library', title: 'Library', icon: <BookOpen className="w-5 h-5" />, bg: 'bg-purple-50 dark:bg-purple-950/40', text: 'text-purple-600' },
+            { id: 'notices', title: 'Notices', icon: <Bell className="w-5 h-5" />, bg: 'bg-rose-50 dark:bg-rose-950/40', text: 'text-rose-600' },
           ].map((service) => (
             <div 
               key={service.id}
@@ -87,7 +89,7 @@ export const HomeView: React.FC = () => {
               <div className={`w-14 h-14 rounded-2xl ${service.bg} ${service.text} flex items-center justify-center transition-transform group-hover:scale-95`}>
                 {service.icon}
               </div>
-              <span className="text-xs font-medium text-gray-600">{service.title}</span>
+              <span className="text-xs font-medium text-gray-600 dark:text-slate-400">{service.title}</span>
             </div>
           ))}
         </div>
@@ -96,18 +98,18 @@ export const HomeView: React.FC = () => {
       {/* 3. Upcoming Assignments/Tasks */}
       {currentUser.role !== 'guest' && (
         <div>
-          <h3 className="text-lg font-bold text-gray-900 mb-3">Pending Tasks</h3>
-          <div className="bg-gray-50 border border-gray-100 rounded-3xl p-4 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3">Pending Tasks</h3>
+          <div className="bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-3xl p-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-gray-100">
+              <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-sm border border-gray-100 dark:border-slate-700">
                 <FileText className="w-6 h-6 text-emerald-600" />
               </div>
               <div>
-                <h4 className="font-bold text-gray-900 text-sm">3 Assignments</h4>
+                <h4 className="font-bold text-gray-900 dark:text-white text-sm">3 Assignments</h4>
                 <p className="text-xs text-gray-500">Due this week</p>
               </div>
             </div>
-            <button onClick={() => setTab('services')} className="w-8 h-8 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center">
+            <button onClick={() => setTab('services')} className="w-8 h-8 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-full flex items-center justify-center">
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -117,7 +119,7 @@ export const HomeView: React.FC = () => {
       {/* 4. Important Notices */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-bold text-gray-900">Recent Notices</h3>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Recent Notices</h3>
           <button onClick={() => setTab('alerts')} className="text-sm font-semibold text-emerald-600">See All</button>
         </div>
         <div className="space-y-3">
@@ -125,28 +127,39 @@ export const HomeView: React.FC = () => {
             <div 
               key={circ.id}
               onClick={() => setTab('alerts')}
-              className="bg-white border border-gray-100 rounded-3xl p-4 flex gap-4 cursor-pointer hover:border-emerald-200 transition-colors shadow-sm"
+              className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-3xl p-4 flex gap-4 cursor-pointer hover:border-emerald-200 transition-colors shadow-sm"
             >
-              <div className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center shrink-0">
                 <Bell className="w-5 h-5 text-rose-500" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
                     {circ.category}
                   </span>
                   <span className="text-[10px] text-gray-400">{circ.publishDate}</span>
                 </div>
-                <h4 className="font-bold text-gray-900 text-sm leading-snug truncate">{circ.title}</h4>
+                <h4 className="font-bold text-gray-900 dark:text-white text-sm leading-snug truncate">{circ.title}</h4>
               </div>
             </div>
           )) : (
-            <div className="bg-gray-50 border border-gray-100 rounded-3xl p-6 text-center">
+            <div className="bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-3xl p-6 text-center">
               <p className="text-sm text-gray-500">No new notices.</p>
             </div>
           )}
         </div>
       </div>
+
+      {/* Floating Feedback Button */}
+      <button
+        onClick={() => setIsFeedbackOpen(true)}
+        className="fixed bottom-20 right-6 z-40 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 text-xs font-bold transition-all transform hover:scale-105"
+      >
+        <MessageSquareWarning className="w-4 h-4" />
+        <span>Feedback / Bug Report</span>
+      </button>
+
+      <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
     </div>
   );
 };

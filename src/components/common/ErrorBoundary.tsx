@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { AlertTriangle, RefreshCw } from 'lucide-react-native';
+import { ErrorTracker } from '../../core/services/errorTracker';
 
 interface Props {
   children: ReactNode;
@@ -24,8 +25,9 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Structured logging for crash monitoring
+    // Structured logging for crash monitoring and admin audit trail dispatch
     console.error('ErrorBoundary caught exception:', error, errorInfo);
+    ErrorTracker.captureCrash(error, errorInfo, this.props.fallbackTitle || 'Mobile Module Component');
   }
 
   private handleReset = () => {

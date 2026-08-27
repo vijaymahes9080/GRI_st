@@ -51,12 +51,12 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center font-sans">
-      <div className="w-full max-w-md bg-white min-h-screen shadow-2xl flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-gray-100 dark:bg-slate-950 flex justify-center font-sans">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 min-h-screen shadow-2xl flex flex-col relative overflow-hidden">
         
         <AppHeader />
 
-        <main className="flex-1 overflow-y-auto pb-20 scrollbar-hide bg-white overflow-x-hidden relative">
+        <main className="flex-1 overflow-y-auto pb-20 scrollbar-hide bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 overflow-x-hidden relative">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentTab}
