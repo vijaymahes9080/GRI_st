@@ -65,6 +65,19 @@ export const GRI_MOBILE_NAV_TAGS: NavigationTagNode[] = [
   { id: 'nav_ai_assistant', title: 'GRI AI Knowledge Assistant', category: 'AI_SERVICES', route: '/(tabs)/ai_chat', icon: 'bot', description: 'Grounded RAG QA with Ordinance Citations' },
 ];
 
+import { setCachedData, getCachedData } from '../storage/idbCache';
+
+export async function getInstitutionalDataWithCache() {
+  try {
+    const cached = await getCachedData('gri_institutional_data');
+    if (cached) {
+      return cached;
+    }
+  } catch {}
+  await setCachedData('gri_institutional_data', GRI_INSTITUTIONAL_DATA);
+  return GRI_INSTITUTIONAL_DATA;
+}
+
 export const GRI_INSTITUTIONAL_DATA = {
   institution: 'The Gandhigram Rural Institute (Deemed to be University)',
   motto: 'கிராமம் உயர நாடு உயரும் (As villages rise, the nation rises)',

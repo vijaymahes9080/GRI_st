@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useAppStore } from '../../core/store/appStore';
 import { 
   Calendar, BookOpen, Clock, FileText, Bell, 
@@ -7,14 +7,8 @@ import {
 
 export const HomeView: React.FC = () => {
   const { setTab, circulars, currentUser } = useAppStore();
-  const [greeting, setGreeting] = useState('');
-
-  useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) setGreeting('Good Morning');
-    else if (hour < 17) setGreeting('Good Afternoon');
-    else setGreeting('Good Evening');
-  }, []);
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
 
   const importantCirculars = circulars.filter(c => c.isImportant).slice(0, 3);
 

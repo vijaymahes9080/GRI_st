@@ -112,161 +112,197 @@ export function cleanFirestoreData<T extends Record<string, any>>(data: T): Reco
  */
 export async function initializeFirestoreData() {
   try {
-    const circularsSnap = await getDocs(collection(db, CIRCULARS_COLLECTION));
-    if (circularsSnap.empty) {
-      for (const circ of INITIAL_CIRCULARS) {
-        await setDoc(doc(db, CIRCULARS_COLLECTION, circ.id), cleanFirestoreData({
-          ...circ,
-          createdAt: serverTimestamp(),
-        }));
+    try {
+      const circularsSnap = await getDocs(collection(db, CIRCULARS_COLLECTION));
+      if (circularsSnap.empty) {
+        for (const circ of INITIAL_CIRCULARS) {
+          await setDoc(doc(db, CIRCULARS_COLLECTION, circ.id), cleanFirestoreData({
+            ...circ,
+            createdAt: serverTimestamp(),
+          })).catch(() => {});
+        }
       }
-    }
+    } catch (e) { console.warn('[Firestore Seed] Circulars skip:', e); }
 
-    const usersSnap = await getDocs(collection(db, USERS_COLLECTION));
-    if (usersSnap.empty) {
-      for (const user of SAMPLE_USERS) {
-        await setDoc(doc(db, USERS_COLLECTION, user.id), cleanFirestoreData({
-          ...user,
-          createdAt: serverTimestamp(),
-        }));
+    try {
+      const usersSnap = await getDocs(collection(db, USERS_COLLECTION));
+      if (usersSnap.empty) {
+        for (const user of SAMPLE_USERS) {
+          await setDoc(doc(db, USERS_COLLECTION, user.id), cleanFirestoreData({
+            ...user,
+            createdAt: serverTimestamp(),
+          })).catch(() => {});
+        }
       }
-    }
+    } catch (e) { console.warn('[Firestore Seed] Users skip:', e); }
 
-    const messagesSnap = await getDocs(collection(db, DISPATCHED_MESSAGES_COLLECTION));
-    if (messagesSnap.empty) {
-      for (const msg of INITIAL_DISPATCHED_MESSAGES) {
-        await setDoc(doc(db, DISPATCHED_MESSAGES_COLLECTION, msg.id), cleanFirestoreData({
-          ...msg,
-          createdAt: serverTimestamp(),
-        }));
+    try {
+      const messagesSnap = await getDocs(collection(db, DISPATCHED_MESSAGES_COLLECTION));
+      if (messagesSnap.empty) {
+        for (const msg of INITIAL_DISPATCHED_MESSAGES) {
+          await setDoc(doc(db, DISPATCHED_MESSAGES_COLLECTION, msg.id), cleanFirestoreData({
+            ...msg,
+            createdAt: serverTimestamp(),
+          })).catch(() => {});
+        }
       }
-    }
+    } catch (e) { console.warn('[Firestore Seed] Messages skip:', e); }
 
-    const schoolsSnap = await getDocs(collection(db, SCHOOLS_COLLECTION));
-    if (schoolsSnap.empty) {
-      for (const sch of SCHOOLS_DATA) {
-        await setDoc(doc(db, SCHOOLS_COLLECTION, sch.id), cleanFirestoreData({
-          ...sch,
-          createdAt: serverTimestamp(),
-        }));
+    try {
+      const schoolsSnap = await getDocs(collection(db, SCHOOLS_COLLECTION));
+      if (schoolsSnap.empty) {
+        for (const sch of SCHOOLS_DATA) {
+          await setDoc(doc(db, SCHOOLS_COLLECTION, sch.id), cleanFirestoreData({
+            ...sch,
+            createdAt: serverTimestamp(),
+          })).catch(() => {});
+        }
       }
-    }
+    } catch (e) { console.warn('[Firestore Seed] Schools skip:', e); }
 
-    const eventsSnap = await getDocs(collection(db, EVENTS_COLLECTION));
-    if (eventsSnap.empty) {
-      for (const evt of INITIAL_EVENTS) {
-        await setDoc(doc(db, EVENTS_COLLECTION, evt.id), cleanFirestoreData({
-          ...evt,
-          createdAt: serverTimestamp(),
-        }));
+    try {
+      const eventsSnap = await getDocs(collection(db, EVENTS_COLLECTION));
+      if (eventsSnap.empty) {
+        for (const evt of INITIAL_EVENTS) {
+          await setDoc(doc(db, EVENTS_COLLECTION, evt.id), cleanFirestoreData({
+            ...evt,
+            createdAt: serverTimestamp(),
+          })).catch(() => {});
+        }
       }
-    }
+    } catch (e) { console.warn('[Firestore Seed] Events skip:', e); }
 
-    const placementsSnap = await getDocs(collection(db, PLACEMENTS_COLLECTION));
-    if (placementsSnap.empty) {
-      for (const plc of INITIAL_PLACEMENTS) {
-        await setDoc(doc(db, PLACEMENTS_COLLECTION, plc.id), cleanFirestoreData({
-          ...plc,
-          createdAt: serverTimestamp(),
-        }));
+    try {
+      const placementsSnap = await getDocs(collection(db, PLACEMENTS_COLLECTION));
+      if (placementsSnap.empty) {
+        for (const plc of INITIAL_PLACEMENTS) {
+          await setDoc(doc(db, PLACEMENTS_COLLECTION, plc.id), cleanFirestoreData({
+            ...plc,
+            createdAt: serverTimestamp(),
+          })).catch(() => {});
+        }
       }
-    }
+    } catch (e) { console.warn('[Firestore Seed] Placements skip:', e); }
 
-    const researchSnap = await getDocs(collection(db, RESEARCH_COLLECTION));
-    if (researchSnap.empty) {
-      for (const res of INITIAL_RESEARCH_PROJECTS) {
-        await setDoc(doc(db, RESEARCH_COLLECTION, res.id), cleanFirestoreData({
-          ...res,
-          createdAt: serverTimestamp(),
-        }));
+    try {
+      const researchSnap = await getDocs(collection(db, RESEARCH_COLLECTION));
+      if (researchSnap.empty) {
+        for (const res of INITIAL_RESEARCH_PROJECTS) {
+          await setDoc(doc(db, RESEARCH_COLLECTION, res.id), cleanFirestoreData({
+            ...res,
+            createdAt: serverTimestamp(),
+          })).catch(() => {});
+        }
       }
-    }
+    } catch (e) { console.warn('[Firestore Seed] Research skip:', e); }
 
-    const docsSnap = await getDocs(collection(db, DOCUMENTS_COLLECTION));
-    if (docsSnap.empty) {
-      for (const d of INITIAL_DOCUMENTS) {
-        await setDoc(doc(db, DOCUMENTS_COLLECTION, d.id), cleanFirestoreData({
-          ...d,
-          createdAt: serverTimestamp(),
-        }));
+    try {
+      const docsSnap = await getDocs(collection(db, DOCUMENTS_COLLECTION));
+      if (docsSnap.empty) {
+        for (const d of INITIAL_DOCUMENTS) {
+          await setDoc(doc(db, DOCUMENTS_COLLECTION, d.id), cleanFirestoreData({
+            ...d,
+            createdAt: serverTimestamp(),
+          })).catch(() => {});
+        }
       }
-    }
+    } catch (e) { console.warn('[Firestore Seed] Docs skip:', e); }
 
-    const faqsSnap = await getDocs(collection(db, FAQS_COLLECTION));
-    if (faqsSnap.empty) {
-      for (const f of INITIAL_FAQS) {
-        await setDoc(doc(db, FAQS_COLLECTION, f.id), cleanFirestoreData({
-          ...f,
-          createdAt: serverTimestamp(),
-        }));
+    try {
+      const faqsSnap = await getDocs(collection(db, FAQS_COLLECTION));
+      if (faqsSnap.empty) {
+        for (const f of INITIAL_FAQS) {
+          await setDoc(doc(db, FAQS_COLLECTION, f.id), cleanFirestoreData({
+            ...f,
+            createdAt: serverTimestamp(),
+          })).catch(() => {});
+        }
       }
-    }
+    } catch (e) { console.warn('[Firestore Seed] FAQs skip:', e); }
 
-    const quickLinksSnap = await getDocs(collection(db, QUICK_LINKS_COLLECTION));
-    if (quickLinksSnap.empty) {
-      for (const q of INITIAL_QUICK_LINKS) {
-        await setDoc(doc(db, QUICK_LINKS_COLLECTION, q.id), cleanFirestoreData({
-          ...q,
-          createdAt: serverTimestamp(),
-        }));
+    try {
+      const quickLinksSnap = await getDocs(collection(db, QUICK_LINKS_COLLECTION));
+      if (quickLinksSnap.empty) {
+        for (const q of INITIAL_QUICK_LINKS) {
+          await setDoc(doc(db, QUICK_LINKS_COLLECTION, q.id), cleanFirestoreData({
+            ...q,
+            createdAt: serverTimestamp(),
+          })).catch(() => {});
+        }
       }
-    }
+    } catch (e) { console.warn('[Firestore Seed] QuickLinks skip:', e); }
 
-    const dynamicPagesSnap = await getDocs(collection(db, DYNAMIC_PAGES_COLLECTION));
-    if (dynamicPagesSnap.empty) {
-      for (const p of INITIAL_DYNAMIC_PAGES) {
-        await setDoc(doc(db, DYNAMIC_PAGES_COLLECTION, p.id), cleanFirestoreData({
-          ...p,
-          createdAt: serverTimestamp(),
-        }));
+    try {
+      const dynamicPagesSnap = await getDocs(collection(db, DYNAMIC_PAGES_COLLECTION));
+      if (dynamicPagesSnap.empty) {
+        for (const p of INITIAL_DYNAMIC_PAGES) {
+          await setDoc(doc(db, DYNAMIC_PAGES_COLLECTION, p.id), cleanFirestoreData({
+            ...p,
+            createdAt: serverTimestamp(),
+          })).catch(() => {});
+        }
       }
-    }
+    } catch (e) { console.warn('[Firestore Seed] DynamicPages skip:', e); }
 
-    const aiKnowledgeSnap = await getDocs(collection(db, AI_KNOWLEDGE_COLLECTION));
-    if (aiKnowledgeSnap.empty) {
-      for (const ak of INITIAL_AI_KNOWLEDGE_SOURCES) {
-        await setDoc(doc(db, AI_KNOWLEDGE_COLLECTION, ak.id), cleanFirestoreData({
-          ...ak,
-          createdAt: serverTimestamp(),
-        }));
+    try {
+      const aiKnowledgeSnap = await getDocs(collection(db, AI_KNOWLEDGE_COLLECTION));
+      if (aiKnowledgeSnap.empty) {
+        for (const ak of INITIAL_AI_KNOWLEDGE_SOURCES) {
+          await setDoc(doc(db, AI_KNOWLEDGE_COLLECTION, ak.id), cleanFirestoreData({
+            ...ak,
+            createdAt: serverTimestamp(),
+          })).catch(() => {});
+        }
       }
-    }
+    } catch (e) { console.warn('[Firestore Seed] AIKnowledge skip:', e); }
 
-    const auditSnap = await getDocs(collection(db, AUDIT_LOGS_COLLECTION));
-    if (auditSnap.empty) {
-      for (const al of INITIAL_AUDIT_LOGS) {
-        await setDoc(doc(db, AUDIT_LOGS_COLLECTION, al.id), cleanFirestoreData({
-          ...al,
-          createdAt: serverTimestamp(),
-        }));
+    try {
+      const auditSnap = await getDocs(collection(db, AUDIT_LOGS_COLLECTION));
+      if (auditSnap.empty) {
+        for (const al of INITIAL_AUDIT_LOGS) {
+          await setDoc(doc(db, AUDIT_LOGS_COLLECTION, al.id), cleanFirestoreData({
+            ...al,
+            createdAt: serverTimestamp(),
+          })).catch(() => {});
+        }
       }
-    }
+    } catch (e) { console.warn('[Firestore Seed] AuditLogs skip:', e); }
 
-    const templatesSnap = await getDocs(collection(db, NOTIFICATION_TEMPLATES_COLLECTION));
-    if (templatesSnap.empty) {
-      for (const tpl of INITIAL_NOTIFICATION_TEMPLATES) {
-        await setDoc(doc(db, NOTIFICATION_TEMPLATES_COLLECTION, tpl.id), cleanFirestoreData({
-          ...tpl,
-          createdAt: serverTimestamp(),
-        }));
+    try {
+      const templatesSnap = await getDocs(collection(db, NOTIFICATION_TEMPLATES_COLLECTION));
+      if (templatesSnap.empty) {
+        for (const tpl of INITIAL_NOTIFICATION_TEMPLATES) {
+          await setDoc(doc(db, NOTIFICATION_TEMPLATES_COLLECTION, tpl.id), cleanFirestoreData({
+            ...tpl,
+            createdAt: serverTimestamp(),
+          })).catch(() => {});
+        }
       }
-    }
+    } catch (e) { console.warn('[Firestore Seed] Templates skip:', e); }
 
     // System Settings & Config Defaults
-    const heroRef = doc(db, SYSTEM_CONFIG_COLLECTION, 'hero_banner');
-    await setDoc(heroRef, cleanFirestoreData(DEFAULT_HERO_CONFIG), { merge: true });
+    try {
+      const heroRef = doc(db, SYSTEM_CONFIG_COLLECTION, 'hero_banner');
+      await setDoc(heroRef, cleanFirestoreData(DEFAULT_HERO_CONFIG), { merge: true }).catch(() => {});
+    } catch (e) {}
 
-    const flagsRef = doc(db, SYSTEM_CONFIG_COLLECTION, 'feature_flags');
-    await setDoc(flagsRef, cleanFirestoreData(DEFAULT_FEATURE_FLAGS), { merge: true });
+    try {
+      const flagsRef = doc(db, SYSTEM_CONFIG_COLLECTION, 'feature_flags');
+      await setDoc(flagsRef, cleanFirestoreData(DEFAULT_FEATURE_FLAGS), { merge: true }).catch(() => {});
+    } catch (e) {}
 
-    const aiConfigRef = doc(db, SYSTEM_CONFIG_COLLECTION, 'ai_settings');
-    await setDoc(aiConfigRef, cleanFirestoreData(DEFAULT_AI_SETTINGS), { merge: true });
+    try {
+      const aiConfigRef = doc(db, SYSTEM_CONFIG_COLLECTION, 'ai_settings');
+      await setDoc(aiConfigRef, cleanFirestoreData(DEFAULT_AI_SETTINGS), { merge: true }).catch(() => {});
+    } catch (e) {}
 
-    const profileRef = doc(db, SYSTEM_CONFIG_COLLECTION, 'institution_profile');
-    await setDoc(profileRef, cleanFirestoreData(INSTITUTION_INFO), { merge: true });
+    try {
+      const profileRef = doc(db, SYSTEM_CONFIG_COLLECTION, 'institution_profile');
+      await setDoc(profileRef, cleanFirestoreData(INSTITUTION_INFO), { merge: true }).catch(() => {});
+    } catch (e) {}
 
   } catch (error) {
-    console.warn('[Firestore] Auto-seed warning:', error);
+    console.warn('[Firestore] Auto-seed handled warning:', error);
   }
 }
 

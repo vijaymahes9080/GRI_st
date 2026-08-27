@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
-import { ArrowLeft, Send, CheckSquare, Square } from 'lucide-react-native';
+import { ArrowLeft, Send, CheckSquare, Square, Eye } from 'lucide-react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { apiClient } from '../../core/api';
 import { themeTokens } from '../../core/theme/tokens';
 import { Card } from '../../components/Card';
+import { NotificationPreviewModal } from '../../components/admin/NotificationPreviewModal';
 
 export default function NotificationComposerScreen() {
   const router = useRouter();
@@ -31,6 +32,7 @@ export default function NotificationComposerScreen() {
 
   const [estimatedRecipients, setEstimatedRecipients] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const toggleChannel = (ch: string) => {
     setChannels((prev) => ({ ...prev, [ch]: !prev[ch] }));
@@ -99,9 +101,18 @@ export default function NotificationComposerScreen() {
           <ArrowLeft size={20} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text className="text-lg font-bold text-slate-900">Create Notification</Text>
-        <TouchableOpacity onPress={handleSend} disabled={isLoading} className="p-2 bg-primary-600 rounded-full shadow-sm">
-          {isLoading ? <ActivityIndicator size="small" color="white" /> : <Send size={18} color="white" />}
-        </TouchableOpacity>
+        <div className="flex-row items-center space-x-2">
+          <TouchableOpacity
+            onPress={() => setIsPreviewOpen(true)}
+            className="flex-row items-center px-3 py-2 bg-slate-100 rounded-xl border border-slate-200 mr-2"
+          >
+            <Eye size={16} color={colors.textSecondary} />
+            <Text className="text-xs font-bold text-slate-700 ml-1.5">Preview</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleSend} disabled={isLoading} className="p-2 bg-primary-600 rounded-full shadow-sm">
+            {isLoading ? <ActivityIndicator size="small" color="white" /> : <Send size={18} color="white" />}
+          </TouchableOpacity>
+        </div>
       </View>
 
       <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
@@ -243,6 +254,15 @@ export default function NotificationComposerScreen() {
 
         </View>
       </ScrollView>
+
+      <NotificationPreviewModal
+        isVisible={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        title={title}
+        message={message}
+        category={category}
+        priority={priority}
+      />
     </View>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
-import { Users, Bell, CheckCircle, Clock, ShieldAlert, PlusCircle, ListOrdered, ArrowLeft, Send } from 'lucide-react-native';
+import { Users, Bell, CheckCircle, Clock, ShieldAlert, PlusCircle, ListOrdered, ArrowLeft, Send, RefreshCw, Settings, Smartphone, Monitor } from 'lucide-react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { apiClient } from '../../core/api';
 import { themeTokens } from '../../core/theme/tokens';
@@ -18,16 +18,34 @@ export default function AdminDashboardScreen() {
     sent_notifications: 238,
     delivery_rate_pct: '98.7%',
     failed_rate_pct: '1.3%',
+    mobile_registrations: 8620,
+    web_registrations: 3830,
+    mobile_share_pct: '69.2%',
+    web_share_pct: '30.8%',
   });
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<string>(new Date().toLocaleTimeString());
 
   useEffect(() => {
     fetchStats();
-  }, []);
+    let interval: any = null;
+    if (autoRefresh) {
+      interval = setInterval(() => {
+        fetchStats();
+      }, 60000); // 60 seconds
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [autoRefresh]);
 
   const fetchStats = async () => {
     try {
       const res = await apiClient.get('/admin/notifications/dashboard/stats');
-      if (res.data) setStats(res.data);
+      if (res.data) {
+        setStats(res.data);
+        setLastUpdated(new Date().toLocaleTimeString());
+      }
     } catch {}
   };
 
@@ -76,6 +94,35 @@ export default function AdminDashboardScreen() {
       <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
         <View style={{ maxWidth: 800, width: '100%', alignSelf: 'center' }}>
           
+          {/* Dashboard Settings & Refresh Control */}
+          <View className="bg-white border border-slate-100 p-4 rounded-2xl mb-6 flex-row items-center justify-between shadow-sm">
+            <View className="flex-row items-center">
+              <View className="w-9 h-9 rounded-xl bg-slate-100 items-center justify-center">
+                <RefreshCw size={18} color={colors.textSecondary} />
+              </View>
+              <View className="ml-3">
+                <Text className="text-xs font-bold text-slate-800">Auto-Refresh Stats (60s)</Text>
+                <Text className="text-[11px] text-slate-400 font-medium">Last updated: {lastUpdated}</Text>
+              </View>
+            </View>
+            <View className="flex-row items-center">
+              <TouchableOpacity
+                onPress={fetchStats}
+                className="px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 mr-2"
+              >
+                <Text className="text-[11px] font-bold text-slate-700">Refresh</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setAutoRefresh(!autoRefresh)}
+                className={`px-3 py-1.5 rounded-xl border ${autoRefresh ? 'bg-primary-50 border-primary-200' : 'bg-slate-100 border-slate-200'}`}
+              >
+                <Text className={`text-[11px] font-bold ${autoRefresh ? 'text-primary-700' : 'text-slate-600'}`}>
+                  {autoRefresh ? 'Enabled' : 'Disabled'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
           <Animated.View entering={FadeInDown.delay(100).duration(400)}>
             <Text className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">System Overview</Text>
             
@@ -112,6 +159,46 @@ export default function AdminDashboardScreen() {
                 <Text className="text-xs font-semibold text-slate-500 mt-1">Delivery Success</Text>
               </Card>
             </View>
+          </Animated.View>
+
+          {/* Platform Acquisition Breakdown Section */}
+          <Animated.View entering={FadeInDown.delay(150).duration(400)} className="mb-8">
+            <Text className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">User Acquisition Channels (Registrations by Platform)</Text>
+            
+            <Card elevation="sm" className="bg-white p-5 rounded-3xl border-slate-100">
+              <View className="flex-row justify-between items-center mb-4">
+                <Text className="text-sm font-bold text-slate-800">Platform Distribution</Text>
+                <Text className="text-xs font-semibold text-slate-500">Total: {stats.total_users.toLocaleString()} users</Text>
+              </View>
+
+              {/* Progress bar visual */}
+              <View className="h-3 w-full bg-slate-100 rounded-full flex-row overflow-hidden mb-5">
+                <View style={{ width: stats.mobile_share_pct || '69.2%' }} className="bg-primary-600 h-full" />
+                <View style={{ width: stats.web_share_pct || '30.8%' }} className="bg-blue-400 h-full" />
+              </View>
+
+              <View className="flex-row justify-between">
+                <View className="flex-row items-center flex-1 mr-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+                  <View className="w-9 h-9 rounded-xl bg-primary-50 items-center justify-center mr-3 border border-primary-100">
+                    <Smartphone size={18} color={colors.primary} />
+                  </View>
+                  <View>
+                    <Text className="text-xs text-slate-500 font-semibold">Mobile App</Text>
+                    <Text className="text-lg font-black text-slate-900">{(stats.mobile_registrations || 8620).toLocaleString()} <Text className="text-xs text-primary-600 font-bold">({stats.mobile_share_pct || '69.2%'})</Text></Text>
+                  </View>
+                </View>
+
+                <View className="flex-row items-center flex-1 bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+                  <View className="w-9 h-9 rounded-xl bg-blue-50 items-center justify-center mr-3 border border-blue-100">
+                    <Monitor size={18} color="#3B82F6" />
+                  </View>
+                  <View>
+                    <Text className="text-xs text-slate-500 font-semibold">Web Portal</Text>
+                    <Text className="text-lg font-black text-slate-900">{(stats.web_registrations || 3830).toLocaleString()} <Text className="text-xs text-blue-600 font-bold">({stats.web_share_pct || '30.8%'})</Text></Text>
+                  </View>
+                </View>
+              </View>
+            </Card>
           </Animated.View>
 
           {/* Quick Actions */}

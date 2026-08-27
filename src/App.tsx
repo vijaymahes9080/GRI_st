@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { useAppStore } from './core/store/appStore';
 import { initializeFirestoreData } from './core/firebase';
+import { runServerDiagnostics } from './utils/serverDiagnostics';
+import { getInstitutionalDataWithCache } from './core/services/institutionalData';
 import { AppHeader } from './components/web/AppHeader';
 import { BottomNavigation } from './components/web/BottomNavigation';
 import { QuickSearchModal } from './components/web/QuickSearchModal';
@@ -34,6 +36,16 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     initializeFirestoreData();
+    runServerDiagnostics();
+    getInstitutionalDataWithCache().catch(() => {});
+    const savedColor = localStorage.getItem('gri_primary_color');
+    if (savedColor) {
+      document.documentElement.style.setProperty('--primary', savedColor);
+    }
+    const savedTheme = localStorage.getItem('gri_theme_mode');
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
     const unsubscribe = initializeRealtimeSync();
     return () => unsubscribe();
   }, []);

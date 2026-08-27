@@ -18,6 +18,30 @@ const SERVICES_LIST = [
 export const QuickSearchModal: React.FC = () => {
   const { isSearchOpen, setSearchOpen, setTab, setSelectedDepartment } = useAppStore();
   const [query, setQuery] = useState('');
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('gri_recent_searches');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const saveToRecent = (searchTerm: string) => {
+    if (!searchTerm.trim()) return;
+    const updated = [searchTerm, ...recentSearches.filter(s => s !== searchTerm)].slice(0, 5);
+    setRecentSearches(updated);
+    try {
+      localStorage.setItem('gri_recent_searches', JSON.stringify(updated));
+    } catch {}
+  };
+
+  const clearRecent = () => {
+    setRecentSearches([]);
+    try {
+      localStorage.removeItem('gri_recent_searches');
+    } catch {}
+  };
 
   // Keyboard shortcut listener for Cmd/Ctrl + K and Escape
   useEffect(() => {
@@ -105,6 +129,37 @@ export const QuickSearchModal: React.FC = () => {
 
         {/* Results Container */}
         <div className="p-4 overflow-y-auto space-y-5">
+          {/* Recent Searches */}
+          {!query && recentSearches.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[11px] uppercase tracking-wider text-[#5C6661] font-bold">
+                  Recent Searches ({recentSearches.length}/5)
+                </p>
+                <button
+                  onClick={clearRecent}
+                  className="text-[10px] text-emerald-700 hover:underline font-semibold"
+                >
+                  Clear History
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {recentSearches.map((term, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setQuery(term);
+                      saveToRecent(term);
+                    }}
+                    className="px-3 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-xs text-emerald-900 font-medium transition flex items-center gap-1"
+                  >
+                    <span>{term}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Quick Actions Shortcuts */}
           {!query && (
             <div>

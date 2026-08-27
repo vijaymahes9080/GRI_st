@@ -17,7 +17,10 @@ import {
   Phone,
   MapPin,
   Flame,
-  Award
+  Award,
+  Palette,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 export const SystemSettingsManager: React.FC = () => {
@@ -45,6 +48,34 @@ export const SystemSettingsManager: React.FC = () => {
   const [instAddress, setInstAddress] = useState(institutionProfile.address);
   const [instViceChancellor, setInstViceChancellor] = useState(institutionProfile.viceChancellor);
   const [instRegistrar, setInstRegistrar] = useState(institutionProfile.registrar);
+
+  // Theme & Color Picker State
+  const [primaryColor, setPrimaryColor] = useState(() => {
+    return localStorage.getItem('gri_primary_color') || '#14532D';
+  });
+  const [themeMode, setThemeMode] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('gri_theme_mode') as 'light' | 'dark') || 'light';
+  });
+
+  const handleColorChange = (color: string) => {
+    setPrimaryColor(color);
+    document.documentElement.style.setProperty('--primary', color);
+    localStorage.setItem('gri_primary_color', color);
+    setFeedback(`Primary brand color updated to ${color}`);
+    setTimeout(() => setFeedback(null), 3000);
+  };
+
+  const handleThemeModeChange = (mode: 'light' | 'dark') => {
+    setThemeMode(mode);
+    localStorage.setItem('gri_theme_mode', mode);
+    if (mode === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    setFeedback(`Portal theme mode switched to ${mode.toUpperCase()}`);
+    setTimeout(() => setFeedback(null), 3000);
+  };
 
   // Hero Banner State
   const [heroBadge, setHeroBadge] = useState(heroConfig.accreditationBadge);
@@ -133,6 +164,85 @@ export const SystemSettingsManager: React.FC = () => {
           </button>
         </div>
       )}
+
+      {/* SECTION: Portal Theme & Brand Color Customization */}
+      <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 space-y-6 text-xs">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div>
+            <h3 className="text-sm font-bold text-white font-display flex items-center gap-2">
+              <Palette className="w-4 h-4 text-emerald-400" />
+              Portal Theme & Brand Color Customization
+            </h3>
+            <p className="text-[11px] text-slate-400">
+              Customize the primary brand color and switch between light and dark modes with dynamic CSS variable updates.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {/* Primary Brand Color Picker */}
+          <div className="space-y-3">
+            <label className="block text-slate-300 font-bold">Primary Brand Color</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={primaryColor}
+                onChange={(e) => handleColorChange(e.target.value)}
+                className="w-12 h-12 rounded-xl bg-slate-950 border border-slate-700 cursor-pointer p-1"
+              />
+              <div>
+                <div className="text-white font-mono font-bold text-sm">{primaryColor}</div>
+                <div className="text-[10px] text-slate-400">Click to pick custom hex color for buttons & highlights</div>
+              </div>
+            </div>
+            <div className="flex gap-2 pt-1">
+              {['#14532D', '#518214', '#2563EB', '#7C3AED', '#DB2777', '#EA580C'].map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => handleColorChange(preset)}
+                  style={{ backgroundColor: preset }}
+                  className={`w-7 h-7 rounded-full border-2 transition ${primaryColor === preset ? 'border-white scale-110 shadow-md' : 'border-slate-700 hover:scale-105'}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Theme Mode Switcher (Light / Dark) */}
+          <div className="space-y-3">
+            <label className="block text-slate-300 font-bold">Appearance Theme (Light & Dark)</label>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => handleThemeModeChange('light')}
+                className={`flex-1 p-3.5 rounded-2xl border flex items-center justify-center gap-2 transition ${
+                  themeMode === 'light'
+                    ? 'bg-white text-slate-900 border-emerald-500 shadow-md font-bold'
+                    : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-900'
+                }`}
+              >
+                <Sun className="w-4 h-4 text-amber-500" />
+                <span>Light Mode</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleThemeModeChange('dark')}
+                className={`flex-1 p-3.5 rounded-2xl border flex items-center justify-center gap-2 transition ${
+                  themeMode === 'dark'
+                    ? 'bg-slate-950 text-white border-emerald-500 shadow-md font-bold'
+                    : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-900'
+                }`}
+              >
+                <Moon className="w-4 h-4 text-sky-400" />
+                <span>Dark Mode</span>
+              </button>
+            </div>
+            <div className="text-[10px] text-slate-400">
+              Current mode: <span className="text-emerald-400 font-bold uppercase">{themeMode}</span>. Suitable contrast and color matching applied.
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* SECTION 1: Institution Profile & Branding */}
       <form onSubmit={handleSaveInstitution} className="bg-slate-900 p-6 rounded-3xl border border-slate-800 space-y-4 text-xs">

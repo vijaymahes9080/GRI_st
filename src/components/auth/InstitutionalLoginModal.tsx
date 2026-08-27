@@ -34,10 +34,11 @@ export const InstitutionalLoginModal: React.FC<Props> = ({ isOpen, onClose, init
     loginWithInstitutionalCredentials, 
     loginAsUser, 
     continueAsGuest,
-    usersList 
+    usersList,
+    registerPendingUser
   } = useAppStore();
 
-  const [activeTab, setActiveTab] = useState<'student_staff' | 'quick_personas' | 'guest'>('student_staff');
+  const [activeTab, setActiveTab] = useState<'student_staff' | 'quick_personas' | 'guest' | 'register'>('student_staff');
   const [identifier, setIdentifier] = useState(
     initialRole === 'admin' 
       ? 'admin@ruraluniv.ac.in' 
@@ -50,6 +51,17 @@ export const InstitutionalLoginModal: React.FC<Props> = ({ isOpen, onClose, init
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Registration state
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPhone, setRegPhone] = useState('');
+  const [regRole, setRegRole] = useState<UserRole>('student');
+  const [regDepartment, setRegDepartment] = useState('Computer Science & Applications');
+  const [regPassword, setRegPassword] = useState('');
+  const [regConfirmPassword, setRegConfirmPassword] = useState('');
+  const [isRegLoading, setIsRegLoading] = useState(false);
+  const [regSuccessMsg, setRegSuccessMsg] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -86,6 +98,46 @@ export const InstitutionalLoginModal: React.FC<Props> = ({ isOpen, onClose, init
   const handleGuestContinue = () => {
     continueAsGuest();
     onClose();
+  };
+
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regName.trim() || !regEmail.trim() || !regPassword.trim()) {
+      setErrorMsg('Please enter Full Name, Email, and Password.');
+      return;
+    }
+    if (regPassword !== regConfirmPassword) {
+      setErrorMsg('Passwords do not match.');
+      return;
+    }
+    if (regPassword.length < 6) {
+      setErrorMsg('Password must be at least 6 characters.');
+      return;
+    }
+
+    setIsRegLoading(true);
+    setErrorMsg(null);
+    setRegSuccessMsg(null);
+    try {
+      await registerPendingUser({
+        name: regName.trim(),
+        email: regEmail.trim().toLowerCase(),
+        phone: regPhone.trim(),
+        role: regRole,
+        department: regDepartment,
+        schoolName: regDepartment,
+      });
+      setRegSuccessMsg('Registration request submitted successfully! Your account is pending administrator verification and approval. Once approved by admin, you will receive login credentials.');
+      setRegName('');
+      setRegEmail('');
+      setRegPhone('');
+      setRegPassword('');
+      setRegConfirmPassword('');
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setIsRegLoading(false);
+    }
   };
 
   return (
@@ -162,6 +214,19 @@ export const InstitutionalLoginModal: React.FC<Props> = ({ isOpen, onClose, init
           >
             <Compass className="w-3.5 h-3.5" />
             <span>Guest Public Portal</span>
+          </button>
+
+          <button
+            id="tab-register"
+            onClick={() => { setActiveTab('register'); setErrorMsg(null); setRegSuccessMsg(null); }}
+            className={`pb-3 px-3 text-xs font-bold border-b-2 transition flex items-center gap-2 ${
+              activeTab === 'register'
+                ? 'border-emerald-500 text-[#0F4C3A]'
+                : 'border-transparent text-[#5C6661] hover:text-[#1A1F1D]'
+            }`}
+          >
+            <UserCheck className="w-3.5 h-3.5" />
+            <span>Register / Request Access</span>
           </button>
         </div>
 
@@ -369,6 +434,128 @@ export const InstitutionalLoginModal: React.FC<Props> = ({ isOpen, onClose, init
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
+          )}
+
+          {activeTab === 'register' && (
+            <form onSubmit={handleRegisterSubmit} className="space-y-4">
+              <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 text-xs text-emerald-900 space-y-1">
+                <p className="font-bold">New Account Registration Request</p>
+                <p className="text-[11px] text-slate-600">
+                  Submit your details for verification. Administrator review and approval is required before system access is granted.
+                </p>
+              </div>
+
+              {regSuccessMsg && (
+                <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-[#0F4C3A] flex-shrink-0 mt-0.5" />
+                  <p className="font-medium leading-relaxed">{regSuccessMsg}</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-[#1A1F1D] mb-1">Full Name</label>
+                  <input
+                    type="text"
+                    value={regName}
+                    onChange={(e) => setRegName(e.target.value)}
+                    placeholder="e.g. Priya Sharma"
+                    required
+                    className="w-full bg-white border border-[#E5EAE7] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1F1D] placeholder:text-[#5C6661] focus:border-[#0F4C3A] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#1A1F1D] mb-1">Email Address</label>
+                  <input
+                    type="email"
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
+                    placeholder="user@ruraluniv.ac.in"
+                    required
+                    className="w-full bg-white border border-[#E5EAE7] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1F1D] placeholder:text-[#5C6661] focus:border-[#0F4C3A] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-[#1A1F1D] mb-1">Role Request</label>
+                  <select
+                    value={regRole}
+                    onChange={(e) => setRegRole(e.target.value as UserRole)}
+                    className="w-full bg-white border border-[#E5EAE7] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1F1D] focus:border-[#0F4C3A] focus:outline-none"
+                  >
+                    <option value="student">Student</option>
+                    <option value="faculty">Faculty / Staff</option>
+                    <option value="scholar">Research Scholar</option>
+                    <option value="guest">Guest / Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#1A1F1D] mb-1">Phone Number</label>
+                  <input
+                    type="text"
+                    value={regPhone}
+                    onChange={(e) => setRegPhone(e.target.value)}
+                    placeholder="+91 98765 43210"
+                    className="w-full bg-white border border-[#E5EAE7] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1F1D] placeholder:text-[#5C6661] focus:border-[#0F4C3A] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#1A1F1D] mb-1">Department / School</label>
+                <input
+                  type="text"
+                  value={regDepartment}
+                  onChange={(e) => setRegDepartment(e.target.value)}
+                  placeholder="e.g. Computer Science & Applications"
+                  required
+                  className="w-full bg-white border border-[#E5EAE7] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1F1D] placeholder:text-[#5C6661] focus:border-[#0F4C3A] focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-[#1A1F1D] mb-1">Password</label>
+                  <input
+                    type="password"
+                    value={regPassword}
+                    onChange={(e) => setRegPassword(e.target.value)}
+                    placeholder="Min 6 characters"
+                    required
+                    className="w-full bg-white border border-[#E5EAE7] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1F1D] placeholder:text-[#5C6661] focus:border-[#0F4C3A] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#1A1F1D] mb-1">Confirm Password</label>
+                  <input
+                    type="password"
+                    value={regConfirmPassword}
+                    onChange={(e) => setRegConfirmPassword(e.target.value)}
+                    placeholder="Re-enter password"
+                    required
+                    className="w-full bg-white border border-[#E5EAE7] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1F1D] placeholder:text-[#5C6661] focus:border-[#0F4C3A] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isRegLoading}
+                className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-950/40 disabled:opacity-50 mt-2"
+              >
+                {isRegLoading ? (
+                  <span>Submitting Request...</span>
+                ) : (
+                  <>
+                    <UserCheck className="w-4 h-4" />
+                    <span>Submit Registration Request for Admin Approval</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </form>
           )}
         </div>
 

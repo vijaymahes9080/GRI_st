@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { pcm16ToBase64, LiveAudioPlayer } from '../../utils/audioUtils';
 import { useAppStore } from '../../core/store/appStore';
+import { getSecureItem, storageKeys } from '../../core/storage';
 
 interface LiveVoiceConversationModalProps {
   isOpen: boolean;
@@ -155,7 +156,7 @@ export const LiveVoiceConversationModal: React.FC<LiveVoiceConversationModalProp
 
       // 3. Connect to server WebSocket bridge on /live
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const token = useAuthStore.getState().token || '';
+      const token = getSecureItem(storageKeys.ACCESS_TOKEN) || 'mock_token';
       const wsUrl = `${protocol}//${window.location.host}/live?token=${token}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;

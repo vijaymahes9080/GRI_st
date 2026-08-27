@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { useAppStore } from '../../core/store/appStore';
 import { BulkConfirmModal, BulkActionType } from './BulkConfirmModal';
 import { AddUserModal } from '../admin/AddUserModal';
@@ -344,8 +345,10 @@ export const AdminView: React.FC = () => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
-              <button
+              <motion.button
                 key={tab.id}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
                   isActive
@@ -362,7 +365,7 @@ export const AdminView: React.FC = () => {
                     {tab.badge}
                   </span>
                 )}
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -383,8 +386,10 @@ export const AdminView: React.FC = () => {
             ].map((m, idx) => {
               const Icon = m.icon;
               return (
-                <div
+                <motion.div
                   key={idx}
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => setActiveTab(m.tab as AdminTab)}
                   className={`p-4 rounded-2xl bg-slate-900 border transition cursor-pointer hover:border-slate-700 space-y-1 ${
                     m.alert ? 'border-amber-500/40 bg-amber-950/20' : 'border-slate-800'
@@ -396,7 +401,7 @@ export const AdminView: React.FC = () => {
                   </div>
                   <div className="text-xl font-bold text-white font-mono mt-1">{m.count}</div>
                   <div className="text-[11px] text-slate-400 font-medium">{m.label}</div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
