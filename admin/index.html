@@ -271,7 +271,7 @@
     .stat-card.blue::before { background: linear-gradient(90deg, var(--info), var(--purple)); }
     .stat-card.purple::before { background: linear-gradient(90deg, var(--purple), #ec4899); }
     .stat-label { font-size: 12px; color: var(--text2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
-    .stat-value { font-size: 34px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+    .stat-value { font-size: 34px; font-weight: 800; line-height: 1; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
     .stat-sub { font-size: 12px; color: var(--text3); }
 
     /* =====================================================================
@@ -1255,17 +1255,62 @@ function switchTab(tab) {
 }
 
 /* =====================================================================
-   DASHBOARD
+   DASHBOARD & COUNTER ANIMATIONS
 ===================================================================== */
+function animateCounter(el, target, duration = 800) {
+  if (!el) return;
+  const num = typeof target === 'number' ? target : parseInt(target, 10);
+  if (isNaN(num)) {
+    el.textContent = target ?? '—';
+    return;
+  }
+  if (num === 0) {
+    el.textContent = '0';
+    return;
+  }
+
+  if (el._counterAnimId) {
+    cancelAnimationFrame(el._counterAnimId);
+  }
+
+  const startValue = 0;
+  const startTime = performance.now();
+
+  function step(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    // Smooth ease-out cubic curve (fast start, deceleration at end)
+    const ease = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(startValue + (num - startValue) * ease);
+    el.textContent = current.toLocaleString();
+
+    if (progress < 1) {
+      el._counterAnimId = requestAnimationFrame(step);
+    } else {
+      el.textContent = num.toLocaleString();
+      delete el._counterAnimId;
+    }
+  }
+
+  el.textContent = '0';
+  el._counterAnimId = requestAnimationFrame(step);
+}
+
 async function loadDashboard() {
+  const statIds = ['stat-total', 'stat-pending', 'stat-approved', 'stat-rejected', 'stat-suspended'];
+  statIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '0';
+  });
+
   const stats = await api('/admin/stats');
   if (!stats) return;
 
-  document.getElementById('stat-total').textContent     = stats.total_users ?? '—';
-  document.getElementById('stat-pending').textContent   = stats.by_status?.pending ?? 0;
-  document.getElementById('stat-approved').textContent  = stats.by_status?.approved ?? 0;
-  document.getElementById('stat-rejected').textContent  = stats.by_status?.rejected ?? 0;
-  document.getElementById('stat-suspended').textContent = stats.by_status?.suspended ?? 0;
+  animateCounter(document.getElementById('stat-total'), stats.total_users ?? 0);
+  animateCounter(document.getElementById('stat-pending'), stats.by_status?.pending ?? 0);
+  animateCounter(document.getElementById('stat-approved'), stats.by_status?.approved ?? 0);
+  animateCounter(document.getElementById('stat-rejected'), stats.by_status?.rejected ?? 0);
+  animateCounter(document.getElementById('stat-suspended'), stats.by_status?.suspended ?? 0);
 
   const pCount = stats.by_status?.pending ?? 0;
   document.getElementById('pending-badge').textContent = pCount;
@@ -1273,13 +1318,18 @@ async function loadDashboard() {
 
   const rb = document.getElementById('role-breakdown');
   const roleColors = { admin:'danger', student:'info', faculty:'success', staff:'warning', other:'purple' };
-  rb.innerHTML = Object.entries(stats.by_role || {}).map(([role, cnt]) => `
+  const roleEntries = Object.entries(stats.by_role || {});
+  rb.innerHTML = roleEntries.map(([role], idx) => `
     <div class="stat-card ${roleColors[role] || 'green'}" style="min-width:130px;flex:1">
       <div class="stat-label">${role}</div>
-      <div class="stat-value" style="font-size:28px">${cnt}</div>
+      <div class="stat-value" id="stat-role-${idx}" style="font-size:28px">0</div>
       <div class="stat-sub">users</div>
     </div>
   `).join('');
+
+  roleEntries.forEach(([_, cnt], idx) => {
+    animateCounter(document.getElementById(`stat-role-${idx}`), cnt);
+  });
 }
 
 /* =====================================================================

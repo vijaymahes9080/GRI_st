@@ -62,6 +62,7 @@ import {
   subscribeToAuditLogs,
   subscribeToNotificationTemplates,
   subscribeToSystemConfig,
+  initializeFirestoreData,
   saveNotificationTemplateToFirestore,
   deleteNotificationTemplateFromFirestore,
   addCircularToFirestore,
@@ -98,6 +99,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { Permission } from '../../types';
 import { clearAllSensitiveStorage } from '../storage';
 import { useAuthStore } from '../auth/authStore';
+import { processOfflineSyncQueue } from '../offline/syncQueue';
 
 export type AppTab = 'home' | 'explore' | 'services' | 'alerts' | 'ai_chat' | 'admin' | 'profile' | 'settings';
 
@@ -119,9 +121,12 @@ interface AppState {
   viewMode: 'desktop' | 'mobile_sim';
   toggleViewMode: () => void;
   
-  // Real-time Database status
+  // Network & Real-time Database status
+  isOnline: boolean;
+  setIsOnline: (online: boolean) => void;
   isFirestoreLive: boolean;
   setFirestoreLive: (live: boolean) => void;
+  resyncFirestoreState: () => Promise<{ successCount: number; failCount: number }>;
 
   // Institutional Auth & Session state
   currentUser: UserProfile;
@@ -294,8 +299,29 @@ export const useAppStore = create<AppState>((set, get) => ({
   viewMode: 'desktop',
   toggleViewMode: () => set((state) => ({ viewMode: state.viewMode === 'desktop' ? 'mobile_sim' : 'desktop' })),
 
+  isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+  setIsOnline: (online) => set({ isOnline: online, isFirestoreLive: online ? get().isFirestoreLive : false }),
+
   isFirestoreLive: false,
   setFirestoreLive: (live) => set({ isFirestoreLive: live }),
+
+  resyncFirestoreState: async () => {
+    let queueRes = { successCount: 0, failCount: 0 };
+    try {
+      queueRes = await processOfflineSyncQueue();
+    } catch (e) {
+      console.warn('[Sync] Offline sync queue error:', e);
+    }
+
+    try {
+      await initializeFirestoreData();
+      set({ isFirestoreLive: true });
+    } catch (e) {
+      console.warn('[Sync] Firestore re-sync error:', e);
+    }
+
+    return queueRes;
+  },
 
   currentUser: SAMPLE_USERS[0], // Default student
   isAuthenticated: true,
