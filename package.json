@@ -58,6 +58,7 @@
     "react-native-screens": "3.31.1",
     "react-native-svg": "15.2.0",
     "react-native-web": "^0.21.2",
+    "recharts": "^3.10.1",
     "sanitize-html": "^2.17.7",
     "tailwind-merge": "^3.6.0",
     "tsx": "^4.23.12",
