@@ -50,6 +50,11 @@ export const LiveVoiceConversationModal: React.FC<LiveVoiceConversationModalProp
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const transcriptsEndRef = useRef<HTMLDivElement>(null);
+  const isMicMutedRef = useRef(isMicMuted);
+  isMicMutedRef.current = isMicMuted;
+  const liveModelTextRef = useRef('');
+  const currentUserRef = useRef(currentUser);
+  currentUserRef.current = currentUser;
 
   const setupMicProcessing = useCallback((stream: MediaStream, ws: WebSocket) => {
     try {
@@ -67,7 +72,7 @@ export const LiveVoiceConversationModal: React.FC<LiveVoiceConversationModalProp
       let silenceCounter = 0;
 
       processor.onaudioprocess = (e) => {
-        if (isMicMuted || ws.readyState !== WebSocket.OPEN) return;
+        if (isMicMutedRef.current || ws.readyState !== WebSocket.OPEN) return;
 
         const inputBuffer = e.inputBuffer.getChannelData(0);
         
@@ -94,7 +99,7 @@ export const LiveVoiceConversationModal: React.FC<LiveVoiceConversationModalProp
     } catch (err) {
       console.error('[Mic Setup Error]', err);
     }
-  }, [isMicMuted]);
+  }, []);
 
   const endLiveSession = useCallback(() => {
     // 1. Stop audio playback
@@ -172,7 +177,7 @@ export const LiveVoiceConversationModal: React.FC<LiveVoiceConversationModalProp
           {
             id: `init-${Date.now()}`,
             sender: 'model',
-            text: `Vanakkam ${currentUser.name}! I am listening via GRI Live Voice. How can I help you today?`,
+            text: `Vanakkam ${currentUserRef.current.name}! I am listening via GRI Live Voice. How can I help you today?`,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           }
         ]);
@@ -201,7 +206,8 @@ export const LiveVoiceConversationModal: React.FC<LiveVoiceConversationModalProp
           }
 
           if (msg.text) {
-            setLiveModelText(prev => prev + msg.text);
+            liveModelTextRef.current += msg.text;
+            setLiveModelText(liveModelTextRef.current);
           }
 
           if (msg.interrupted) {
@@ -211,16 +217,18 @@ export const LiveVoiceConversationModal: React.FC<LiveVoiceConversationModalProp
           }
 
           if (msg.turnComplete) {
-            if (liveModelText.trim()) {
+            if (liveModelTextRef.current.trim()) {
+              const completedText = liveModelTextRef.current;
               setTranscripts(prev => [
                 ...prev,
                 {
                   id: `model-${Date.now()}`,
                   sender: 'model',
-                  text: liveModelText,
+                  text: completedText,
                   timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 }
               ]);
+              liveModelTextRef.current = '';
               setLiveModelText('');
             }
           }
@@ -243,7 +251,7 @@ export const LiveVoiceConversationModal: React.FC<LiveVoiceConversationModalProp
       setErrorMessage(err?.message || 'Failed to initialize voice session');
       setIsConnecting(false);
     }
-  }, [currentUser.name, liveModelText, setupMicProcessing]);
+  }, [setupMicProcessing]);
 
   useEffect(() => {
     transcriptsEndRef.current?.scrollIntoView({ behavior: 'smooth' });

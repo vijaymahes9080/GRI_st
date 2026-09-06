@@ -2,15 +2,18 @@ import React, { useState } from 'react';
 import { useAppStore } from '../../core/store/appStore';
 import { 
   Calendar, BookOpen, Clock, FileText, Bell, 
-  ChevronRight, ArrowRight, GraduationCap, MapPin, Play, MessageSquareWarning
+  ChevronRight, ArrowRight, GraduationCap, MapPin, Play, MessageSquareWarning,
+  Radio, Mic, Sparkles
 } from 'lucide-react';
 import { FeedbackModal } from '../common/FeedbackModal';
 import { ServiceDetailModal, ServiceType } from './ServiceDetailModal';
+import { LiveVoiceConversationModal } from '../common/LiveVoiceConversationModal';
 
 export const HomeView: React.FC = () => {
   const { setTab, circulars, currentUser } = useAppStore();
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [selectedHomeService, setSelectedHomeService] = useState<ServiceType | null>(null);
+  const [isLiveVoiceOpen, setIsLiveVoiceOpen] = useState(false);
 
   const importantCirculars = circulars.filter(c => c.isImportant).slice(0, 3);
 
@@ -67,6 +70,42 @@ export const HomeView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* AI Voice Assistant & Transcription Banner */}
+      <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 rounded-3xl p-4 sm:p-5 text-white shadow-lg border border-emerald-500/30 relative overflow-hidden">
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <div className="flex items-center gap-2">
+            <span className="p-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+              <Radio className="w-4 h-4 text-emerald-300 animate-pulse" />
+            </span>
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-200">
+              GRI Voice & AI Multimodal
+            </span>
+          </div>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
+            Live & Transcribe
+          </span>
+        </div>
+        <p className="text-xs text-slate-200 leading-relaxed mb-3">
+          Experience real-time two-way voice conversations with <strong className="text-emerald-300 font-mono">gemini-3.1-flash-live-preview</strong>, or transcribe microphone speech via <strong className="text-teal-300 font-mono">gemini-3.5-transcribe</strong>.
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsLiveVoiceOpen(true)}
+            className="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow transition"
+          >
+            <Radio className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+            <span>Start Live Call</span>
+          </button>
+          <button
+            onClick={() => setTab('ai_chat')}
+            className="py-2 px-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+          >
+            <Mic className="w-3.5 h-3.5 text-teal-300" />
+            <span>Dictate & Transcribe</span>
+          </button>
+        </div>
+      </div>
 
       {/* 2. Quick Actions Grid */}
       <div>
@@ -170,6 +209,10 @@ export const HomeView: React.FC = () => {
         service={selectedHomeService} 
         isOpen={Boolean(selectedHomeService)} 
         onClose={() => setSelectedHomeService(null)} 
+      />
+      <LiveVoiceConversationModal
+        isOpen={isLiveVoiceOpen}
+        onClose={() => setIsLiveVoiceOpen(false)}
       />
     </div>
   );
